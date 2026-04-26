@@ -91,7 +91,7 @@ export async function ejecutarQueryPostArchivos<T>(url: string, body: any): Prom
 }
 
 // PUT -> Actualiza datos
-export async function putData<T>(url: string, body: any): Promise<T> {
+export async function ejecutarQueryPut<T>(url: string, body: any): Promise<T> {
     try {
         const response = await fetch(`${environment.apiUrl}/${url}`, {
             method: "PUT",
@@ -119,7 +119,7 @@ export async function putData<T>(url: string, body: any): Promise<T> {
 }
 
 // PATCH -> Actualiza datos parcialmente
-export async function patchData<T>(url: string, body: any): Promise<T> {
+export async function ejecutarQueryPatch<T>(url: string, body: any): Promise<T> {
     try {
         const response = await fetch(`${environment.apiUrl}/${url}`, {
             method: "PATCH",
@@ -147,7 +147,7 @@ export async function patchData<T>(url: string, body: any): Promise<T> {
 }
 
 // DELETE -> Elimina datos
-export async function deleteData<T>(url: string): Promise<T> {
+export async function ejecutarQueryDelete<T>(url: string): Promise<T> {
     try {
         const response = await fetch(`${environment.apiUrl}/${url}`, {
             method: "DELETE",

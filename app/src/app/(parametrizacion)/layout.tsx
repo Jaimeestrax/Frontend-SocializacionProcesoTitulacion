@@ -1,0 +1,14 @@
+import { AppSidebar } from "@/components/app-sidebar";
+
+export default function AuthLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    return (
+        <main className="flex items-center justify-center p-4 mt-4">
+            <AppSidebar />
+            {children}
+        </main>
+    );
+}
