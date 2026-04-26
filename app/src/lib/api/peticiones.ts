@@ -26,7 +26,7 @@ export async function ejecutarQueryGet<T>(url: string): Promise<T> {
         return data;
     } catch (e: any) {
         // Errores de fetch o de la api
-        console.error('Error fetching data:', e.name);
+        //console.error('Error fetching data:', e.name);
         throw {
             // Envia excepción al nivel superior
             status: e?.status,
@@ -55,7 +55,7 @@ export async function ejecutarQueryPost<T>(url: string, body: any): Promise<T> {
 
         return data;
     } catch (e: any) {
-        console.error('Error posting data:', e.name);
+        //console.error('Error posting data:', e.name);
         throw {
             status: e?.status,
             message: e?.message || environment.mensajeError
@@ -82,7 +82,7 @@ export async function ejecutarQueryPostArchivos<T>(url: string, body: any): Prom
 
         return data;
     } catch (e: any) {
-        console.error('Error posting data files:', e.name);
+        //console.error('Error posting data files:', e.name);
         throw {
             status: e?.status,
             message: e?.message || environment.mensajeError
@@ -110,7 +110,7 @@ export async function ejecutarQueryPut<T>(url: string, body: any): Promise<T> {
 
         return data;
     } catch (e: any) {
-        console.error('Error updating data:', e.name);
+        //console.error('Error updating data:', e.name);
         throw {
             status: e?.status,
             message: e?.message || environment.mensajeError
@@ -138,7 +138,7 @@ export async function ejecutarQueryPatch<T>(url: string, body: any): Promise<T> 
 
         return data;
     } catch (e: any) {
-        console.error('Error updating data:', e.name);
+        //console.error('Error updating data:', e.name);
         throw {
             status: e?.status,
             message: e?.message || environment.mensajeError
@@ -165,7 +165,7 @@ export async function ejecutarQueryDelete<T>(url: string): Promise<T> {
 
         return data;
     } catch (e: any) {
-        console.error('Error deleting data:', e.name);
+        //console.error('Error deleting data:', e.name);
         throw {
             status: e?.status,
             message: e?.message || environment.mensajeError

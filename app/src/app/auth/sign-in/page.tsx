@@ -13,11 +13,11 @@ export default function SignInPage() {
                 </div>
             </div>
 
-            <h2 className="text-center text-xl font-semibold lg:text-2xl">
+            <h2 className="text-center text-xl font-semibold md:text-2xl">
                 Inicio de sesión
             </h2>
 
-            <p className="text-center text-sm text-muted-foreground mb-6 lg:text-md">
+            <p className="text-center text-sm text-muted-foreground mb-6 md:text-md">
                 Inicie sesión para administrar el contenido
             </p>
 
@@ -26,13 +26,13 @@ export default function SignInPage() {
             <Separator />
 
             <div className="flex items-center justify-center mt-6">
-                <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">
+                <Badge className="bg-success text-success-foreground font-bold text-xs md:text-sm">
                     <ShieldCheck data-icon="inline-start" />
                     SOLO PERSONAL AUTORIZADO
                 </Badge>
             </div>
 
-            <p className="text-center text-xs text-muted-foreground mt-2">
+            <p className="text-center text-xs text-muted-foreground mt-4 md:text-sm">
                 Acceso restringido solo para la comisión de titulación. <br />
                 Los intentos de acceso no autorizado son monitoreados y registrados.
             </p>

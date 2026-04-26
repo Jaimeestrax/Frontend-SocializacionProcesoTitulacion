@@ -1,14 +1,18 @@
-import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarPrivate } from "@/components/sidebar-private";
 
-export default function AuthLayout({
+export default function ParametrizacionLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     return (
-        <main className="flex items-center justify-center p-4 mt-4">
-            <AppSidebar />
-            {children}
-        </main>
+        <SidebarProvider>
+            <SidebarPrivate />
+            <main className="flex-1 p-4">
+                <SidebarTrigger />
+                {children}
+            </main>
+        </SidebarProvider>
     );
 }

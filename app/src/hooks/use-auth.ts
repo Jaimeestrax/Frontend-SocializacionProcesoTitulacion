@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { login as loginService } from "@/services/auth_service";
+import authService from "@/services/auth_service";
+import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/hooks/use-auth-context";
 
 export function useAuth() {
+    const router = useRouter();
+    // Contexto de la sesión
+    const { setSession, clearSession } = useAuthContext();
     // Estado para controlar loading
     const [loading, setLoading] = useState(false);
 
@@ -12,9 +17,10 @@ export function useAuth() {
         try {
             setLoading(true); // Activa loading
 
-            const res = await loginService(usuario, contrasena); // Llama al servicio
+            const res = await authService.login(usuario, contrasena); // Llama al servicio
+            const { token, publicUser } = res.data; // Respuesta de api
 
-            localStorage.setItem("token", res.data.token); // Guarda token
+            setSession(publicUser, token); // Guardar usuario Y token en contexto
 
             return res;
         } catch (error) {
@@ -26,8 +32,8 @@ export function useAuth() {
 
     // Función de cierre de sesión
     const logout = () => {
-        // Elimina el token del localStorage
-        localStorage.removeItem("token");
+        clearSession(); // Limpia sesión
+        router.push("/home");
     };
 
     // Hook que retorna login, logout y loading

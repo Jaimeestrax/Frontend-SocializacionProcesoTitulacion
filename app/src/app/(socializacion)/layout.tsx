@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarPublic } from "@/components/sidebar-public";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function SocializacionLayout({
@@ -8,7 +8,7 @@ export default function SocializacionLayout({
 }) {
     return (
         <SidebarProvider>
-            <AppSidebar />
+            <SidebarPublic />
             <main className="flex flex-1 items-center justify-center px-4">
                 <SidebarTrigger />
                 {children}

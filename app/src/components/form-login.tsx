@@ -7,7 +7,8 @@ import { User, LockKeyhole, LogIn, EyeOffIcon } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { toast } from "sonner";
+
+import { toast } from "@/components/ui/toast-custom";
 
 import {
     Field,
@@ -78,7 +79,7 @@ export default function FormLogin() {
                     </InputGroup>
                 </Field>
                 <Field>
-                    <Button variant="default" type="submit" className="py-5 font-bold" disabled={loading}>
+                    <Button variant="default" type="submit" className="py-5 font-bold text-md xl:text-lg" disabled={loading}>
                         {loading ? <><Spinner data-icon="inline-start" />Cargando...</> : <>Iniciar <LogIn /></>}
                     </Button>
                 </Field>
