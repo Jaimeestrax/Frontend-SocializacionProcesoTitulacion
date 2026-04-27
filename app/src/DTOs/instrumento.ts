@@ -3,5 +3,6 @@ export type Instrumento = {
     nombre: string,
     descripcion: string,
     id_encargado: string,
-    archivo: File
+    archivo: File,
+    ruta?: string
 }

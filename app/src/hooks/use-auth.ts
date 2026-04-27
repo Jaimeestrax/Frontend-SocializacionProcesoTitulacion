@@ -3,12 +3,9 @@
 import { useState } from "react";
 import authService from "@/services/auth_service";
 import { useRouter } from "next/navigation";
-import { useAuthContext } from "@/hooks/use-auth-context";
 
 export function useAuth() {
     const router = useRouter();
-    // Contexto de la sesión
-    const { setSession, clearSession } = useAuthContext();
     // Estado para controlar loading
     const [loading, setLoading] = useState(false);
 
@@ -20,7 +17,9 @@ export function useAuth() {
             const res = await authService.login(usuario, contrasena); // Llama al servicio
             const { token, publicUser } = res.data; // Respuesta de api
 
-            setSession(publicUser, token); // Guardar usuario Y token en contexto
+            // Guardar usuario Y token en localStorage
+            localStorage.setItem("token", token);
+            localStorage.setItem("identity", JSON.stringify(publicUser));
 
             return res;
         } catch (error) {
@@ -32,7 +31,9 @@ export function useAuth() {
 
     // Función de cierre de sesión
     const logout = () => {
-        clearSession(); // Limpia sesión
+        // Limpiar localStorage
+        localStorage.removeItem("token");
+        localStorage.removeItem("identity");
         router.push("/home");
     };
 

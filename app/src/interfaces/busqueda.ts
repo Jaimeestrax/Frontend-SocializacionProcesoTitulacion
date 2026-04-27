@@ -1,4 +1,5 @@
 export interface Busqueda {
-    page: number,
-    limit: number
+    pagina: number,
+    limite: number,
+    palabra?: string
 }

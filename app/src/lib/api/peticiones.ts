@@ -2,10 +2,14 @@ import { environment } from "./client";
 import { getHeadersJson, getHeadersArchivos } from "./headers";
 
 // GET -> Obtiene datos
-export async function ejecutarQueryGet<T>(url: string): Promise<T> {
+export async function ejecutarQueryGet<T>(url: string, id: string | null = null): Promise<T> {
     // <T> Puede tomar cualquier tipo de dato -> devuelve un tipo genérico
     try {
-        const response = await fetch(`${environment.apiUrl}/${url}`, {
+        let urlFinal = `${environment.apiUrl}/${url}`;
+        if (id) {
+            urlFinal += `/${id}`;
+        }
+        const response = await fetch(urlFinal, {
             method: "GET",
             headers: getHeadersJson()
         });
@@ -91,9 +95,9 @@ export async function ejecutarQueryPostArchivos<T>(url: string, body: any): Prom
 }
 
 // PUT -> Actualiza datos
-export async function ejecutarQueryPut<T>(url: string, body: any): Promise<T> {
+export async function ejecutarQueryPut<T>(url: string, id: string, body: any): Promise<T> {
     try {
-        const response = await fetch(`${environment.apiUrl}/${url}`, {
+        const response = await fetch(`${environment.apiUrl}/${url}/${id}`, {
             method: "PUT",
             headers: getHeadersJson(),
             body: JSON.stringify(body)
@@ -119,9 +123,9 @@ export async function ejecutarQueryPut<T>(url: string, body: any): Promise<T> {
 }
 
 // PATCH -> Actualiza datos parcialmente
-export async function ejecutarQueryPatch<T>(url: string, body: any): Promise<T> {
+export async function ejecutarQueryPatch<T>(url: string, id: string, body: any): Promise<T> {
     try {
-        const response = await fetch(`${environment.apiUrl}/${url}`, {
+        const response = await fetch(`${environment.apiUrl}/${url}/${id}`, {
             method: "PATCH",
             headers: getHeadersJson(),
             body: JSON.stringify(body)
@@ -147,9 +151,9 @@ export async function ejecutarQueryPatch<T>(url: string, body: any): Promise<T> 
 }
 
 // DELETE -> Elimina datos
-export async function ejecutarQueryDelete<T>(url: string): Promise<T> {
+export async function ejecutarQueryDelete<T>(url: string, id: string): Promise<T> {
     try {
-        const response = await fetch(`${environment.apiUrl}/${url}`, {
+        const response = await fetch(`${environment.apiUrl}/${url}/${id}`, {
             method: "DELETE",
             headers: getHeadersJson()
         });
@@ -166,6 +170,33 @@ export async function ejecutarQueryDelete<T>(url: string): Promise<T> {
         return data;
     } catch (e: any) {
         //console.error('Error deleting data:', e.name);
+        throw {
+            status: e?.status,
+            message: e?.message || environment.mensajeError
+        };
+    }
+}
+
+export async function ejecutarQueryPutArchivos<T>(url: string, id: string, body: any): Promise<T> {
+    try {
+        const response = await fetch(`${environment.apiUrl}/${url}/${id}`, {
+            method: "PUT",
+            headers: getHeadersArchivos(),
+            body: body
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw {
+                status: response.status,
+                message: data?.message || environment.mensajeError
+            };
+        }
+
+        return data;
+    } catch (e: any) {
+        //console.error('Error updating data files:', e.name);
         throw {
             status: e?.status,
             message: e?.message || environment.mensajeError

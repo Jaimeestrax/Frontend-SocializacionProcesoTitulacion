@@ -9,7 +9,7 @@ export default function ParametrizacionLayout({
     return (
         <SidebarProvider>
             <SidebarPrivate />
-            <main className="flex-1 p-4">
+            <main className="flex-1 p-4 overflow-x-scroll">
                 <SidebarTrigger />
                 {children}
             </main>
