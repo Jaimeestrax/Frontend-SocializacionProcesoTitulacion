@@ -1,8 +1,8 @@
 export type Actividad = {
     nombre: string,
     descripcion: string,
-    encargado: string,
+    id_cargo: string,
     fecha_inicio: string,
     fecha_fin: string,
-    instrumento: string,
+    instrumentos: string[],
 }

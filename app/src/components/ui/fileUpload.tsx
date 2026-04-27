@@ -105,7 +105,7 @@ export default function FileUploadField({
                     "cursor-pointer select-none",
                     isDragging
                         ? "border-blue-400 bg-blue-50 dark:bg-blue-950/20"
-                        : "border-border bg-muted/40 hover:border-muted-foreground/40 hover:bg-muted/60",
+                        : "border-foreground/20 bg-foreground/5 hover:border-primary hover:bg-muted/60",
                 ].join(" ")}
             >
                 {/* Hidden input — only shown when no file selected */}

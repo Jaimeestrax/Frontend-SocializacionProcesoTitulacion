@@ -1,12 +1,12 @@
 import { ejecutarQueryGet } from "../lib/api/peticiones";
 import { Respuesta } from "@/interfaces/respuesta";
 
-function obtenerCargos() {
-    return ejecutarQueryGet<Respuesta>('obtener-cargos');
+function listarCargos() {
+    return ejecutarQueryGet<Respuesta>('listar-cargos');
 }
 
 const cargosService = {
-    obtenerCargos
+    listarCargos
 }
 
 export default cargosService;

@@ -46,12 +46,17 @@ function actualizarEstadoInstrumento(id: string, data: any) {
     return ejecutarQueryPatch<Respuesta>('actualizar-estado-instrumento', id, data);
 }
 
+function listarInstrumentos() {
+    return ejecutarQueryGet<Respuesta>('listar-instrumentos');
+}
+
 const instrumentosService = {
     registrarInstrumento,
     obtenerInstrumentos,
     obtenerInstrumentoPorId,
     actualizarInstrumento,
-    actualizarEstadoInstrumento
+    actualizarEstadoInstrumento,
+    listarInstrumentos
 }
 
 export default instrumentosService;

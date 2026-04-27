@@ -82,6 +82,20 @@ export function useInstrumentos() {
         }
     };
 
+    const listarInstrumentos = async () => {
+        try {
+            setLoading(true); // Activa loading
+
+            const res = await instrumentosService.listarInstrumentos(); // Llama al servicio
+
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false); // Desactiva loading
+        }
+    };
+
     // Hook que retorna funciones crud de instrumentos
     return {
         registrarInstrumento,
@@ -89,6 +103,7 @@ export function useInstrumentos() {
         actualizarEstadoInstrumento,
         actualizarInstrumento,
         obtenerInstrumentoPorId,
+        listarInstrumentos,
         loading
     };
 }
