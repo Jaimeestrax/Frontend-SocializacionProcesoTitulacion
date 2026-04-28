@@ -11,7 +11,8 @@ export async function ejecutarQueryGet<T>(url: string, id: string | null = null)
         }
         const response = await fetch(urlFinal, {
             method: "GET",
-            headers: getHeadersJson()
+            headers: getHeadersJson(),
+            credentials: "include" // Para enviar cookies en la petición
         });
 
         // Recupera el cuerpo de la respuesta -> lo que envia el backend: {data, message}
@@ -45,7 +46,8 @@ export async function ejecutarQueryPost<T>(url: string, body: any): Promise<T> {
         const response = await fetch(`${environment.apiUrl}/${url}`, {
             method: "POST",
             headers: getHeadersJson(),
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            credentials: "include"
         });
 
         const data = await response.json();
@@ -72,7 +74,8 @@ export async function ejecutarQueryPostArchivos<T>(url: string, body: any): Prom
         const response = await fetch(`${environment.apiUrl}/${url}`, {
             method: "POST",
             headers: getHeadersArchivos(),
-            body: body
+            body: body,
+            credentials: "include"
         });
 
         const data = await response.json();
@@ -100,7 +103,8 @@ export async function ejecutarQueryPut<T>(url: string, id: string, body: any): P
         const response = await fetch(`${environment.apiUrl}/${url}/${id}`, {
             method: "PUT",
             headers: getHeadersJson(),
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            credentials: "include"
         });
 
         const data = await response.json();
@@ -128,7 +132,8 @@ export async function ejecutarQueryPatch<T>(url: string, id: string, body: any):
         const response = await fetch(`${environment.apiUrl}/${url}/${id}`, {
             method: "PATCH",
             headers: getHeadersJson(),
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            credentials: "include"
         });
 
         const data = await response.json();
@@ -155,7 +160,8 @@ export async function ejecutarQueryDelete<T>(url: string, id: string): Promise<T
     try {
         const response = await fetch(`${environment.apiUrl}/${url}/${id}`, {
             method: "DELETE",
-            headers: getHeadersJson()
+            headers: getHeadersJson(),
+            credentials: "include"
         });
 
         const data = await response.json();
@@ -182,7 +188,8 @@ export async function ejecutarQueryPutArchivos<T>(url: string, id: string, body:
         const response = await fetch(`${environment.apiUrl}/${url}/${id}`, {
             method: "PUT",
             headers: getHeadersArchivos(),
-            body: body
+            body: body,
+            credentials: "include"
         });
 
         const data = await response.json();

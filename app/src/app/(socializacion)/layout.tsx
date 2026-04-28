@@ -9,7 +9,7 @@ export default function SocializacionLayout({
     return (
         <SidebarProvider>
             <SidebarPublic />
-            <main className="flex flex-1 items-center justify-center px-4">
+            <main className="flex-1 px-2">
                 <SidebarTrigger />
                 {children}
             </main>

@@ -9,12 +9,17 @@ function login(usuario: string, contrasena: string) {
     return ejecutarQueryPost<Respuesta>('login', body);
 }
 
+function logout() {
+    return ejecutarQueryPost<Respuesta>('logout', {});
+}
+
 function obtenerUsuarioAutenticado() {
     return ejecutarQueryGet<Respuesta>('obtener-usuario-autenticado');
 }
 
 const authService = {
     login,
+    logout,
     obtenerUsuarioAutenticado
 }
 

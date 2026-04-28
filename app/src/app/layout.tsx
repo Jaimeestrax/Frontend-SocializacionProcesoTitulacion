@@ -37,10 +37,10 @@ export default function RootLayout({
       lang="es" suppressHydrationWarning
       className={`${robotoSans.variable} ${robotoMono.variable} h-full antialiased`}
     >
-      <body className="bg-background text-foreground">
+      <body className="bg-background text-foreground h-full overflow-hidden">
         <Providers>
-          <div className="flex min-h-screen flex-col">
-            <header className="w-full flex justify-between px-4 py-4">
+          <div className="flex h-full flex-col">
+            <header className="w-full flex justify-between px-4 py-4 shrink-0">
               <div>
                 <span className="text-primary font-bold text-sm md:text-lg xl:text-xl md:hidden">
                   SOPTI-SOFT
@@ -54,11 +54,11 @@ export default function RootLayout({
               </div>
             </header>
 
-            <main className="flex-1">
+            <main className="flex-1 overflow-y-auto">
               {children}
             </main>
 
-            <footer className="text-right text-sm py-4 px-4 text-muted-foreground">
+            <footer className="text-right text-sm py-4 px-4 text-muted-foreground font-bold shrink-0">
               Socialización del Proceso de Titulación {new Date().getFullYear()} ©
             </footer>
           </div>

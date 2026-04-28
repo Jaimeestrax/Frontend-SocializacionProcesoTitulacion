@@ -15,7 +15,8 @@ import {
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
-    SidebarMenuItem
+    SidebarMenuItem,
+
 } from "@/components/ui/sidebar"
 
 
@@ -46,9 +47,14 @@ export function SidebarPublic({ ...props }: React.ComponentProps<typeof Sidebar>
             </SidebarContent>
             <SidebarFooter>
                 {/* Login */}
-                <Button variant="link" onClick={() => { router.push("/auth/sign-in"); }}>
-                    Iniciar sesión <LogIn />
-                </Button>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton onClick={() => router.push("/auth/sign-in")}>
+                            <LogIn />
+                            <span>Iniciar sesión</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
             </SidebarFooter>
         </Sidebar>
     )

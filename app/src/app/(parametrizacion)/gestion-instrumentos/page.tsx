@@ -65,7 +65,7 @@ export default function GestionInstrumentos() {
     // Se configura la busqueda inicial
     const [busqueda, setBusqueda] = useState<Busqueda>({
         pagina: 1,
-        limite: 20,
+        limite: 10,
         palabra: ""
     });
 

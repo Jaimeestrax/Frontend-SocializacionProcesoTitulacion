@@ -15,11 +15,12 @@ export function useAuth() {
             setLoading(true); // Activa loading
 
             const res = await authService.login(usuario, contrasena); // Llama al servicio
-            const { token, publicUser } = res.data; // Respuesta de api
+            const identity = res.data; // Respuesta de api
 
-            // Guardar usuario Y token en localStorage
-            localStorage.setItem("token", token);
-            localStorage.setItem("identity", JSON.stringify(publicUser));
+            // Guardar usuario
+            localStorage.setItem("identity", JSON.stringify(identity));
+            // Cookies ya vienen del backend
+
 
             return res;
         } catch (error) {
@@ -30,11 +31,22 @@ export function useAuth() {
     };
 
     // Función de cierre de sesión
-    const logout = () => {
-        // Limpiar localStorage
-        localStorage.removeItem("token");
-        localStorage.removeItem("identity");
-        router.push("/home");
+    const logout = async () => {
+        try {
+            setLoading(true); // Activa loading
+
+            const res = await authService.logout(); // Llama al servicio que elimina cookie
+            // Limpiar identity
+            localStorage.removeItem("identity");
+            // Redirigir a login
+            router.push("/home");
+
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false); // Desactiva loading
+        }
     };
 
     // Hook que retorna login, logout y loading

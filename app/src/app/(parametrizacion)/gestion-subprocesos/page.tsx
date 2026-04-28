@@ -125,9 +125,31 @@ export default function GestionSubprocesos() {
         });
     };
 
+    const actualizarActividadEditar = (index: number, campo: keyof Actividad, valor: any) => {
+        setSubprocesoActualizar(prev => {
+            const acts = [...prev.actividades];
+            acts[index] = { ...acts[index], [campo]: valor };
+            return { ...prev, actividades: acts };
+        });
+    };
+
     // Toggle de instrumento dentro de una actividad
     const toggleInstrumento = (indexAct: number, idInstrumento: string) => {
         setSubproceso(prev => {
+            const acts = [...prev.actividades];
+            const seleccionados = acts[indexAct].instrumentos;
+            acts[indexAct] = {
+                ...acts[indexAct],
+                instrumentos: seleccionados.includes(idInstrumento)
+                    ? seleccionados.filter((id: any) => id !== idInstrumento)
+                    : [...seleccionados, idInstrumento],
+            };
+            return { ...prev, actividades: acts };
+        });
+    };
+
+    const toggleInstrumentoEditar = (indexAct: number, idInstrumento: string) => {
+        setSubprocesoActualizar(prev => {
             const acts = [...prev.actividades];
             const seleccionados = acts[indexAct].instrumentos;
             acts[indexAct] = {
@@ -144,9 +166,18 @@ export default function GestionSubprocesos() {
     const agregarActividad = () =>
         setSubproceso((prev: any) => ({ ...prev, actividades: [...prev.actividades, actividadVacia()] }));
 
+    const agregarActividadEditar = () =>
+        setSubprocesoActualizar((prev: any) => ({ ...prev, actividades: [...prev.actividades, actividadVacia()] }));
+
     // Eliminar actividad
     const eliminarActividad = (index: number) =>
         setSubproceso((prev: any) => ({
+            ...prev,
+            actividades: prev.actividades.filter((_: any, i: any) => i !== index),
+        }));
+
+    const eliminarActividadEditar = (index: number) =>
+        setSubprocesoActualizar((prev: any) => ({
             ...prev,
             actividades: prev.actividades.filter((_: any, i: any) => i !== index),
         }));
@@ -563,7 +594,7 @@ export default function GestionSubprocesos() {
                                         {subprocesoActualizar.actividades.length > 1 && (
                                             <Button type="button" variant="ghost" size="sm"
                                                 className="hover:bg-destructive/10"
-                                                onClick={() => eliminarActividad(index)}>
+                                                onClick={() => eliminarActividadEditar(index)}>
                                                 <Trash2 className="w-4 h-4 text-destructive" />
                                             </Button>
                                         )}
@@ -575,7 +606,7 @@ export default function GestionSubprocesos() {
                                             <InputGroup className="py-5 px-2 bg-secondary">
                                                 <InputGroupInput type="text" placeholder="Nombre de la actividad" required
                                                     value={act.nombre}
-                                                    onChange={e => actualizarActividad(index, "nombre", e.target.value)}
+                                                    onChange={e => actualizarActividadEditar(index, "nombre", e.target.value)}
                                                     className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
                                             </InputGroup>
                                         </Field>
@@ -585,7 +616,7 @@ export default function GestionSubprocesos() {
                                             <InputGroup className="py-5 px-2 bg-secondary">
                                                 <textarea rows={2} placeholder="Descripción de la actividad"
                                                     value={act.descripcion}
-                                                    onChange={e => actualizarActividad(index, "descripcion", e.target.value)}
+                                                    onChange={e => actualizarActividadEditar(index, "descripcion", e.target.value)}
                                                     className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none bg-transparent" />
                                             </InputGroup>
                                         </Field>
@@ -596,7 +627,7 @@ export default function GestionSubprocesos() {
                                                 <InputGroup className="py-5 px-1 bg-secondary">
                                                     <InputGroupInput type="date" required
                                                         value={act.fecha_inicio}
-                                                        onChange={e => actualizarActividad(index, "fecha_inicio", e.target.value)}
+                                                        onChange={e => actualizarActividadEditar(index, "fecha_inicio", e.target.value)}
                                                         className="text-xs md:text-xs" />
                                                 </InputGroup>
                                             </Field>
@@ -605,7 +636,7 @@ export default function GestionSubprocesos() {
                                                 <InputGroup className="py-5 px-1 bg-secondary">
                                                     <InputGroupInput type="date" required
                                                         value={act.fecha_fin}
-                                                        onChange={e => actualizarActividad(index, "fecha_fin", e.target.value)}
+                                                        onChange={e => actualizarActividadEditar(index, "fecha_fin", e.target.value)}
                                                         className="text-xs md:text-xs" />
                                                 </InputGroup>
                                             </Field>
@@ -616,7 +647,7 @@ export default function GestionSubprocesos() {
                                             <InputGroup className="py-5 px-2 bg-secondary">
                                                 <select
                                                     value={act.id_cargo}
-                                                    onChange={e => actualizarActividad(index, "id_cargo", e.target.value)}
+                                                    onChange={e => actualizarActividadEditar(index, "id_cargo", e.target.value)}
                                                     className="w-full text-sm bg-transparent outline-none py-2">
                                                     <option value="">Seleccione un cargo</option>
                                                     {cargosDisponibles.map(cargo => (
@@ -640,7 +671,7 @@ export default function GestionSubprocesos() {
                                                         <input
                                                             type="checkbox"
                                                             checked={act.instrumentos.includes(inst._id)}
-                                                            onChange={() => toggleInstrumento(index, inst._id)}
+                                                            onChange={() => toggleInstrumentoEditar(index, inst._id)}
                                                             className="accent-primary"
                                                         />
                                                         <span>{inst.identificador} — {inst.nombre}</span>
@@ -657,7 +688,7 @@ export default function GestionSubprocesos() {
 
                                     <div className="flex items-center justify-between">
                                         <p></p>
-                                        <Button type="button" variant="default" size="sm" onClick={agregarActividad}>
+                                        <Button type="button" variant="default" size="sm" onClick={agregarActividadEditar}>
                                             <Plus className="w-4 h-4" /> Agregar actividad
                                         </Button>
                                     </div>

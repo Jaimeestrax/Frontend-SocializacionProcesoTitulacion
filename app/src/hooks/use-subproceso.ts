@@ -68,12 +68,51 @@ export function useSubprocesos() {
         }
     };
 
+    const obtenerSubprocesosProximos = async () => {
+        try {
+            setLoading(true);
+            const response = await subprocesosService.obtenerSubprocesosProximos();
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const obtenerSubprocesoActual = async () => {
+        try {
+            setLoading(true);
+            const response = await subprocesosService.obtenerSubprocesoActual();
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const obtenerPorcentajeAvance = async () => {
+        try {
+            setLoading(true);
+            const response = await subprocesosService.obtenerPorcentajeAvance();
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         loading,
         registrarSubproceso,
         obtenerSubprocesos,
         obtenerSubprocesoPorId,
         actualizarSubproceso,
-        actualizarEstadoSubproceso
+        actualizarEstadoSubproceso,
+        obtenerSubprocesosProximos,
+        obtenerSubprocesoActual,
+        obtenerPorcentajeAvance
     };
 }
