@@ -1,5 +1,5 @@
 import { ejecutarQueryGet, ejecutarQueryPost } from "../lib/api/peticiones";
-import { Respuesta } from "@/interfaces/respuesta";
+import { Respuesta } from "@/constants/respuesta";
 
 function login(usuario: string, contrasena: string) {
     const body = {
@@ -13,14 +13,9 @@ function logout() {
     return ejecutarQueryPost<Respuesta>('logout', {});
 }
 
-function obtenerUsuarioAutenticado() {
-    return ejecutarQueryGet<Respuesta>('obtener-usuario-autenticado');
-}
-
 const authService = {
     login,
-    logout,
-    obtenerUsuarioAutenticado
+    logout
 }
 
 export default authService;

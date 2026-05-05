@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button"
 
 import { LogIn } from "lucide-react"
-import { data } from "@/interfaces/menu-public";
+import { data } from "@/constants/menu-public";
 
 import {
     Sidebar,

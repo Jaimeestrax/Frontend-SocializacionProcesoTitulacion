@@ -1,5 +1,6 @@
 "use client";
 
+// Componentes de interfaz
 import {
     Table,
     TableBody,
@@ -37,20 +38,24 @@ import {
 
 import { Button } from "@/components/ui/button"
 
-import { FilePlusCorner, FileEdit, CircleX, FileDown } from 'lucide-react';
-import { useState, useEffect } from "react";
-import { useDrawerDirection } from "@/hooks/use-drawer-size";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { toast } from "@/components/ui/toast-custom";
 import FileUploadField from "@/components/ui/fileUpload";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
+
+// Iconos
+import { FilePlusCorner, FileEdit, CircleX, FileDown } from 'lucide-react';
+
+// Utilidades
+import { useState, useEffect } from "react";
+import { Busqueda } from "@/constants/busqueda";
+import { Instrumento } from "@/DTOs/instrumento";
 
 // Uso de hooks que interactuan con la API
 import { useInstrumentos } from "@/hooks/use-instrumento";
-import { Busqueda } from "@/interfaces/busqueda";
-import { Instrumento } from "@/DTOs/instrumento";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useDrawerDirection } from "@/hooks/use-drawer-size";
 
 export default function GestionInstrumentos() {
     const { registrarInstrumento, obtenerInstrumentos, actualizarEstadoInstrumento, actualizarInstrumento, obtenerInstrumentoPorId, loading } = useInstrumentos();

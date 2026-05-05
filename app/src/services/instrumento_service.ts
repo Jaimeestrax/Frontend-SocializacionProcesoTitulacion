@@ -6,7 +6,7 @@ import {
     ejecutarQueryPatch
 } from "../lib/api/peticiones";
 
-import { Respuesta } from "@/interfaces/respuesta";
+import { Respuesta } from "@/constants/respuesta";
 
 // Envio de form-data para registrar un instumento (metadata y archivo)
 function registrarInstrumento(data: any) {

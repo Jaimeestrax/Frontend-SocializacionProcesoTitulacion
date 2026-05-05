@@ -5,7 +5,7 @@ import {
     ejecutarQueryPatch
 } from "../lib/api/peticiones";
 
-import { Respuesta } from "@/interfaces/respuesta";
+import { Respuesta } from "@/constants/respuesta";
 
 function registrarSubproceso(data: any) {
     return ejecutarQueryPost<Respuesta>("registrar-subproceso", data);

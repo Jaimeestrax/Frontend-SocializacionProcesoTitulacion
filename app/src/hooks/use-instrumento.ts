@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import instrumentosService from "@/services/instrumentos_service";
+import instrumentosService from "@/services/instrumento_service";
 import { Instrumento } from "@/DTOs/instrumento";
-import { Busqueda } from "@/interfaces/busqueda";
+import { Busqueda } from "@/constants/busqueda";
 
 export function useInstrumentos() {
     const [loading, setLoading] = useState(false);

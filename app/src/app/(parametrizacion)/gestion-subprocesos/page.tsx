@@ -25,7 +25,7 @@ import { useDrawerDirection } from "@/hooks/use-drawer-size";
 import { useSubprocesos } from "@/hooks/use-subproceso";
 import { useInstrumentos } from "@/hooks/use-instrumento";
 import { useCargos } from "@/hooks/use-cargo";
-import { Busqueda } from "@/interfaces/busqueda";
+import { Busqueda } from "@/constants/busqueda";
 import { Subproceso } from "@/DTOs/subproceso";
 import { Actividad } from "@/DTOs/actividad";
 

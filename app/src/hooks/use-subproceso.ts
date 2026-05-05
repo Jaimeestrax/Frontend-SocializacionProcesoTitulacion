@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import subprocesosService from "@/services/subprocesos_service";
+import subprocesosService from "@/services/subproceso_service";
 import { Subproceso } from "@/DTOs/subproceso";
-import { Busqueda } from "@/interfaces/busqueda";
+import { Busqueda } from "@/constants/busqueda";
 
 export function useSubprocesos() {
     const [loading, setLoading] = useState(false);
