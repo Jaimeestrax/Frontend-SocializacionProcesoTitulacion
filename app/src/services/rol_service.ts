@@ -27,8 +27,12 @@ function obtenerRolPorId(id: string) {
     return ejecutarQueryGet<Respuesta>('obtener-rol-por-id', id);
 }
 
-function obtenerRolesActivos() {
-    return ejecutarQueryGet<Respuesta>('obtener-roles-activos');
+function contarRolesActivos() {
+    return ejecutarQueryGet<Respuesta>('contar-roles-activos');
+}
+
+function listarRoles() {
+    return ejecutarQueryGet<Respuesta>('listar-roles');
 }
 
 const rolesService = {
@@ -37,7 +41,8 @@ const rolesService = {
     obtenerRoles,
     actualizarRol,
     obtenerRolPorId,
-    obtenerRolesActivos
+    contarRolesActivos,
+    listarRoles
 }
 
 export default rolesService;

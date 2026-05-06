@@ -78,11 +78,25 @@ export function useRoles() {
         }
     };
 
-    const obtenerRolesActivos = async () => {
+    const contarRolesActivos = async () => {
         try {
             setLoading(true);
 
-            const res = await rolesService.obtenerRolesActivos();
+            const res = await rolesService.contarRolesActivos();
+
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const listarRoles = async () => {
+        try {
+            setLoading(true);
+
+            const res = await rolesService.listarRoles();
 
             return res;
         } catch (error) {
@@ -98,7 +112,8 @@ export function useRoles() {
         obtenerRoles,
         actualizarRol,
         obtenerRolPorId,
-        obtenerRolesActivos,
+        contarRolesActivos,
+        listarRoles,
         loading
     };
 }

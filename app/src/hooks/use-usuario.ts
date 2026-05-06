@@ -5,7 +5,7 @@ import usuarioService from "@/services/usuario_service";
 import { Usuario } from "@/DTOs/usuario";
 import { Busqueda } from "@/constants/busqueda";
 
-export function useUsuario() {
+export function useUsuarios() {
     const [loading, setLoading] = useState(false);
 
     const obtenerUsuarioAutenticado = async () => {

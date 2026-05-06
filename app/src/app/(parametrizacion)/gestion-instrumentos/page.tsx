@@ -415,23 +415,23 @@ export default function GestionInstrumentos() {
                                 </InputGroup>
                             </Field>
                             <Field>
-                                {instrumentoEditar.ruta && (
+                                {typeof instrumentoEditar.archivo === 'string' && (
                                     <div className="flex items-center gap-2 p-3 bg-secondary rounded-md mb-2">
                                         <FileDown className="text-warning h-4 w-4" />
                                         <span className="text-sm truncate flex-1">
-                                            {instrumentoEditar.ruta.replace(/\\/g, '/').split('/').pop()}
+                                            {instrumentoEditar.archivo.replace(/\\/g, '/').split('/').pop()}
                                         </span>
                                         <Button
                                             variant="ghost"
                                             size="icon"
                                             className="hover:bg-destructive/10 h-6 w-6"
-                                            onClick={() => setInstrumentoEditar({ ...instrumentoEditar, ruta: "" })}
+                                            onClick={() => setInstrumentoEditar({ ...instrumentoEditar, archivo: null as unknown as File })}
                                         >
                                             <CircleX className="text-destructive h-4 w-4" />
                                         </Button>
                                     </div>
                                 )}
-                                {!instrumentoEditar.ruta && (
+                                {!instrumentoEditar.archivo && (
                                     <FileUploadField
                                         id="archivo-editar"
                                         label="NUEVO ARCHIVO"

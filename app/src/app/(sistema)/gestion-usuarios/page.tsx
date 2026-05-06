@@ -42,11 +42,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { toast } from "@/components/ui/toast-custom";
-import FileUploadField from "@/components/ui/fileUpload";
 import { Badge } from "@/components/ui/badge";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 // Iconos
-import { Users, UserPlus, FileEdit, CircleX, FileDown } from 'lucide-react';
+import { Users, UserPlus, CircleUser, FileEdit, CircleX, ToggleLeft, ToggleRight, EyeOffIcon, EyeIcon } from 'lucide-react';
 
 // Utilidades
 import { useState, useEffect } from "react";
@@ -54,14 +61,24 @@ import { Busqueda } from "@/constants/busqueda";
 import { Usuario } from "@/DTOs/usuario";
 
 // Uso de hooks que interactuan con la API
-import { useUsuario } from "@/hooks/use-usuario";
+import { useUsuarios } from "@/hooks/use-usuario";
+import { useRoles } from "@/hooks/use-rol";
+import { useCargos } from "@/hooks/use-cargo";
 import { useDrawerDirection } from "@/hooks/use-drawer-size";
 
+import { environment } from "@/lib/api/client";
 
 export default function GestionUsuarios() {
 
-    const { registrarUsuario, obtenerUsuarios, actualizarEstadoUsuario, actualizarUsuario, obtenerUsuarioPorId, loading } = useUsuario();
+    const { registrarUsuario, obtenerUsuarios, actualizarEstadoUsuario, actualizarUsuario, obtenerUsuarioPorId, loading } = useUsuarios();
+    const { listarRoles } = useRoles();
+    const { listarCargos } = useCargos();
     const drawerDirection = useDrawerDirection();
+    const [mostrarContrasena, setMostrarContrasena] = useState(false);
+
+    const toggleMostrarContrasena = () => {
+        setMostrarContrasena(!mostrarContrasena);
+    };
 
     // Listado de usuarios
     const [usuarios, setUsuarios] = useState<any[]>([]);
@@ -76,7 +93,12 @@ export default function GestionUsuarios() {
         palabra: ""
     });
 
-    // Llamada asincrona reutilizable
+    // Roles
+    const [rolesDisponibles, setRolesDisponibles] = useState<any[]>([]);
+    // Cargos
+    const [cargosDisponibles, setCargosDisponibles] = useState<any[]>([]);
+
+    // Listado de usuarios
     const cargarUsuarios = async () => {
         try {
             const res = await obtenerUsuarios(busqueda);
@@ -91,10 +113,25 @@ export default function GestionUsuarios() {
         }
     };
 
+    // Carga de roles y cargos
+    const cargarSelectores = async () => {
+        try {
+            // Llamada concurrente
+            const [resRoles, resCargos] = await Promise.all([
+                listarRoles(),
+                listarCargos(),
+            ]);
+            setRolesDisponibles(resRoles.data);
+            setCargosDisponibles(resCargos.data);
+        } catch (error: any) {
+            console.error("Error al cargar selectores:", error.message);
+            //toast.error(error.message);
+        }
+    };
+
     // Carga inicial de la página
-    useEffect(() => {
-        cargarUsuarios();
-    }, [busqueda]);
+    useEffect(() => { cargarSelectores(); }, []);
+    useEffect(() => { cargarUsuarios(); }, [busqueda]);
 
     // Registro de usuarios
     const [isOpenNuevoUsuario, setIsOpenNuevoUsuario] = useState(false);
@@ -106,8 +143,7 @@ export default function GestionUsuarios() {
         usuario: "",
         contrasena: "",
         idRol: "",
-        idCargo: "",
-        descripcion: ""
+        idCargo: ""
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -127,8 +163,7 @@ export default function GestionUsuarios() {
                 usuario: "",
                 contrasena: "",
                 idRol: "",
-                idCargo: "",
-                descripcion: ""
+                idCargo: ""
             });
             setIsOpenNuevoUsuario(false);
 
@@ -157,13 +192,12 @@ export default function GestionUsuarios() {
         apellidos: "",
         correo: "",
         usuario: "",
-        contrasena: "",
         idRol: "",
-        idCargo: "",
-        descripcion: ""
+        idCargo: ""
     });
 
     const [usuarioEditarId, setUsuarioEditarId] = useState<string>("");
+    const [cambiarContrasena, setCambiarContrasena] = useState(false);
 
     // Abrir drawer de edición
     const handleEditar = async (usuario: any) => {
@@ -201,7 +235,8 @@ export default function GestionUsuarios() {
         });
     };
 
-    const cargoColors = {
+    // Record <key, type> -> Ayuda a la creación de diccionarios con llaves como string
+    const cargoColors: Record<string, string> = {
         'Presidente Comisión de Titulación': "bg-purple-200 text-purple-600",
         'Miembro Comisión de Titulación': "bg-blue-200 text-blue-600",
         'Tutor': "bg-green-200 text-green-600",
@@ -246,7 +281,7 @@ export default function GestionUsuarios() {
                     <TableHeader>
                         <TableRow>
                             <TableHead className="text-center">Nro</TableHead>
-                            <TableHead className="text-center">Foto perfil</TableHead>
+                            <TableHead className="text-center">Foto</TableHead>
                             <TableHead className="text-center">Usuario</TableHead>
                             <TableHead className="text-center">Rol</TableHead>
                             <TableHead className="text-center">Cargo</TableHead>
@@ -260,7 +295,13 @@ export default function GestionUsuarios() {
                         {usuarios.map((usuario, i) => (
                             <TableRow key={usuario._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
-                                <TableCell><img src={usuario.foto} alt="Foto" className="w-10 h-10 rounded-full" /></TableCell>
+                                <TableCell className="flex items-center justify-center">
+                                    {usuario.foto ? (
+                                        <img src={`${environment.baseUrl}/${usuario.foto}`} alt="Foto" className="w-8 h-8 rounded-full" />
+                                    ) : (
+                                        <CircleUser className="w-8 h-8" />
+                                    )}
+                                </TableCell>
                                 <TableCell className="text-left">
                                     {usuario.nombreCompleto}
                                     <br />
@@ -268,10 +309,7 @@ export default function GestionUsuarios() {
                                 </TableCell>
                                 <TableCell>{usuario.idRol.nombre}</TableCell>
                                 <TableCell>{
-                                    <Badge
-                                        className={`px-5 py-3 text-xs md:text-sm ${cargoColors[usuario.idCargo.nombre] || "bg-primary/60 text-foreground"
-                                            }`}
-                                    >
+                                    <Badge className={`px-5 py-3 text-xs md:text-sm ${cargoColors[usuario.idCargo.nombre] || "bg-primary/60 text-foreground"}`}>
                                         {usuario.idCargo.nombre}
                                     </Badge>
                                 }</TableCell>
@@ -294,6 +332,25 @@ export default function GestionUsuarios() {
                                             </TooltipTrigger>
                                             <TooltipContent>Editar</TooltipContent>
                                         </Tooltip>
+                                        {usuario.estado === 1 ? (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="ghost" className="hover:bg-warning/10" onClick={() => handleCambioEstado(usuario._id, 0)}>
+                                                        <ToggleRight className="text-warning" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Desactivar</TooltipContent>
+                                            </Tooltip>
+                                        ) : (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="ghost" className="hover:bg-success/60" onClick={() => handleCambioEstado(usuario._id, 1)}>
+                                                        <ToggleLeft className="text-success-foreground" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Activar</TooltipContent>
+                                            </Tooltip>
+                                        )}
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button variant="ghost" className="hover:bg-destructive/10" onClick={() => handleCambioEstado(usuario._id, 2)}>
@@ -339,7 +396,7 @@ export default function GestionUsuarios() {
             </div>
 
             {/** Drawer de registro de usuarios */}
-            {/* <Drawer open={isOpenNuevoUsuario} onOpenChange={setIsOpenNuevoUsuario} direction={drawerDirection} onClose={() => { setUsuario({ nombres: '', apellidos: '', correo: '', password: '', rol: '', cargo: '', foto: null as unknown as File }) }}>
+            <Drawer open={isOpenNuevoUsuario} onOpenChange={setIsOpenNuevoUsuario} direction={drawerDirection} onClose={() => { setUsuario({ nombres: '', apellidos: '', correo: '', usuario: '', contrasena: '', idRol: '', idCargo: '' }) }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Registro Usuario</DrawerTitle>
@@ -348,125 +405,218 @@ export default function GestionUsuarios() {
                         </DrawerDescription>
                     </DrawerHeader>
 
-                    <form className="px-12 py-8 md:px-6 md:py-6" onSubmit={handleSubmit}>
+                    <form className="space-y-4 px-12 py-8 md:px-6 md:py-6 overflow-y-auto" onSubmit={handleSubmit}>
                         <FieldGroup>
                             <Field>
-                                <FieldLabel htmlFor="identificador" className="text-xs">IDENTIFICADOR</FieldLabel>
+                                <FieldLabel htmlFor="nombres" className="text-xs">NOMBRES</FieldLabel>
                                 <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupAddon align="inline-start" className="font-bold">
-                                        IT-
-                                    </InputGroupAddon>
-                                    <InputGroupInput id="identificador" type="text" placeholder="OM-1.a" required
-                                        value={instrumento.identificador} onChange={(e) => setInstrumento({ ...instrumento, identificador: e.target.value })}
+                                    <InputGroupInput id="nombres" type="text" placeholder="Ingrese los nombres del usuario" required
+                                        value={usuario.nombres} onChange={(e) => setUsuario({ ...usuario, nombres: e.target.value })}
                                         className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
                                 </InputGroup>
                             </Field>
                             <Field>
-                                <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE DEL INSTRUMENTO</FieldLabel>
+                                <FieldLabel htmlFor="apellidos" className="text-xs">APELLIDOS</FieldLabel>
                                 <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del instrumento" required
-                                        value={instrumento.nombre} onChange={(e) => setInstrumento({ ...instrumento, nombre: e.target.value })}
+                                    <InputGroupInput id="apellidos" type="text" placeholder="Ingrese los apellidos del usuario" required
+                                        value={usuario.apellidos} onChange={(e) => setUsuario({ ...usuario, apellidos: e.target.value })}
                                         className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
                                 </InputGroup>
                             </Field>
                             <Field>
-                                <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCION</FieldLabel>
+                                <FieldLabel htmlFor="correo" className="text-xs">CORREO</FieldLabel>
                                 <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <textarea id="descripcion" placeholder="Ingrese la descripcion del instrumento" rows={4}
-                                        value={instrumento.descripcion} onChange={(e) => setInstrumento({ ...instrumento, descripcion: e.target.value })}
-                                        className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none"
+                                    <InputGroupInput id="correo" type="text" placeholder="Ingrese el correo institucional del usuario" required
+                                        value={usuario.correo} onChange={(e) => setUsuario({ ...usuario, correo: e.target.value })}
+                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                </InputGroup>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="usuario" className="text-xs">USUARIO</FieldLabel>
+                                <InputGroup className='py-5 px-2 bg-secondary'>
+                                    <InputGroupInput id="usuario" type="text" placeholder="Ingrese el nombre de usuario" required
+                                        value={usuario.usuario} onChange={(e) => setUsuario({ ...usuario, usuario: e.target.value })}
+                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
                                     />
                                 </InputGroup>
                             </Field>
                             <Field>
-                                <FileUploadField id="archivo" label="ARCHIVO" accept=".pdf,.docx" required
-                                    onChange={(file) =>
-                                        setInstrumento({ ...instrumento, archivo: file as File })
-                                    }
-                                />
+                                <FieldLabel htmlFor="contrasena" className="text-xs">CONTRASEÑA</FieldLabel>
+                                <InputGroup className='py-5 px-2 bg-secondary'>
+                                    <InputGroupInput id="contrasena" type={mostrarContrasena ? "text" : "password"} placeholder="Ingrese la contraseña" required
+                                        value={usuario.contrasena} onChange={(e) => setUsuario({ ...usuario, contrasena: e.target.value })}
+                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                    <InputGroupAddon align="inline-end">
+                                        <Button type="button" variant="ghost" onClick={toggleMostrarContrasena} className="cursor-pointer">
+                                            {mostrarContrasena ? <EyeOffIcon /> : <EyeIcon />}
+                                        </Button>
+                                    </InputGroupAddon>
+                                </InputGroup>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="idRol" className="text-xs">ROL</FieldLabel>
+                                <Select value={usuario.idRol} onValueChange={(e) => setUsuario({ ...usuario, idRol: e })}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Escoja un rol" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectGroup>
+                                            {rolesDisponibles?.map((rol) => (
+                                                <SelectItem key={rol._id} value={rol._id}>
+                                                    {rol.nombre}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="idCargo" className="text-xs">CARGO</FieldLabel>
+                                <Select value={usuario.idCargo} onValueChange={(e) => setUsuario({ ...usuario, idCargo: e })}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Indique el cargo" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectGroup>
+                                            {cargosDisponibles?.map((cargo) => (
+                                                <SelectItem key={cargo._id} value={cargo._id}>
+                                                    {cargo.nombre}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Guardando..." : "Guardar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenNuevoInstrumento(false)}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenNuevoUsuario(false)}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>
                     </form>
                 </DrawerContent>
-            </Drawer> */}
+            </Drawer>
 
-            {/** Drawer de edición de instrumentos */}
-            {/* <Drawer open={isOpenEditarInstrumento} onOpenChange={setIsOpenEditarInstrumento} direction={drawerDirection}>
+            {/** Drawer de edición de usuarios */}
+            <Drawer open={isOpenEditarUsuario} onOpenChange={setIsOpenEditarUsuario} direction={drawerDirection} onClose={() => setCambiarContrasena(false)} >
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
-                        <DrawerTitle className="font-bold text-md md:text-lg">Editar Instrumento</DrawerTitle>
-                        <DrawerDescription className="text-xs md:text-sm">Ingrese la información necesaria para editar el instrumento.</DrawerDescription>
+                        <DrawerTitle className="font-bold text-md md:text-lg">Editar Usuario</DrawerTitle>
+                        <DrawerDescription className="text-xs md:text-sm">Ingrese la información necesaria para editar el usuario.</DrawerDescription>
                     </DrawerHeader>
 
-                    <form className="px-12 py-8 md:px-6 md:py-6">
+                    <form className="space-y-4 px-12 py-8 md:px-6 md:py-6 overflow-y-auto" onSubmit={handleActualizar}>
                         <FieldGroup>
                             <Field>
-                                <FieldLabel htmlFor="identificador" className="text-xs">IDENTIFICADOR</FieldLabel>
+                                <FieldLabel htmlFor="nombres" className="text-xs">NOMBRES</FieldLabel>
                                 <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="identificador" type="text" placeholder="Ingrese el identificador del instrumento" required
-                                        value={instrumentoEditar.identificador} onChange={(e) => setInstrumentoEditar({ ...instrumentoEditar, identificador: e.target.value })}
+                                    <InputGroupInput id="nombres" type="text" placeholder="Ingrese los nombres del usuario" required
+                                        value={usuarioEditar.nombres} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, nombres: e.target.value })}
                                         className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
                                 </InputGroup>
                             </Field>
                             <Field>
-                                <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE DEL INSTRUMENTO</FieldLabel>
+                                <FieldLabel htmlFor="apellidos" className="text-xs">APELLIDOS</FieldLabel>
                                 <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del instrumento" required
-                                        value={instrumentoEditar.nombre} onChange={(e) => setInstrumentoEditar({ ...instrumentoEditar, nombre: e.target.value })}
+                                    <InputGroupInput id="apellidos" type="text" placeholder="Ingrese los apellidos del usuario" required
+                                        value={usuarioEditar.apellidos} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, apellidos: e.target.value })}
                                         className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
                                 </InputGroup>
                             </Field>
                             <Field>
-                                <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCION</FieldLabel>
+                                <FieldLabel htmlFor="correo" className="text-xs">CORREO</FieldLabel>
                                 <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <textarea id="descripcion" placeholder="Ingrese la descripcion del instrumento" rows={4}
-                                        value={instrumentoEditar.descripcion} onChange={(e) => setInstrumentoEditar({ ...instrumentoEditar, descripcion: e.target.value })}
-                                        className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none"
+                                    <InputGroupInput id="correo" type="text" placeholder="Ingrese el correo institucional del usuario" required
+                                        value={usuarioEditar.correo} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
+                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                </InputGroup>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="usuario" className="text-xs">USUARIO</FieldLabel>
+                                <InputGroup className='py-5 px-2 bg-secondary'>
+                                    <InputGroupInput id="usuario" type="text" placeholder="Ingrese el nombre de usuario" required
+                                        value={usuarioEditar.usuario} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, usuario: e.target.value })}
+                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
                                     />
                                 </InputGroup>
                             </Field>
                             <Field>
-                                {instrumentoEditar.ruta && (
-                                    <div className="flex items-center gap-2 p-3 bg-secondary rounded-md mb-2">
-                                        <FileDown className="text-warning h-4 w-4" />
-                                        <span className="text-sm truncate flex-1">
-                                            {instrumentoEditar.ruta.replace(/\\/g, '/').split('/').pop()}
-                                        </span>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="hover:bg-destructive/10 h-6 w-6"
-                                            onClick={() => setInstrumentoEditar({ ...instrumentoEditar, ruta: "" })}
-                                        >
-                                            <CircleX className="text-destructive h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                )}
-                                {!instrumentoEditar.ruta && (
-                                    <FileUploadField
-                                        id="archivo-editar"
-                                        label="NUEVO ARCHIVO"
-                                        accept=".pdf,.docx"
-                                        onChange={(file) => setInstrumentoEditar({ ...instrumentoEditar, archivo: file as File })}
+                                <div className="flex">
+                                    <FieldLabel htmlFor="contrasena" className="text-xs">CAMBIAR CONTRASEÑA</FieldLabel>
+                                    <InputGroupInput id="cambiarContrasena" type="checkbox" checked={cambiarContrasena}
+                                        onChange={(e) => {
+                                            setCambiarContrasena(e.target.checked);
+                                            if (!e.target.checked) {
+                                                setUsuarioEditar({ ...usuarioEditar, contrasena: "" });
+                                            }
+                                        }}
+                                        className="h-5 w-5 cursor-pointer accent-primary"
                                     />
+                                </div>
+
+                                {cambiarContrasena && (
+                                    <InputGroup className='py-5 px-2 bg-secondary'>
+                                        <InputGroupInput id="contrasena" type={mostrarContrasena ? "text" : "password"}
+                                            placeholder="Ingrese la nueva contraseña" required
+                                            value={usuarioEditar.contrasena} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, contrasena: e.target.value })}
+                                            className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                        <InputGroupAddon align="inline-end">
+                                            <Button type="button" variant="ghost" onClick={toggleMostrarContrasena} className="cursor-pointer">
+                                                {mostrarContrasena ? <EyeOffIcon /> : <EyeIcon />}
+                                            </Button>
+                                        </InputGroupAddon>
+                                    </InputGroup>
                                 )}
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="idRol" className="text-xs">ROL</FieldLabel>
+                                <Select value={usuarioEditar.idRol} onValueChange={(e) => setUsuarioEditar({ ...usuarioEditar, idRol: e })}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Escoja un rol" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectGroup>
+                                            {rolesDisponibles?.map((rol) => (
+                                                <SelectItem key={rol._id} value={rol._id}>
+                                                    {rol.nombre}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="idCargo" className="text-xs">CARGO</FieldLabel>
+                                <Select value={usuarioEditar.idCargo} onValueChange={(e) => setUsuarioEditar({ ...usuarioEditar, idCargo: e })}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Indique el cargo" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectGroup>
+                                            {cargosDisponibles?.map((cargo) => (
+                                                <SelectItem key={cargo._id} value={cargo._id}>
+                                                    {cargo.nombre}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                            <Button onClick={handleActualizar} className="md:py-6">Actualizar</Button>
-                            <Button onClick={() => setIsOpenEditarInstrumento(false)} variant="outline" className="md:py-6">Cancelar</Button>
+                            <Button type="submit" className="md:py-6" disabled={loading}>
+                                {loading ? "Actualizando..." : "Actualizar"}
+                            </Button>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenEditarUsuario(false)}>
+                                Cancelar
+                            </Button>
                         </DrawerFooter>
                     </form>
                 </DrawerContent>
-            </Drawer> */}
+            </Drawer>
         </div>
     );
 }

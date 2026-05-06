@@ -40,7 +40,7 @@ export default function RootLayout({
       <body className="bg-background text-foreground h-full overflow-hidden">
         <Providers>
           <div className="flex h-full flex-col">
-            <header className="w-full flex justify-between px-4 py-4 shrink-0 bg-sidebar">
+            <header className="w-full flex justify-between px-4 py-4 shrink-0 bg-sidebar border-2">
               <div>
                 <span className="text-primary font-bold text-sm md:text-lg xl:text-xl px-1 md:px-12">
                   SOPTI-SOFT
@@ -58,11 +58,11 @@ export default function RootLayout({
               {children}
             </main>
 
-            <footer className="text-right text-sm py-4 px-4 bg-sidebar text-muted-foreground font-bold shrink-0">
+            <footer className="text-right text-sm py-4 px-4 bg-sidebar text-muted-foreground font-bold shrink-0 border-2">
               Socialización del Proceso de Titulación {new Date().getFullYear()} ©
             </footer>
           </div>
-          <Toaster />
+          <Toaster expand visibleToasts={1} />
         </Providers>
       </body>
     </html>

@@ -20,13 +20,18 @@ function actualizarUsuario(id: string, data: any) {
     formData.append("nombres", data.nombres);
     formData.append("apellidos", data.apellidos);
     formData.append("correo", data.correo);
-    formData.append("usuario", data.usuario);
-    formData.append("idRol", data.idRol);
-    formData.append("idCargo", data.idCargo);
-    formData.append("descripcion", data.descripcion);
 
-    if (data.fechaFin) {
-        formData.append("fechaFin", data.fechaFin);
+    // Estos campos pueden o no ser actualizados
+    if (data.usuario) {
+        formData.append("usuario", data.usuario);
+    }
+
+    if (data.idRol) {
+        formData.append("idRol", data.idRol);
+    }
+
+    if (data.idCargo) {
+        formData.append("idCargo", data.idCargo);
     }
 
     if (data.contrasena) {

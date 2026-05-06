@@ -23,8 +23,6 @@ export default function SignInPage() {
 
             <FormLogin />
 
-            <Separator />
-
             <div className="flex items-center justify-center mt-6">
                 <Badge className="bg-success text-success-foreground font-bold text-xs md:text-sm">
                     <ShieldCheck data-icon="inline-start" />

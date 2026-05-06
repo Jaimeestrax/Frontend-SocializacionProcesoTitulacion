@@ -53,7 +53,7 @@ import { useDrawerDirection } from "@/hooks/use-drawer-size";
 
 export default function GestionRoles() {
 
-    const { registrarRol, obtenerRoles, actualizarEstadoRol, obtenerRolPorId, actualizarRol, obtenerRolesActivos, loading } = useRoles();
+    const { registrarRol, obtenerRoles, actualizarEstadoRol, obtenerRolPorId, actualizarRol, contarRolesActivos, loading } = useRoles();
     const drawerDirection = useDrawerDirection();
 
     // Listado de roles
@@ -72,7 +72,7 @@ export default function GestionRoles() {
     const cargarRoles = async () => {
         try {
             const res = await obtenerRoles(busqueda);
-            const res2 = await obtenerRolesActivos();
+            const res2 = await contarRolesActivos();
             setRoles(res.data.docs);
             setSiguiente(res.data.hasNextPage);
             setAnterior(res.data.hasPrevPage);

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 
-import { User, LockKeyhole, LogIn, EyeOffIcon } from 'lucide-react';
+import { User, LockKeyhole, LogIn, EyeOffIcon, EyeIcon } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -30,6 +30,12 @@ export default function FormLogin() {
 
     const [usuario, setUsuario] = useState("");
     const [contrasena, setContrasena] = useState("");
+
+    const [mostrarContrasena, setMostrarContrasena] = useState(false);
+
+    const toggleMostrarContrasena = () => {
+        setMostrarContrasena(!mostrarContrasena);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -74,8 +80,13 @@ export default function FormLogin() {
                         <InputGroupAddon align="inline-start">
                             <LockKeyhole />
                         </InputGroupAddon>
-                        <InputGroupInput id="password" type="password" required
+                        <InputGroupInput id="password" type={mostrarContrasena ? "text" : "password"} required
                             value={contrasena} onChange={(e) => setContrasena(e.target.value)} />
+                        <InputGroupAddon align="inline-end">
+                            <Button type="button" variant="ghost" onClick={toggleMostrarContrasena} className="cursor-pointer">
+                                {mostrarContrasena ? <EyeOffIcon /> : <EyeIcon />}
+                            </Button>
+                        </InputGroupAddon>
                     </InputGroup>
                 </Field>
                 <Field>
