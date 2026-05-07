@@ -49,10 +49,38 @@ export function useAuth() {
         }
     };
 
+    // Función para recuperar contraseña
+    const forgotPassword = async (correo: string) => {
+        try {
+            setLoading(true);
+            const res = await authService.forgotPassword(correo);
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Función de reseteo de contraseña
+    const resetPassword = async (token: string, contrasena: string) => {
+        try {
+            setLoading(true);
+            const res = await authService.resetPassword(token, contrasena);
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Hook que retorna login, logout y loading
     return {
         login,
         logout,
+        forgotPassword,
+        resetPassword,
         loading
     };
 }

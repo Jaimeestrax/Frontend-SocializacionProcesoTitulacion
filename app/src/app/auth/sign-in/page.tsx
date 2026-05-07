@@ -1,5 +1,4 @@
 import FormLogin from "@/components/form-login";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge"
 import { ShieldCheck } from 'lucide-react';
 

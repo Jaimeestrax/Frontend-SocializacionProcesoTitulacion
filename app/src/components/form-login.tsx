@@ -7,7 +7,7 @@ import { User, LockKeyhole, LogIn, EyeOffIcon, EyeIcon } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-
+import Link from "next/link";
 import { toast } from "@/components/ui/toast-custom";
 
 import {
@@ -69,12 +69,9 @@ export default function FormLogin() {
                 <Field>
                     <div className="flex items-center">
                         <FieldLabel htmlFor="password">CONTRASEÑA</FieldLabel>
-                        <a
-                            href="#"
-                            className="text-primary ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                        >
+                        <Link href="/auth/forget-password" className="text-primary ml-auto inline-block text-sm underline-offset-4 hover:underline">
                             OLVIDO SU CONTRASEÑA?
-                        </a>
+                        </Link>
                     </div>
                     <InputGroup className='py-5 px-2'>
                         <InputGroupAddon align="inline-start">

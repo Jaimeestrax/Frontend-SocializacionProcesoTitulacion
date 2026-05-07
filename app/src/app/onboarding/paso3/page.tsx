@@ -3,8 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Progress } from "@/components/ui/progress"
-import { StepForward, StepBack } from 'lucide-react';
+import { StepForward, StepBack, CircleCheck, CloudUpload, FileText, FileDown } from 'lucide-react';
 import { useRouter } from "next/navigation";
+import { Card, CardDescription, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 
 export default function Paso3() {
     const router = useRouter();
@@ -12,7 +13,7 @@ export default function Paso3() {
     const pasoActual = 2; // Paso actual
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col px-6 lg:px-24 xl:px-50 2xl:px-60">
             <Field className="px-12 w-full">
                 <FieldLabel htmlFor="progress-upload">
                     <span>Paso 2 de 3</span>
@@ -20,28 +21,86 @@ export default function Paso3() {
                 </FieldLabel>
                 <Progress className='h-3' value={66} id="progress-upload" />
             </Field>
-            <div className="flex items-center gap-4 bg-secondary rounded-2xl p-6 mb-6 shadow-md">
+
+            <div className="mt-8 md:mt-12 flex flex-col md:flex-row items-center gap-2 bg-secondary rounded-2xl p-6 mb-6 shadow-md">
                 {/* Imagen costado */}
-                <div className="w-25 h-25 rounded-full bg-foreground-muted border-primary/50 border-4 flex items-center justify-center">
-                    <img src="/images/logo.png" alt="logo" className="w-15 h-20" />
+                <div className="w-30 h-30 rounded-full bg-foreground-muted border-primary/50 border-4 flex items-center justify-center">
+                    <img src="/images/logo.png" alt="logo" className="w-15 h-25" />
                 </div>
                 {/* Cuadro de dialogo */}
-                <p className="text-lg md:text-xl lg:text-2xl italic">
-                    Descarga los instrumentos necesarios para cada subproceso, asegurando que cumpla con los formatos institucionales.
+                <p className="text-sm md:text-lg lg:text-xl italic bg-background px-6 py-2 rounded-full">
+                    "Descarga los instrumentos necesarios para cada subproceso, asegurando que cumpla con los formatos institucionales"
                 </p>
             </div>
-            <div className="w-full max-w-sm lg:max-w-lg bg-card p-6 md:p-1 relative">
 
-                <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-2">
-                    <Button variant="link" className="p-2 md:p-4" onClick={() => router.push("/onboarding/paso2")}>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 lg:gap-6">
+                <Card className="border-b-success border-b-6">
+                    <CardHeader>
+                        <CardTitle>
+                            <CircleCheck />
+                        </CardTitle>
+                        <CardDescription className="font-bold text-foreground text-lg">
+                            IT-OM-1.a
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">Solicitud de opción de titulación para el estudiante que elige examen de carácter complexivo</p>
+                    </CardContent>
+                    <CardFooter className="flex items-center justify-center bg-background">
+                        <Button variant="default" className="px-8 py-4 cursor-pointer">
+                            <FileDown /> Descargar
+                        </Button>
+                    </CardFooter>
+                </Card>
+                <Card className="border-b-warning border-b-6">
+                    <CardHeader>
+                        <CardTitle>
+                            <CloudUpload />
+                        </CardTitle>
+                        <CardDescription className="font-bold text-foreground text-lg">
+                            IT-OM-2
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">Comunicación de la designación de Director(a) para el acompañamiento académico</p>
+                    </CardContent>
+                    <CardFooter className="flex items-center justify-center bg-background">
+                        <Button variant="default" className="px-8 py-4 cursor-pointer">
+                            <FileDown /> Descargar
+                        </Button>
+                    </CardFooter>
+                </Card>
+                <Card className="hidden md:flex border-b-destructive border-b-6">
+                    <CardHeader>
+                        <CardTitle>
+                            <FileText />
+                        </CardTitle>
+                        <CardDescription className="font-bold text-foreground text-lg">
+                            IT-AN-1.a
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">Anteproyecto de la opción: Trabajo de Titulación modalidad Proyecto Técnico</p>
+                    </CardContent>
+                    <CardFooter className="flex items-center justify-center bg-background">
+                        <Button variant="default" className="px-8 py-4 cursor-pointer">
+                            <FileDown /> Descargar
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
+
+            <div className="mt-8 md:mt-12 flex flex-col gap-8 md:gap-12">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <Button variant="link" className="border-2 border-primary p-2 md:p-4 md:col-start-2" onClick={() => router.push("/onboarding/paso2")}>
                         <StepBack /> Atras
                     </Button>
-                    <Button variant="default" className="p-2 md:p-4" onClick={() => router.push("/onboarding/paso4")}>
+                    <Button variant="default" className="p-2 md:p-4 md:col-start-3" onClick={() => router.push("/onboarding/paso4")}>
                         Siguiente <StepForward />
                     </Button>
                 </div>
                 {/** Dots de navegación */}
-                <div className="flex items-center justify-center lg:justify-start gap-2 md:mt-8 lg:mt-24">
+                <div className="flex items-center justify-center gap-2">
                     {Array.from({ length: totalPasos }).map((_, i) => (
                         <span
                             key={i}

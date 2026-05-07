@@ -22,7 +22,7 @@ export default function Paso2() {
                 <Progress className='h-3' value={33} id="progress-upload" />
             </Field>
 
-            <div className="flex w-full max-w-lg md:max-w-xl lg:max-w-4xl xl:max-w-5xl p-6 md:p-2 mt-2">
+            <div className="flex w-full max-w-lg md:max-w-xl lg:max-w-4xl xl:max-w-5xl p-6 md:p-2 mt-2 md:mt-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/** Cuadro izquierda*/}
                     <div className="bg-foreground/10 relative rounded-lg md:rounded-xl p-6 flex items-center justify-center">
@@ -58,11 +58,11 @@ export default function Paso2() {
                             Monitorea el flujo de cada subproceso en tiempo real con indicadores claros de avance.
                         </p>
 
-                        <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 lg:gap-6">
+                        <div className="grid grid-cols-2 gap-2 lg:gap-6">
                             <Button variant="default" className="p-2 md:p-4" onClick={() => router.push("/onboarding/paso3")}>
                                 Siguiente <StepForward />
                             </Button>
-                            <Button variant="link" className="p-2 md:p-4" onClick={() => router.push("/home")}>
+                            <Button variant="link" className="border-2 border-primary p-2 md:p-4" onClick={() => router.push("/home")}>
                                 Saltar a la página principal
                             </Button>
                         </div>
