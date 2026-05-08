@@ -36,8 +36,16 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 
-import { Button } from "@/components/ui/button"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 
+import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -46,7 +54,7 @@ import FileUploadField from "@/components/ui/fileUpload";
 import { Badge } from "@/components/ui/badge";
 
 // Iconos
-import { FilePlusCorner, FileEdit, CircleX, FileDown } from 'lucide-react';
+import { FilePlusCorner, FileEdit, CircleX, FileDown, CircleCheck, History } from 'lucide-react';
 
 // Utilidades
 import { useState, useEffect } from "react";
@@ -56,9 +64,20 @@ import { Instrumento } from "@/DTOs/instrumento";
 // Uso de hooks que interactuan con la API
 import { useInstrumentos } from "@/hooks/use-instrumento";
 import { useDrawerDirection } from "@/hooks/use-drawer-size";
+import { environment } from "@/lib/api/client";
 
 export default function GestionInstrumentos() {
-    const { registrarInstrumento, obtenerInstrumentos, actualizarEstadoInstrumento, actualizarInstrumento, obtenerInstrumentoPorId, loading } = useInstrumentos();
+    const {
+        registrarInstrumento,
+        obtenerInstrumentos,
+        actualizarVigenciaInstrumento,
+        actualizarInstrumento,
+        obtenerInstrumentoPorId,
+        obtenerHistoricoInstrumento,
+        contarInstrumentosVigentes,
+        loading
+    } = useInstrumentos();
+
     const drawerDirection = useDrawerDirection();
 
     // Listado de instrumentos
@@ -78,10 +97,11 @@ export default function GestionInstrumentos() {
     const cargarInstrumentos = async () => {
         try {
             const res = await obtenerInstrumentos(busqueda);
+            const res2 = await contarInstrumentosVigentes();
             setInstrumentos(res.data.docs);
             setSiguiente(res.data.hasNextPage);
             setAnterior(res.data.hasPrevPage);
-            setTotalInstrumentos(res.data.totalDocs);
+            setTotalInstrumentos(res2.data);
             toast.success(res.message);
         } catch (error: any) {
             console.error("Error al obtener instrumentos:", error.message);
@@ -98,10 +118,9 @@ export default function GestionInstrumentos() {
     const [isOpenNuevoInstrumento, setIsOpenNuevoInstrumento] = useState(false);
 
     const [instrumento, setInstrumento] = useState<Instrumento>({
-        identificador: "",
         nombre: "",
         descripcion: "",
-        id_encargado: "",
+        idEncargadoGenerar: "",
         archivo: null as unknown as File
     });
 
@@ -109,19 +128,17 @@ export default function GestionInstrumentos() {
         e.preventDefault();
 
         try {
-            //console.log("Enviando:", instrumento);
             const user = JSON.parse(localStorage.getItem("identity") || "{}");
-            const res = await registrarInstrumento({ ...instrumento, id_encargado: user._id });
+            const res = await registrarInstrumento({ ...instrumento, idEncargadoGenerar: user._id });
             // Recarga la lista de instrumentos
             await cargarInstrumentos();
             // Mensaje correcto de registro
             toast.success(res.message);
             // Reinicio del drawer
             setInstrumento({
-                identificador: "",
                 nombre: "",
                 descripcion: "",
-                id_encargado: "",
+                idEncargadoGenerar: "",
                 archivo: null as unknown as File
             });
             setIsOpenNuevoInstrumento(false);
@@ -132,38 +149,30 @@ export default function GestionInstrumentos() {
         }
     };
 
-    // Cambio de estado de un instrumento
-    const handleCambioEstado = async (id: string, estado: boolean) => {
+    // Cambio de vigencia de un instrumento
+    const handleCambioVigencia = async (id: string, vigente: boolean) => {
         try {
-            const res = await actualizarEstadoInstrumento(id, { estado });
+            const res = await actualizarVigenciaInstrumento(id, { vigente });
             await cargarInstrumentos();
             toast.success(res.message);
         } catch (error: any) {
-            console.error("Error al actualizar estado instrumento:", error.message);
+            console.error("Error al actualizar vigencia del instrumento:", error.message);
             toast.error(error.message);
         }
     };
 
-    // Descarga de un instrumento
+    // Descargar achivo de un instrumento
     const handleDescarga = (instrumento: any) => {
-        const rutaNormalizada = instrumento.ruta.replace(/\\/g, '/');
-        const url = `${process.env.NEXT_PUBLIC_URL}/${rutaNormalizada}`;
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = instrumento.nombre;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const url = `${environment.baseUrl}/${instrumento.archivo}`;
+        window.open(url, '_blank'); // Abre en otra pestaña
     };
 
     // Actualizar instrumento
     const [isOpenEditarInstrumento, setIsOpenEditarInstrumento] = useState(false);
     const [instrumentoEditar, setInstrumentoEditar] = useState<Instrumento>({
-        identificador: "",
         nombre: "",
         descripcion: "",
-        id_encargado: "",
+        idEncargadoActualizar: "",
         archivo: null as unknown as File
     });
     const [instrumentoEditarId, setInstrumentoEditarId] = useState<string>("");
@@ -185,7 +194,8 @@ export default function GestionInstrumentos() {
     const handleActualizar = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await actualizarInstrumento(instrumentoEditarId, instrumentoEditar);
+            const user = JSON.parse(localStorage.getItem("identity") || "{}");
+            const res = await actualizarInstrumento(instrumentoEditarId, { ...instrumentoEditar, idEncargadoActualizar: user._id });
             setIsOpenEditarInstrumento(false);
             await cargarInstrumentos();
             toast.success(res.message);
@@ -195,6 +205,32 @@ export default function GestionInstrumentos() {
         }
     };
 
+    const formatearFecha = (fecha: any) => {
+        if (!fecha) return "S/N";
+        return new Date(fecha).toLocaleDateString("es-EC", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        });
+    };
+
+    // Modal con historico de un instrumento
+    const [isOpenHistoricoInstrumento, setIsOpenHistoricoInstrumento] = useState(false);
+    const [historicoInstrumento, setHistoricoInstrumento] = useState<any[]>([]);
+
+    // Abrir modal con historico de un instrumento
+    const handleHistorico = async (instrumento: any) => {
+        try {
+            const res = await obtenerHistoricoInstrumento(instrumento.codigo);
+            console.log("Histórico del instrumento:", res.data);
+            setHistoricoInstrumento(res.data);
+            setIsOpenHistoricoInstrumento(true);
+            toast.success(res.message);
+        } catch (error: any) {
+            console.error("Error al obtener historico del instrumento:", error.message);
+            toast.error(error.message);
+        }
+    };
 
     return (
         <div className="container mx-auto">
@@ -232,11 +268,14 @@ export default function GestionInstrumentos() {
                     <TableHeader>
                         <TableRow>
                             <TableHead className="text-center">Nro</TableHead>
-                            <TableHead className="text-center">Identificador</TableHead>
+                            {/* <TableHead className="text-center">Código</TableHead> */}
                             <TableHead className="text-center">Nombre</TableHead>
-                            <TableHead className="text-center">Descripcion</TableHead>
-                            <TableHead className="text-center">Encargado</TableHead>
-                            <TableHead className="text-center">Estado</TableHead>
+                            <TableHead className="text-center">Descripción</TableHead>
+                            <TableHead className="text-center">Generado por</TableHead>
+                            <TableHead className="text-center">Condición</TableHead>
+                            <TableHead className="text-center">Fecha inicio</TableHead>
+                            <TableHead className="text-center">Fecha fin</TableHead>
+                            <TableHead className="text-center">Version</TableHead>
                             <TableHead className="text-center">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -244,23 +283,26 @@ export default function GestionInstrumentos() {
                         {instrumentos.map((instrumento, i) => (
                             <TableRow key={instrumento._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
-                                <TableCell>{instrumento.identificador}</TableCell>
+                                {/* <TableCell>{instrumento.codigo}</TableCell> */}
                                 <TableCell>{instrumento.nombre}</TableCell>
                                 <TableCell>{instrumento.descripcion}</TableCell>
-                                <TableCell>{instrumento.id_encargado.nombres + ' ' + instrumento.id_encargado.apellidos}</TableCell>
+                                <TableCell>{instrumento.idEncargadoGenerar.nombres + ' ' + instrumento.idEncargadoGenerar.apellidos}</TableCell>
                                 <TableCell>{
-                                    instrumento.estado ? (
-                                        <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground text-xs md:text-sm">Activo</Badge>
+                                    instrumento.vigente ? (
+                                        <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground text-xs md:text-sm">Vigente</Badge>
                                     ) : (
-                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground text-xs md:text-sm">Inactivo</Badge>
+                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground text-xs md:text-sm">No vigente</Badge>
                                     )
                                 }</TableCell>
+                                <TableCell>{formatearFecha(instrumento.fechaInicio)}</TableCell>
+                                <TableCell>{formatearFecha(instrumento.fechaFin)}</TableCell>
+                                <TableCell>{instrumento.version}</TableCell>
                                 <TableCell>
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button variant="ghost" className="hover:bg-warning/10" onClick={() => handleDescarga(instrumento)}>
-                                                    <FileDown className="text-warning" />
+                                                <Button variant="ghost" className="hover:bg-primary/10" onClick={() => handleDescarga(instrumento)}>
+                                                    <FileDown className="text-primary" />
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>Descargar</TooltipContent>
@@ -268,8 +310,8 @@ export default function GestionInstrumentos() {
 
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button variant="ghost" className="hover:bg-primary/10" onClick={() => handleEditar(instrumento)}>
-                                                    <FileEdit className="text-primary" />
+                                                <Button variant="ghost" className="hover:bg-warning/10" onClick={() => handleEditar(instrumento)}>
+                                                    <FileEdit className="text-warning" />
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>Editar</TooltipContent>
@@ -277,11 +319,20 @@ export default function GestionInstrumentos() {
 
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button variant="ghost" className="hover:bg-destructive/10" onClick={() => handleCambioEstado(instrumento._id, !instrumento.estado)}>
-                                                    <CircleX className="text-destructive" />
+                                                <Button variant="ghost" className="hover:bg-destructive/10" onClick={() => handleCambioVigencia(instrumento._id, !instrumento.vigente)}>
+                                                    {instrumento.vigente ? <CircleX className="text-destructive" /> : <CircleCheck className="text-success-foreground" />}
                                                 </Button>
                                             </TooltipTrigger>
-                                            <TooltipContent>Eliminar</TooltipContent>
+                                            <TooltipContent>{instrumento.vigente ? "Desactivar" : "Activar"}</TooltipContent>
+                                        </Tooltip>
+
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button variant="ghost" className="hover:bg-primary/10" onClick={() => handleHistorico(instrumento)}>
+                                                    <History className="text-primary" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Ver Histórico</TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
                                 </TableCell>
@@ -320,7 +371,7 @@ export default function GestionInstrumentos() {
             </div>
 
             {/** Drawer de registro de instrumentos */}
-            <Drawer open={isOpenNuevoInstrumento} onOpenChange={setIsOpenNuevoInstrumento} direction={drawerDirection} onClose={() => { setInstrumento({ identificador: '', nombre: '', descripcion: '', id_encargado: '', archivo: null as unknown as File }) }}>
+            <Drawer open={isOpenNuevoInstrumento} onOpenChange={setIsOpenNuevoInstrumento} direction={drawerDirection} onClose={() => { setInstrumento({ nombre: '', descripcion: '', idEncargadoGenerar: '', archivo: null as unknown as File }) }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Registro Instrumento</DrawerTitle>
@@ -331,17 +382,6 @@ export default function GestionInstrumentos() {
 
                     <form className="px-12 py-8 md:px-6 md:py-6" onSubmit={handleSubmit}>
                         <FieldGroup>
-                            <Field>
-                                <FieldLabel htmlFor="identificador" className="text-xs">IDENTIFICADOR</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupAddon align="inline-start" className="font-bold">
-                                        IT-
-                                    </InputGroupAddon>
-                                    <InputGroupInput id="identificador" type="text" placeholder="OM-1.a" required
-                                        value={instrumento.identificador} onChange={(e) => setInstrumento({ ...instrumento, identificador: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
-                                </InputGroup>
-                            </Field>
                             <Field>
                                 <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE DEL INSTRUMENTO</FieldLabel>
                                 <InputGroup className='py-5 px-2 bg-secondary'>
@@ -390,14 +430,6 @@ export default function GestionInstrumentos() {
                     <form className="px-12 py-8 md:px-6 md:py-6">
                         <FieldGroup>
                             <Field>
-                                <FieldLabel htmlFor="identificador" className="text-xs">IDENTIFICADOR</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="identificador" type="text" placeholder="Ingrese el identificador del instrumento" required
-                                        value={instrumentoEditar.identificador} onChange={(e) => setInstrumentoEditar({ ...instrumentoEditar, identificador: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
-                                </InputGroup>
-                            </Field>
-                            <Field>
                                 <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE DEL INSTRUMENTO</FieldLabel>
                                 <InputGroup className='py-5 px-2 bg-secondary'>
                                     <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del instrumento" required
@@ -417,25 +449,20 @@ export default function GestionInstrumentos() {
                             <Field>
                                 {typeof instrumentoEditar.archivo === 'string' && (
                                     <div className="flex items-center gap-2 p-3 bg-secondary rounded-md mb-2">
-                                        <FileDown className="text-warning h-4 w-4" />
+                                        <FileDown className="text-primary h-4 w-4" />
                                         <span className="text-sm truncate flex-1">
-                                            {instrumentoEditar.archivo.replace(/\\/g, '/').split('/').pop()}
+                                            {/* Se muestra código del instrumento y extension del archivo */}
+                                            {`IT-000${instrumentoEditar.codigo}.${instrumentoEditar.archivo.split('.').pop()}`}
                                         </span>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="hover:bg-destructive/10 h-6 w-6"
-                                            onClick={() => setInstrumentoEditar({ ...instrumentoEditar, archivo: null as unknown as File })}
-                                        >
+                                        {/* Eliminar el archivo actual */}
+                                        <Button variant="ghost" size="icon" className="hover:bg-destructive/10 h-6 w-6"
+                                            onClick={() => setInstrumentoEditar({ ...instrumentoEditar, archivo: null as unknown as File })}>
                                             <CircleX className="text-destructive h-4 w-4" />
                                         </Button>
                                     </div>
                                 )}
-                                {!instrumentoEditar.archivo && (
-                                    <FileUploadField
-                                        id="archivo-editar"
-                                        label="NUEVO ARCHIVO"
-                                        accept=".pdf,.docx"
+                                {typeof instrumentoEditar.archivo !== 'string' && (
+                                    <FileUploadField id="archivo-editar" label="NUEVO ARCHIVO" accept=".pdf,.docx"
                                         onChange={(file) => setInstrumentoEditar({ ...instrumentoEditar, archivo: file as File })}
                                     />
                                 )}
@@ -448,6 +475,67 @@ export default function GestionInstrumentos() {
                     </form>
                 </DrawerContent>
             </Drawer>
+
+            {/** Modal para mostrar el historico de un instrumento */}
+            <Dialog open={isOpenHistoricoInstrumento} onOpenChange={setIsOpenHistoricoInstrumento}>
+                <DialogContent className="overflow-x-auto sm:max-w-xl lg:max-w-4xl" showCloseButton={false}>
+                    <DialogHeader>
+                        <DialogTitle>Histórico del instrumento</DialogTitle>
+                        <DialogDescription>
+                            Revise el detalle de las versiones del instrumento:{historicoInstrumento?.[0]?.nombre || ""}
+                        </DialogDescription>
+                        <div className="mt-2 no-scrollbar max-h-[50vh] overflow-y-auto">
+                            <Table className="bg-white dark:bg-gray-900 rounded-lg">
+                                {/* <TableCaption>Listado de instrumentos</TableCaption> */}
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="text-center">Nro</TableHead>
+                                        <TableHead className="text-center">Nombre</TableHead>
+                                        <TableHead className="text-center">Descripción</TableHead>
+                                        <TableHead className="text-center">Generado por</TableHead>
+                                        <TableHead className="text-center">Condición</TableHead>
+                                        <TableHead className="text-center">Fecha inicio</TableHead>
+                                        <TableHead className="text-center">Fecha fin</TableHead>
+                                        <TableHead className="text-center">Acciones</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {historicoInstrumento.map((instrumento, i) => (
+                                        <TableRow key={instrumento._id} className="text-center">
+                                            <TableCell>{i + 1}</TableCell>
+                                            {/* <TableCell>{instrumento.codigo}</TableCell> */}
+                                            <TableCell>{instrumento.nombre}</TableCell>
+                                            <TableCell>{instrumento.descripcion}</TableCell>
+                                            <TableCell>{instrumento.idEncargadoGenerar.nombres + ' ' + instrumento.idEncargadoGenerar.apellidos}</TableCell>
+                                            <TableCell>{
+                                                instrumento.vigente ? (
+                                                    <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground text-xs md:text-sm">Vigente</Badge>
+                                                ) : (
+                                                    <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground text-xs md:text-sm">No vigente</Badge>
+                                                )
+                                            }</TableCell>
+                                            <TableCell>{formatearFecha(instrumento.fechaInicio)}</TableCell>
+                                            <TableCell>{formatearFecha(instrumento.fechaFin)}</TableCell>
+                                            <TableCell>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button variant="ghost" className="hover:bg-primary/10" onClick={() => handleDescarga(instrumento)}>
+                                                                <FileDown className="text-primary" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>Descargar</TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

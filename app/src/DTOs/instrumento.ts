@@ -1,7 +1,9 @@
 export type Instrumento = {
-    identificador: string,
+    identificador?: string,
+    codigo?: string,
     nombre: string,
-    descripcion: string,
-    id_encargado: string,
-    archivo: File | string,
+    descripcion?: string,
+    archivo?: File | string,
+    idEncargadoGenerar?: string,
+    idEncargadoActualizar?: string
 }

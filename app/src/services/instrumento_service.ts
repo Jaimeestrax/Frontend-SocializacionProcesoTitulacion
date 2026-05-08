@@ -12,16 +12,14 @@ import { Respuesta } from "@/constants/respuesta";
 function registrarInstrumento(data: any) {
     const formData = new FormData();
 
-    formData.append("identificador", data.identificador);
     formData.append("nombre", data.nombre);
     formData.append("descripcion", data.descripcion);
-    formData.append("id_encargado", data.id_encargado);
     formData.append("archivo", data.archivo);
+    formData.append("idEncargadoGenerar", data.idEncargadoGenerar);
 
     return ejecutarQueryPostArchivos<Respuesta>('registrar-instrumento', formData);
 }
 
-// Envia paginación
 function obtenerInstrumentos(busqueda: any) {
     return ejecutarQueryPost<Respuesta>('obtener-instrumentos', busqueda);
 }
@@ -33,21 +31,29 @@ function obtenerInstrumentoPorId(id: string) {
 function actualizarInstrumento(id: string, data: any) {
     const formData = new FormData();
 
-    formData.append("identificador", data.identificador);
     formData.append("nombre", data.nombre);
     formData.append("descripcion", data.descripcion);
+    formData.append("idEncargadoActualizar", data.idEncargadoActualizar);
     if (data.archivo) {
         formData.append("archivo", data.archivo);
     }
     return ejecutarQueryPutArchivos<Respuesta>('actualizar-instrumento', id, formData);
 }
 
-function actualizarEstadoInstrumento(id: string, data: any) {
-    return ejecutarQueryPatch<Respuesta>('actualizar-estado-instrumento', id, data);
+function actualizarVigenciaInstrumento(id: string, data: any) {
+    return ejecutarQueryPatch<Respuesta>('actualizar-vigencia-instrumento', id, data);
 }
 
 function listarInstrumentos() {
     return ejecutarQueryGet<Respuesta>('listar-instrumentos');
+}
+
+function obtenerHistoricoInstrumento(codigo: string) {
+    return ejecutarQueryGet<Respuesta>('obtener-historico-instrumento', codigo);
+}
+
+function contarInstrumentosVigentes() {
+    return ejecutarQueryGet<Respuesta>('contar-instrumentos-vigentes');
 }
 
 const instrumentosService = {
@@ -55,8 +61,10 @@ const instrumentosService = {
     obtenerInstrumentos,
     obtenerInstrumentoPorId,
     actualizarInstrumento,
-    actualizarEstadoInstrumento,
-    listarInstrumentos
+    actualizarVigenciaInstrumento,
+    listarInstrumentos,
+    obtenerHistoricoInstrumento,
+    contarInstrumentosVigentes
 }
 
 export default instrumentosService;

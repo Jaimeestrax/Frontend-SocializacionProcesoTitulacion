@@ -39,11 +39,11 @@ export function useInstrumentos() {
     };
 
     // Función de cambio de estado
-    const actualizarEstadoInstrumento = async (id: string, data: any) => {
+    const actualizarVigenciaInstrumento = async (id: string, data: any) => {
         try {
             setLoading(true); // Activa loading
 
-            const res = await instrumentosService.actualizarEstadoInstrumento(id, data); // Llama al servicio
+            const res = await instrumentosService.actualizarVigenciaInstrumento(id, data); // Llama al servicio
 
             return res;
         } catch (error) {
@@ -96,14 +96,44 @@ export function useInstrumentos() {
         }
     };
 
+    const obtenerHistoricoInstrumento = async (codigo: string) => {
+        try {
+            setLoading(true); // Activa loading
+
+            const res = await instrumentosService.obtenerHistoricoInstrumento(codigo); // Llama al servicio
+
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false); // Desactiva loading
+        }
+    };
+
+    const contarInstrumentosVigentes = async () => {
+        try {
+            setLoading(true); // Activa loading
+
+            const res = await instrumentosService.contarInstrumentosVigentes(); // Llama al servicio
+
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false); // Desactiva loading
+        }
+    };
+
     // Hook que retorna funciones crud de instrumentos
     return {
         registrarInstrumento,
         obtenerInstrumentos,
-        actualizarEstadoInstrumento,
+        actualizarVigenciaInstrumento,
         actualizarInstrumento,
         obtenerInstrumentoPorId,
         listarInstrumentos,
+        obtenerHistoricoInstrumento,
+        contarInstrumentosVigentes,
         loading
     };
 }
