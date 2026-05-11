@@ -15,10 +15,6 @@ function obtenerSubprocesos(busqueda: any) {
     return ejecutarQueryPost<Respuesta>("obtener-subprocesos", busqueda);
 }
 
-function obtenerSubprocesoPorId(id: string) {
-    return ejecutarQueryGet<Respuesta>("obtener-subproceso-por-id", id);
-}
-
 function actualizarSubproceso(id: string, data: any) {
     return ejecutarQueryPut<Respuesta>("actualizar-subproceso", id, data);
 }
@@ -27,27 +23,21 @@ function actualizarEstadoSubproceso(id: string, data: any) {
     return ejecutarQueryPatch<Respuesta>("actualizar-estado-subproceso", id, data);
 }
 
-function obtenerSubprocesosProximos() {
-    return ejecutarQueryGet<Respuesta>("obtener-subprocesos-proximos");
+function obtenerSubprocesoPorId(id: string) {
+    return ejecutarQueryGet<Respuesta>("obtener-subproceso-por-id", id);
 }
 
-function obtenerSubprocesoActual() {
-    return ejecutarQueryGet<Respuesta>("obtener-subproceso-actual");
-}
-
-function obtenerPorcentajeAvance() {
-    return ejecutarQueryGet<Respuesta>("obtener-porcentaje-avance");
+function contarSubprocesosActivos() {
+    return ejecutarQueryGet<Respuesta>("contar-subprocesos-activos");
 }
 
 const subprocesosService = {
     registrarSubproceso,
     obtenerSubprocesos,
-    obtenerSubprocesoPorId,
     actualizarSubproceso,
     actualizarEstadoSubproceso,
-    obtenerSubprocesosProximos,
-    obtenerSubprocesoActual,
-    obtenerPorcentajeAvance
+    obtenerSubprocesoPorId,
+    contarSubprocesosActivos
 }
 
 export default subprocesosService;

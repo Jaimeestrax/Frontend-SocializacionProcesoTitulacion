@@ -27,7 +27,7 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
 
-    const { obtenerSubprocesosProximos, obtenerSubprocesoActual, obtenerPorcentajeAvance } = useSubprocesos();
+    // const { obtenerSubprocesosProximos, obtenerSubprocesoActual, obtenerPorcentajeAvance } = useSubprocesos();
     const [subprocesoActual, setSubprocesoActual] = useState<any>(null);
     const [subprocesosProximos, setSubprocesosProximos] = useState<any>([]);
     // Calcular tiempo restante para proximo subproceso
@@ -35,41 +35,41 @@ export default function Home() {
     // Porcentaje de avance
     const [porcentajeAvance, setPorcentajeAvance] = useState<number>(0);
 
-    const cargarDatos = async () => {
-        // Cargar subproceso actual
-        try {
-            const respuestaActual = await obtenerSubprocesoActual();
-            setSubprocesoActual(respuestaActual.data);
-            //toast.success(respuestaActual.message);
-        } catch (error: any) {
-            console.error("Error al cargar subproceso actual:", error.message);
-            //toast.error(error.message);
-        }
+    // const cargarDatos = async () => {
+    //     // Cargar subproceso actual
+    //     try {
+    //         const respuestaActual = await obtenerSubprocesoActual();
+    //         setSubprocesoActual(respuestaActual.data);
+    //         //toast.success(respuestaActual.message);
+    //     } catch (error: any) {
+    //         console.error("Error al cargar subproceso actual:", error.message);
+    //         //toast.error(error.message);
+    //     }
 
-        // Cargar subprocesos próximos (independiente del anterior)
-        try {
-            const respuestaProximos = await obtenerSubprocesosProximos();
-            setSubprocesosProximos(respuestaProximos.data);
-            //toast.success(respuestaProximos.message);
-        } catch (error: any) {
-            console.error("Error al cargar subprocesos próximos:", error.message);
-            //toast.error(error.message);
-        }
+    //     // Cargar subprocesos próximos (independiente del anterior)
+    //     try {
+    //         const respuestaProximos = await obtenerSubprocesosProximos();
+    //         setSubprocesosProximos(respuestaProximos.data);
+    //         //toast.success(respuestaProximos.message);
+    //     } catch (error: any) {
+    //         console.error("Error al cargar subprocesos próximos:", error.message);
+    //         //toast.error(error.message);
+    //     }
 
-        // Cargar porcentaje de avance
-        try {
-            const respuestaPorcentajeAvance = await obtenerPorcentajeAvance();
-            setPorcentajeAvance(respuestaPorcentajeAvance.data);
-            //toast.success(respuestaPorcentajeAvance.message);
-        } catch (error: any) {
-            console.error("Error al cargar porcentaje de avance:", error.message);
-            //toast.error(error.message);
-        }
-    }
+    //     // Cargar porcentaje de avance
+    //     try {
+    //         const respuestaPorcentajeAvance = await obtenerPorcentajeAvance();
+    //         setPorcentajeAvance(respuestaPorcentajeAvance.data);
+    //         //toast.success(respuestaPorcentajeAvance.message);
+    //     } catch (error: any) {
+    //         console.error("Error al cargar porcentaje de avance:", error.message);
+    //         //toast.error(error.message);
+    //     }
+    // }
 
-    useEffect(() => {
-        cargarDatos();
-    }, []);
+    // useEffect(() => {
+    //     cargarDatos();
+    // }, []);
 
     useEffect(() => {
         // Función para calcular tiempo restante

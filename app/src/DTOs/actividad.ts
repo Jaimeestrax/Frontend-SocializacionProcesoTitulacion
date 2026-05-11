@@ -1,8 +1,7 @@
 export type Actividad = {
+    _id?: string,
     nombre: string,
     descripcion: string,
-    id_cargo: string,
-    fecha_inicio: string,
-    fecha_fin: string,
-    instrumentos: string[],
+    idParticipante: string,
+    instrumentos: string[]
 }

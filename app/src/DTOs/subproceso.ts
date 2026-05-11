@@ -4,5 +4,8 @@ export type Subproceso = {
     identificador: string,
     nombre: string,
     descripcion: string,
-    actividades: Actividad[]
+    actividades: Actividad[],
+    estado?: number,
+    idEncargadoGenerar?: string,
+    idEncargadoActualizar?: string
 }

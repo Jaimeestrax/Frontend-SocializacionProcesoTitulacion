@@ -1,23 +1,50 @@
 "use client";
 
 import { toast } from "@/components/ui/toast-custom";
-import { GitBranchPlus, GitFork, FileEdit, CircleX, Plus, Trash2 } from 'lucide-react';
+
+import { GitBranchPlus, GitFork, FileEdit, CircleX, Plus, Trash2, ToggleLeft, ToggleRight, Info, FileDown } from 'lucide-react';
+
 import {
-    Drawer, DrawerContent, DrawerDescription,
-    DrawerFooter, DrawerHeader, DrawerTitle,
+    Drawer,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
 } from "@/components/ui/drawer";
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
+
 import {
-    Table, TableBody, TableCell, TableHead,
-    TableHeader, TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
 } from "@/components/ui/table";
+
 import {
-    Pagination, PaginationContent, PaginationItem,
-    PaginationLink, PaginationNext, PaginationPrevious,
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious
 } from "@/components/ui/pagination";
+
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
@@ -28,14 +55,12 @@ import { useCargos } from "@/hooks/use-cargo";
 import { Busqueda } from "@/constants/busqueda";
 import { Subproceso } from "@/DTOs/subproceso";
 import { Actividad } from "@/DTOs/actividad";
-
+import { environment } from "@/lib/api/client";
 
 const actividadVacia = (): Actividad => ({
     nombre: "",
     descripcion: "",
-    id_cargo: "",
-    fecha_inicio: "",
-    fecha_fin: "",
+    idParticipante: "",
     instrumentos: [],
 });
 
@@ -44,11 +69,13 @@ const subprocesoVacio = (): Subproceso => ({
     nombre: "",
     descripcion: "",
     actividades: [actividadVacia()],
+    idEncargadoGenerar: "",
+    idEncargadoActualizar: ""
 });
 
 export default function GestionSubprocesos() {
     // Hooks de subproceso
-    const { registrarSubproceso, obtenerSubprocesos, actualizarEstadoSubproceso, actualizarSubproceso, obtenerSubprocesoPorId, loading } = useSubprocesos();
+    const { registrarSubproceso, obtenerSubprocesos, actualizarEstadoSubproceso, actualizarSubproceso, obtenerSubprocesoPorId, contarSubprocesosActivos, loading } = useSubprocesos();
     // Utilidades para obtener cargos (actores) e instrumentos
     const { listarInstrumentos } = useInstrumentos();
     const { listarCargos } = useCargos();
@@ -85,10 +112,11 @@ export default function GestionSubprocesos() {
     const cargarSubprocesos = async () => {
         try {
             const res = await obtenerSubprocesos(busqueda);
+            const res2 = await contarSubprocesosActivos();
             setSubprocesos(res.data.docs);
             setSiguiente(res.data.hasNextPage);
             setAnterior(res.data.hasPrevPage);
-            setTotalSubprocesos(res.data.totalDocs);
+            setTotalSubprocesos(res2.data);
             toast.success(res.message);
         } catch (error: any) {
             console.error("Error al obtener subprocesos:", error.message);
@@ -185,7 +213,8 @@ export default function GestionSubprocesos() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await registrarSubproceso(subproceso);
+            const user = JSON.parse(localStorage.getItem("identity") || "{}");
+            const res = await registrarSubproceso({ ...subproceso, idEncargadoGenerar: user._id });
             setSubproceso(subprocesoVacio());
             setIsOpenNuevoSubproceso(false);
             await cargarSubprocesos();
@@ -196,7 +225,7 @@ export default function GestionSubprocesos() {
         }
     };
 
-    const handleCambioEstado = async (id: string, estado: boolean) => {
+    const handleCambioEstado = async (id: string, estado: number) => {
         try {
             const res = await actualizarEstadoSubproceso(id, { estado });
             await cargarSubprocesos();
@@ -210,7 +239,8 @@ export default function GestionSubprocesos() {
     const handleActualizar = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await actualizarSubproceso(subprocesoActualizarId, subprocesoActualizar);
+            const user = JSON.parse(localStorage.getItem("identity") || "{}");
+            const res = await actualizarSubproceso(subprocesoActualizarId, { ...subprocesoActualizar, idEncargadoActualizar: user._id });
             setSubprocesoActualizar(subprocesoVacio());
             setIsOpenActualizarSubproceso(false);
             await cargarSubprocesos();
@@ -228,13 +258,7 @@ export default function GestionSubprocesos() {
             // Normalización de data
             data.actividades = data.actividades.map((act: any) => ({
                 ...act,
-                fecha_inicio: act.fecha_inicio
-                    ? new Date(act.fecha_inicio).toISOString().split("T")[0]
-                    : "",
-                fecha_fin: act.fecha_fin
-                    ? new Date(act.fecha_fin).toISOString().split("T")[0]
-                    : "",
-                id_cargo: act.id_cargo?._id || "",
+                idParticipante: act.idParticipante?._id || "",
                 instrumentos: act.instrumentos?.map((i: any) => i._id) || []
             }));
             setSubprocesoActualizar(data);
@@ -244,6 +268,40 @@ export default function GestionSubprocesos() {
             console.error("Error al obtener subproceso para editar:", error.message);
             toast.error(error.message);
         }
+    };
+
+    // Detalle de actividades de un subproceso
+    const [isOpenDetalleSubproceso, setIsOpenDetalleSubproceso] = useState(false);
+    const [detalleSubproceso, setDetalleSubproceso] = useState<any>(null);
+
+    const handleDetalle = async (subproceso: any) => {
+        try {
+            const res = await obtenerSubprocesoPorId(subproceso._id);
+            setDetalleSubproceso(res.data);
+            setIsOpenDetalleSubproceso(true);
+        } catch (error: any) {
+            console.error("Error al obtener detalle del subproceso:", error.message);
+            toast.error(error.message);
+        }
+    };
+
+    // Descargar achivo de un instrumento
+    const handleDescarga = (instrumento: any) => {
+        const url = `${environment.baseUrl}/${instrumento.archivo}`;
+        window.open(url, '_blank'); // Abre en otra pestaña
+    };
+
+    let contadorInstrumentos = 0;
+    const obtenerIdentificadorInstrumento = (actividad: any, instrumentoIndex: number) => {
+        // Solo el primer instrumento de la actividad incrementa
+        if (instrumentoIndex === 0) {
+            contadorInstrumentos++;
+        }
+
+        // fromCharCode convierte número a letra
+        const sufijo = actividad.instrumentos.length > 1 ? `.${String.fromCharCode(97 + instrumentoIndex)}` : "";
+
+        return `IT-${detalleSubproceso.identificador}-${contadorInstrumentos}${sufijo}.`;
     };
 
     return (
@@ -285,22 +343,20 @@ export default function GestionSubprocesos() {
                             <TableHead className="text-center">Nro</TableHead>
                             <TableHead className="text-center">Identificador</TableHead>
                             <TableHead className="text-center">Nombre</TableHead>
-                            <TableHead className="text-center">Fecha inicio</TableHead>
-                            <TableHead className="text-center">Fecha fin</TableHead>
+                            <TableHead className="text-center">Descripción</TableHead>
                             <TableHead className="text-center">Estado</TableHead>
                             <TableHead className="text-center">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody className="text-xs lg:text-sm">
                         {subprocesos.map((sp, i) => (
                             <TableRow key={sp._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
                                 <TableCell>{sp.identificador}</TableCell>
-                                <TableCell>{sp.nombre}</TableCell>
-                                <TableCell>{new Date(sp.fecha_inicio).toLocaleDateString()}</TableCell>
-                                <TableCell>{new Date(sp.fecha_fin).toLocaleDateString()}</TableCell>
+                                <TableCell className="max-w-sm whitespace-normal wrap-break-word">{sp.nombre}</TableCell>
+                                <TableCell className="max-w-xl whitespace-normal wrap-break-word">{sp.descripcion}</TableCell>
                                 <TableCell>
-                                    {sp.estado
+                                    {sp.estado == 1
                                         ? <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground text-xs md:text-sm">Activo</Badge>
                                         : <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground text-xs md:text-sm">Inactivo</Badge>
                                     }
@@ -309,19 +365,46 @@ export default function GestionSubprocesos() {
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
+                                                <Button variant="ghost" className="hover:bg-primary/10" onClick={() => handleDetalle(sp)} >
+                                                    <Info className="text-primary" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Detalle</TooltipContent>
+                                        </Tooltip>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
                                                 <Button variant="ghost" className="hover:bg-primary/10" onClick={() => handleEditar(sp)} >
                                                     <FileEdit className="text-primary" />
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>Editar</TooltipContent>
                                         </Tooltip>
+                                        {sp.estado === 1 ? (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="ghost" className="hover:bg-warning/10" onClick={() => handleCambioEstado(sp._id, 0)}>
+                                                        <ToggleRight className="text-warning" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Desactivar</TooltipContent>
+                                            </Tooltip>
+                                        ) : (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="ghost" className="hover:bg-success/60" onClick={() => handleCambioEstado(sp._id, 1)}>
+                                                        <ToggleLeft className="text-success-foreground" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Activar</TooltipContent>
+                                            </Tooltip>
+                                        )}
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button variant="ghost" className="hover:bg-destructive/10" onClick={() => handleCambioEstado(sp._id, !sp.estado)}>
+                                                <Button variant="ghost" className="hover:bg-destructive/10" onClick={() => handleCambioEstado(sp._id, 2)}>
                                                     <CircleX className="text-destructive" />
                                                 </Button>
                                             </TooltipTrigger>
-                                            <TooltipContent>{sp.estado ? "Desactivar" : "Activar"}</TooltipContent>
+                                            <TooltipContent>Eliminar</TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
                                 </TableCell>
@@ -445,38 +528,17 @@ export default function GestionSubprocesos() {
                                             </InputGroup>
                                         </Field>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                            <Field>
-                                                <FieldLabel className="text-xs">FECHA INICIO</FieldLabel>
-                                                <InputGroup className="py-5 px-1 bg-secondary">
-                                                    <InputGroupInput type="date" required
-                                                        value={act.fecha_inicio}
-                                                        onChange={e => actualizarActividad(index, "fecha_inicio", e.target.value)}
-                                                        className="text-xs md:text-xs" />
-                                                </InputGroup>
-                                            </Field>
-                                            <Field>
-                                                <FieldLabel className="text-xs">FECHA FIN</FieldLabel>
-                                                <InputGroup className="py-5 px-1 bg-secondary">
-                                                    <InputGroupInput type="date" required
-                                                        value={act.fecha_fin}
-                                                        onChange={e => actualizarActividad(index, "fecha_fin", e.target.value)}
-                                                        className="text-xs md:text-xs" />
-                                                </InputGroup>
-                                            </Field>
-                                        </div>
-
                                         <Field>
                                             <FieldLabel className="text-xs">PARTICIPANTE</FieldLabel>
                                             <InputGroup className="py-5 px-2 bg-secondary">
                                                 <select
-                                                    value={act.id_cargo}
-                                                    onChange={e => actualizarActividad(index, "id_cargo", e.target.value)}
+                                                    value={act.idParticipante}
+                                                    onChange={e => actualizarActividad(index, "idParticipante", e.target.value)}
                                                     className="w-full text-sm bg-transparent outline-none py-2">
-                                                    <option value="">Seleccione un cargo</option>
+                                                    <option value="">Seleccione un participante</option>
                                                     {cargosDisponibles.map(cargo => (
                                                         <option key={cargo._id} value={cargo._id}>
-                                                            {cargo.nombre_cargo}
+                                                            {cargo.nombre}
                                                         </option>
                                                     ))}
                                                 </select>
@@ -498,7 +560,7 @@ export default function GestionSubprocesos() {
                                                             onChange={() => toggleInstrumento(index, inst._id)}
                                                             className="accent-primary"
                                                         />
-                                                        <span>{inst.identificador} — {inst.nombre}</span>
+                                                        <span>{inst.nombre}</span>
                                                     </label>
                                                 ))}
                                             </div>
@@ -509,15 +571,13 @@ export default function GestionSubprocesos() {
                                             )}
                                         </Field>
                                     </FieldGroup>
-
-                                    <div className="flex items-center justify-between">
-                                        <p></p>
-                                        <Button type="button" variant="default" size="sm" onClick={agregarActividad}>
-                                            <Plus className="w-4 h-4" /> Agregar actividad
-                                        </Button>
-                                    </div>
                                 </div>
                             ))}
+                            <div className="flex items-center justify-end mt-4">
+                                <Button type="button" variant="default" size="sm" onClick={agregarActividad}>
+                                    <Plus className="w-4 h-4" /> Agregar actividad
+                                </Button>
+                            </div>
                         </section>
 
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -621,38 +681,17 @@ export default function GestionSubprocesos() {
                                             </InputGroup>
                                         </Field>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                            <Field>
-                                                <FieldLabel className="text-xs">FECHA INICIO</FieldLabel>
-                                                <InputGroup className="py-5 px-1 bg-secondary">
-                                                    <InputGroupInput type="date" required
-                                                        value={act.fecha_inicio}
-                                                        onChange={e => actualizarActividadEditar(index, "fecha_inicio", e.target.value)}
-                                                        className="text-xs md:text-xs" />
-                                                </InputGroup>
-                                            </Field>
-                                            <Field>
-                                                <FieldLabel className="text-xs">FECHA FIN</FieldLabel>
-                                                <InputGroup className="py-5 px-1 bg-secondary">
-                                                    <InputGroupInput type="date" required
-                                                        value={act.fecha_fin}
-                                                        onChange={e => actualizarActividadEditar(index, "fecha_fin", e.target.value)}
-                                                        className="text-xs md:text-xs" />
-                                                </InputGroup>
-                                            </Field>
-                                        </div>
-
                                         <Field>
                                             <FieldLabel className="text-xs">PARTICIPANTE</FieldLabel>
                                             <InputGroup className="py-5 px-2 bg-secondary">
                                                 <select
-                                                    value={act.id_cargo}
-                                                    onChange={e => actualizarActividadEditar(index, "id_cargo", e.target.value)}
+                                                    value={act.idParticipante}
+                                                    onChange={e => actualizarActividadEditar(index, "idParticipante", e.target.value)}
                                                     className="w-full text-sm bg-transparent outline-none py-2">
-                                                    <option value="">Seleccione un cargo</option>
+                                                    <option value="">Seleccione un participante</option>
                                                     {cargosDisponibles.map(cargo => (
                                                         <option key={cargo._id} value={cargo._id}>
-                                                            {cargo.nombre_cargo}
+                                                            {cargo.nombre}
                                                         </option>
                                                     ))}
                                                 </select>
@@ -674,7 +713,7 @@ export default function GestionSubprocesos() {
                                                             onChange={() => toggleInstrumentoEditar(index, inst._id)}
                                                             className="accent-primary"
                                                         />
-                                                        <span>{inst.identificador} — {inst.nombre}</span>
+                                                        <span>{inst.nombre}</span>
                                                     </label>
                                                 ))}
                                             </div>
@@ -685,15 +724,14 @@ export default function GestionSubprocesos() {
                                             )}
                                         </Field>
                                     </FieldGroup>
-
-                                    <div className="flex items-center justify-between">
-                                        <p></p>
-                                        <Button type="button" variant="default" size="sm" onClick={agregarActividadEditar}>
-                                            <Plus className="w-4 h-4" /> Agregar actividad
-                                        </Button>
-                                    </div>
                                 </div>
                             ))}
+                            <div className="flex items-center justify-between">
+                                <p></p>
+                                <Button type="button" variant="default" size="sm" onClick={agregarActividadEditar}>
+                                    <Plus className="w-4 h-4" /> Agregar actividad
+                                </Button>
+                            </div>
                         </section>
 
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -707,6 +745,56 @@ export default function GestionSubprocesos() {
                     </form>
                 </DrawerContent>
             </Drawer>
+
+            {/** Modal para mostrar el historico de un instrumento */}
+            <Dialog open={isOpenDetalleSubproceso} onOpenChange={setIsOpenDetalleSubproceso}>
+                <DialogContent className="overflow-x-auto sm:max-w-xl md:max-w-3xl lg:max-w-4xl xl:max-w-6xl" showCloseButton={false}>
+                    <DialogHeader>
+                        <DialogTitle>Detalle del subproceso</DialogTitle>
+                        <DialogDescription className="text-xs lg:text-sm">
+                            {detalleSubproceso?.identificador}: {detalleSubproceso?.nombre}
+                        </DialogDescription>
+                        <div className="mt-2 no-scrollbar max-h-[50vh] overflow-y-auto">
+                            <Table className="bg-white dark:bg-gray-900 rounded-lg text-xs lg:text-sm">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="text-center">Nro. actividad</TableHead>
+                                        <TableHead className="text-center">Nombre</TableHead>
+                                        <TableHead className="text-center">Participante</TableHead>
+                                        <TableHead className="text-center">Descripción</TableHead>
+                                        <TableHead className="text-center">Instrumentos</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {detalleSubproceso?.actividades.map((actividad: any, i: number) => (
+                                        <TableRow key={actividad._id} className="text-center">
+                                            <TableCell>{i + 1}</TableCell>
+                                            <TableCell className="max-w-xs whitespace-normal wrap-break-word">{actividad.nombre}</TableCell>
+                                            <TableCell>{actividad.idParticipante.nombre}</TableCell>
+                                            <TableCell className="max-w-sm whitespace-normal wrap-break-word">{actividad.descripcion}</TableCell>
+                                            <TableCell>
+                                                {actividad.instrumentos.map((instrumento: any, y: number) => (
+
+                                                    <TooltipProvider key={y}>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button variant="ghost" className="hover:bg-primary/10" onClick={() => handleDescarga(instrumento)}>
+                                                                    <FileDown className="text-primary" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>{obtenerIdentificadorInstrumento(actividad, y) + " " + instrumento.nombre}</TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                ))}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

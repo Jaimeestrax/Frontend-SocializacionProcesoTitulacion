@@ -279,13 +279,13 @@ export default function GestionInstrumentos() {
                             <TableHead className="text-center">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody className="text-xs lg:text-sm">
                         {instrumentos.map((instrumento, i) => (
                             <TableRow key={instrumento._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
                                 {/* <TableCell>{instrumento.codigo}</TableCell> */}
                                 <TableCell>{instrumento.nombre}</TableCell>
-                                <TableCell>{instrumento.descripcion}</TableCell>
+                                <TableCell className="max-w-sm whitespace-normal wrap-break-words">{instrumento.descripcion}</TableCell>
                                 <TableCell>{instrumento.idEncargadoGenerar.nombres + ' ' + instrumento.idEncargadoGenerar.apellidos}</TableCell>
                                 <TableCell>{
                                     instrumento.vigente ? (
@@ -478,14 +478,14 @@ export default function GestionInstrumentos() {
 
             {/** Modal para mostrar el historico de un instrumento */}
             <Dialog open={isOpenHistoricoInstrumento} onOpenChange={setIsOpenHistoricoInstrumento}>
-                <DialogContent className="overflow-x-auto sm:max-w-xl lg:max-w-4xl" showCloseButton={false}>
+                <DialogContent className="overflow-x-auto sm:max-w-xl md:max-w-3xl lg:max-w-4xl" showCloseButton={false}>
                     <DialogHeader>
                         <DialogTitle>Histórico del instrumento</DialogTitle>
-                        <DialogDescription>
+                        <DialogDescription className="text-xs lg:text-sm">
                             Revise el detalle de las versiones del instrumento:{historicoInstrumento?.[0]?.nombre || ""}
                         </DialogDescription>
                         <div className="mt-2 no-scrollbar max-h-[50vh] overflow-y-auto">
-                            <Table className="bg-white dark:bg-gray-900 rounded-lg">
+                            <Table className="bg-white dark:bg-gray-900 rounded-lg text-xs lg:text-sm">
                                 {/* <TableCaption>Listado de instrumentos</TableCaption> */}
                                 <TableHeader>
                                     <TableRow>
@@ -505,7 +505,7 @@ export default function GestionInstrumentos() {
                                             <TableCell>{i + 1}</TableCell>
                                             {/* <TableCell>{instrumento.codigo}</TableCell> */}
                                             <TableCell>{instrumento.nombre}</TableCell>
-                                            <TableCell>{instrumento.descripcion}</TableCell>
+                                            <TableCell className="max-w-sm whitespace-normal wrap-break-word">{instrumento.descripcion}</TableCell>
                                             <TableCell>{instrumento.idEncargadoGenerar.nombres + ' ' + instrumento.idEncargadoGenerar.apellidos}</TableCell>
                                             <TableCell>{
                                                 instrumento.vigente ? (

@@ -20,22 +20,10 @@ export function useSubprocesos() {
         }
     };
 
-    const obtenerSubprocesos = async (busqueda: any) => {
+    const obtenerSubprocesos = async (busqueda: Busqueda) => {
         try {
             setLoading(true);
             const response = await subprocesosService.obtenerSubprocesos(busqueda);
-            return response;
-        } catch (error) {
-            throw error;
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const obtenerSubprocesoPorId = async (id: string) => {
-        try {
-            setLoading(true);
-            const response = await subprocesosService.obtenerSubprocesoPorId(id);
             return response;
         } catch (error) {
             throw error;
@@ -68,10 +56,10 @@ export function useSubprocesos() {
         }
     };
 
-    const obtenerSubprocesosProximos = async () => {
+    const obtenerSubprocesoPorId = async (id: string) => {
         try {
             setLoading(true);
-            const response = await subprocesosService.obtenerSubprocesosProximos();
+            const response = await subprocesosService.obtenerSubprocesoPorId(id);
             return response;
         } catch (error) {
             throw error;
@@ -80,22 +68,10 @@ export function useSubprocesos() {
         }
     };
 
-    const obtenerSubprocesoActual = async () => {
+    const contarSubprocesosActivos = async () => {
         try {
             setLoading(true);
-            const response = await subprocesosService.obtenerSubprocesoActual();
-            return response;
-        } catch (error) {
-            throw error;
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const obtenerPorcentajeAvance = async () => {
-        try {
-            setLoading(true);
-            const response = await subprocesosService.obtenerPorcentajeAvance();
+            const response = await subprocesosService.contarSubprocesosActivos();
             return response;
         } catch (error) {
             throw error;
@@ -108,11 +84,9 @@ export function useSubprocesos() {
         loading,
         registrarSubproceso,
         obtenerSubprocesos,
-        obtenerSubprocesoPorId,
         actualizarSubproceso,
         actualizarEstadoSubproceso,
-        obtenerSubprocesosProximos,
-        obtenerSubprocesoActual,
-        obtenerPorcentajeAvance
+        obtenerSubprocesoPorId,
+        contarSubprocesosActivos
     };
 }
