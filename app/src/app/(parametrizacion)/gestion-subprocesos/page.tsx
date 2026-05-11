@@ -68,6 +68,7 @@ const subprocesoVacio = (): Subproceso => ({
     identificador: "",
     nombre: "",
     descripcion: "",
+    orden: 0,
     actividades: [actividadVacia()],
     idEncargadoGenerar: "",
     idEncargadoActualizar: ""
@@ -91,7 +92,7 @@ export default function GestionSubprocesos() {
     // Configuracion de paginación
     const [busqueda, setBusqueda] = useState<Busqueda>({
         pagina: 1,
-        limite: 10,
+        limite: 20,
         palabra: ""
     });
 
@@ -191,11 +192,38 @@ export default function GestionSubprocesos() {
     };
 
     // Agregar nueva actividad
-    const agregarActividad = () =>
-        setSubproceso((prev: any) => ({ ...prev, actividades: [...prev.actividades, actividadVacia()] }));
+    const agregarActividad = (index: number, posicion: "arriba" | "abajo") => {
+        setSubproceso(prev => {
+            const actividades = [...prev.actividades];
 
-    const agregarActividadEditar = () =>
-        setSubprocesoActualizar((prev: any) => ({ ...prev, actividades: [...prev.actividades, actividadVacia()] }));
+            // Calcular dónde insertar
+            const nuevoIndex = posicion === "arriba" ? index : index + 1;
+
+            // Insertar sin reemplazar
+            actividades.splice(nuevoIndex, 0, actividadVacia());
+
+            return {
+                ...prev,
+                actividades
+            };
+        });
+    };
+
+    // Agregar nueva actividad editar
+    const agregarActividadEditar = (index: number, posicion: "arriba" | "abajo") => {
+        setSubprocesoActualizar(prev => {
+            const actividades = [...prev.actividades];
+
+            const nuevoIndex = posicion === "arriba" ? index : index + 1;
+
+            actividades.splice(nuevoIndex, 0, actividadVacia());
+
+            return {
+                ...prev,
+                actividades
+            };
+        });
+    };
 
     // Eliminar actividad
     const eliminarActividad = (index: number) =>
@@ -302,6 +330,29 @@ export default function GestionSubprocesos() {
         const sufijo = actividad.instrumentos.length > 1 ? `.${String.fromCharCode(97 + instrumentoIndex)}` : "";
 
         return `IT-${detalleSubproceso.identificador}-${contadorInstrumentos}${sufijo}.`;
+    };
+
+    // Instrumentos ya seleccionados en otras actividades
+    const obtenerInstrumentosDisponibles = (indexActual: number) => {
+        // Obtener ids usados en otras actividades
+        const instrumentosUsados = subproceso.actividades
+            .filter((_, index) => index !== indexActual)
+            .flatMap(act => act.instrumentos); // flat aplana y map extrae -> se evita arrays dentro de array
+
+        // Filtrar los disponibles
+        return instrumentosDisponibles.filter(
+            inst => !instrumentosUsados.includes(inst._id)
+        );
+    };
+
+    const obtenerInstrumentosDisponiblesEditar = (indexActual: number) => {
+        const instrumentosUsados = subprocesoActualizar.actividades
+            .filter((_, index) => index !== indexActual)
+            .flatMap(act => act.instrumentos);
+
+        return instrumentosDisponibles.filter(
+            inst => !instrumentosUsados.includes(inst._id)
+        );
     };
 
     return (
@@ -454,14 +505,34 @@ export default function GestionSubprocesos() {
                         <section className="space-y-4">
                             <p className="font-semibold text-sm text-muted-foreground">SUBPROCESO</p>
                             <FieldGroup>
-                                <Field>
-                                    <FieldLabel htmlFor="identificador" className="text-xs">ID SUBPROCESO</FieldLabel>
-                                    <InputGroup className="py-5 px-2 bg-secondary">
-                                        <InputGroupInput id="identificador" type="text" placeholder="OM" required
-                                            value={subproceso.identificador} onChange={e => setSubproceso(p => ({ ...p, identificador: e.target.value }))}
-                                            className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
-                                    </InputGroup>
-                                </Field>
+                                <div className="flex items-center justify-between gap-2">
+                                    <Field>
+                                        <FieldLabel htmlFor="identificador" className="text-xs">ID SUBPROCESO</FieldLabel>
+                                        <InputGroup className="py-5 px-2 bg-secondary">
+                                            <InputGroupInput id="identificador" type="text" placeholder="OM" required
+                                                value={subproceso.identificador} onChange={e => setSubproceso(p => ({ ...p, identificador: e.target.value }))}
+                                                className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                        </InputGroup>
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="orden" className="text-xs">ORDEN</FieldLabel>
+                                        <InputGroup className="py-5 px-2 bg-secondary">
+                                            <select id="orden" required value={subproceso.orden}
+                                                onChange={e => setSubproceso(p => ({ ...p, orden: Number(e.target.value) }))}
+                                                className="w-full text-sm bg-transparent outline-none py-2">
+                                                <option value={0}>Indique el orden</option>
+                                                {Array.from(
+                                                    { length: totalSubprocesos + 1 },
+                                                    (_, i) => (
+                                                        <option key={i + 1} value={i + 1}>
+                                                            {i + 1}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
+                                        </InputGroup>
+                                    </Field>
+                                </div>
                                 <Field>
                                     <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE</FieldLabel>
                                     <InputGroup className="py-5 px-2 bg-secondary">
@@ -492,11 +563,16 @@ export default function GestionSubprocesos() {
 
                             {subproceso.actividades.map((act, index) => (
                                 <div key={index} className="border border-dashed rounded-lg p-4 space-y-4 relative">
+                                    <div className="flex items-center justify-end mt-4">
+                                        <Button type="button" variant="default" size="sm" onClick={() => agregarActividad(index, "arriba")}>
+                                            <Plus className="w-4 h-4" /> Agregar actividad antes
+                                        </Button>
+                                    </div>
 
                                     {/** Cabecera de actividad */}
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-semibold text-muted-foreground">
-                                            ACTIVIDAD {index + 1}
+                                            ACTIVIDAD Nro. {index + 1}
                                         </span>
                                         {subproceso.actividades.length > 1 && (
                                             <Button type="button" variant="ghost" size="sm"
@@ -551,11 +627,10 @@ export default function GestionSubprocesos() {
                                                 {instrumentosDisponibles.length === 0 && (
                                                     <p className="text-xs text-muted-foreground">No hay instrumentos disponibles</p>
                                                 )}
-                                                {instrumentosDisponibles.map(inst => (
+                                                {obtenerInstrumentosDisponibles(index).map(inst => (
                                                     <label key={inst._id}
                                                         className="flex items-center gap-2 cursor-pointer text-xs hover:text-primary">
-                                                        <input
-                                                            type="checkbox"
+                                                        <input type="checkbox"
                                                             checked={act.instrumentos.includes(inst._id)}
                                                             onChange={() => toggleInstrumento(index, inst._id)}
                                                             className="accent-primary"
@@ -571,13 +646,13 @@ export default function GestionSubprocesos() {
                                             )}
                                         </Field>
                                     </FieldGroup>
+                                    <div className="flex items-center justify-end mt-4">
+                                        <Button type="button" variant="default" size="sm" onClick={() => agregarActividad(index, "abajo")}>
+                                            <Plus className="w-4 h-4" /> Agregar actividad después
+                                        </Button>
+                                    </div>
                                 </div>
                             ))}
-                            <div className="flex items-center justify-end mt-4">
-                                <Button type="button" variant="default" size="sm" onClick={agregarActividad}>
-                                    <Plus className="w-4 h-4" /> Agregar actividad
-                                </Button>
-                            </div>
                         </section>
 
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -607,14 +682,34 @@ export default function GestionSubprocesos() {
                         <section className="space-y-4">
                             <p className="font-semibold text-sm text-muted-foreground">SUBPROCESO</p>
                             <FieldGroup>
-                                <Field>
-                                    <FieldLabel htmlFor="identificador" className="text-xs">ID SUBPROCESO</FieldLabel>
-                                    <InputGroup className="py-5 px-2 bg-secondary">
-                                        <InputGroupInput id="identificador" type="text" placeholder="OM" required
-                                            value={subprocesoActualizar.identificador} onChange={e => setSubprocesoActualizar(p => ({ ...p, identificador: e.target.value }))}
-                                            className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
-                                    </InputGroup>
-                                </Field>
+                                <div className="flex items-center justify-between gap-2">
+                                    <Field>
+                                        <FieldLabel htmlFor="identificador" className="text-xs">ID SUBPROCESO</FieldLabel>
+                                        <InputGroup className="py-5 px-2 bg-secondary">
+                                            <InputGroupInput id="identificador" type="text" placeholder="OM" required
+                                                value={subprocesoActualizar.identificador} onChange={e => setSubprocesoActualizar(p => ({ ...p, identificador: e.target.value }))}
+                                                className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                        </InputGroup>
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="orden" className="text-xs">ORDEN</FieldLabel>
+                                        <InputGroup className="py-5 px-2 bg-secondary">
+                                            <select id="orden" required value={subprocesoActualizar.orden}
+                                                onChange={e => setSubprocesoActualizar(p => ({ ...p, orden: Number(e.target.value) }))}
+                                                className="w-full text-sm bg-transparent outline-none py-2">
+                                                <option value={0}>Indique el orden</option>
+                                                {Array.from(
+                                                    { length: totalSubprocesos },
+                                                    (_, i) => (
+                                                        <option key={i + 1} value={i + 1}>
+                                                            {i + 1}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
+                                        </InputGroup>
+                                    </Field>
+                                </div>
                                 <Field>
                                     <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE</FieldLabel>
                                     <InputGroup className="py-5 px-2 bg-secondary">
@@ -645,11 +740,16 @@ export default function GestionSubprocesos() {
 
                             {subprocesoActualizar.actividades.map((act, index) => (
                                 <div key={index} className="border border-dashed rounded-lg p-4 space-y-4 relative">
+                                    <div className="flex items-center justify-end">
+                                        <Button type="button" variant="default" size="sm" onClick={() => agregarActividadEditar(index, "arriba")}>
+                                            <Plus className="w-4 h-4" /> Agregar actividad antes
+                                        </Button>
+                                    </div>
 
                                     {/** Cabecera de actividad */}
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-semibold text-muted-foreground">
-                                            ACTIVIDAD {index + 1}
+                                            ACTIVIDAD Nro. {index + 1}
                                         </span>
                                         {subprocesoActualizar.actividades.length > 1 && (
                                             <Button type="button" variant="ghost" size="sm"
@@ -684,8 +784,7 @@ export default function GestionSubprocesos() {
                                         <Field>
                                             <FieldLabel className="text-xs">PARTICIPANTE</FieldLabel>
                                             <InputGroup className="py-5 px-2 bg-secondary">
-                                                <select
-                                                    value={act.idParticipante}
+                                                <select value={act.idParticipante}
                                                     onChange={e => actualizarActividadEditar(index, "idParticipante", e.target.value)}
                                                     className="w-full text-sm bg-transparent outline-none py-2">
                                                     <option value="">Seleccione un participante</option>
@@ -704,11 +803,10 @@ export default function GestionSubprocesos() {
                                                 {instrumentosDisponibles.length === 0 && (
                                                     <p className="text-xs text-muted-foreground">No hay instrumentos disponibles</p>
                                                 )}
-                                                {instrumentosDisponibles.map(inst => (
+                                                {obtenerInstrumentosDisponiblesEditar(index).map(inst => (
                                                     <label key={inst._id}
                                                         className="flex items-center gap-2 cursor-pointer text-xs hover:text-primary">
-                                                        <input
-                                                            type="checkbox"
+                                                        <input type="checkbox"
                                                             checked={act.instrumentos.includes(inst._id)}
                                                             onChange={() => toggleInstrumentoEditar(index, inst._id)}
                                                             className="accent-primary"
@@ -724,14 +822,13 @@ export default function GestionSubprocesos() {
                                             )}
                                         </Field>
                                     </FieldGroup>
+                                    <div className="flex items-center justify-end">
+                                        <Button type="button" variant="default" size="sm" onClick={() => agregarActividadEditar(index, "abajo")}>
+                                            <Plus className="w-4 h-4" /> Agregar actividad después
+                                        </Button>
+                                    </div>
                                 </div>
                             ))}
-                            <div className="flex items-center justify-between">
-                                <p></p>
-                                <Button type="button" variant="default" size="sm" onClick={agregarActividadEditar}>
-                                    <Plus className="w-4 h-4" /> Agregar actividad
-                                </Button>
-                            </div>
                         </section>
 
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -746,7 +843,7 @@ export default function GestionSubprocesos() {
                 </DrawerContent>
             </Drawer>
 
-            {/** Modal para mostrar el historico de un instrumento */}
+            {/** Modal para mostrar las actividades de un subproceso*/}
             <Dialog open={isOpenDetalleSubproceso} onOpenChange={setIsOpenDetalleSubproceso}>
                 <DialogContent className="overflow-x-auto sm:max-w-xl md:max-w-3xl lg:max-w-4xl xl:max-w-6xl" showCloseButton={false}>
                     <DialogHeader>
@@ -774,7 +871,6 @@ export default function GestionSubprocesos() {
                                             <TableCell className="max-w-sm whitespace-normal wrap-break-word">{actividad.descripcion}</TableCell>
                                             <TableCell>
                                                 {actividad.instrumentos.map((instrumento: any, y: number) => (
-
                                                     <TooltipProvider key={y}>
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
