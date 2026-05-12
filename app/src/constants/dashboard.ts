@@ -25,7 +25,7 @@ export const cards = [
         description: "Gestione la planificación del proceso para el periodo académico actual.",
         buttonLabel: "Planificar",
         buttonClass: "border-sky-600 bg-sky-600/10 text-sky-600",
-        route: "/planificacion",
+        route: "/gestion-planificaciones",
         roles: [1, 2]
     },
     {

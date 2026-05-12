@@ -222,7 +222,6 @@ export default function GestionInstrumentos() {
     const handleHistorico = async (instrumento: any) => {
         try {
             const res = await obtenerHistoricoInstrumento(instrumento.codigo);
-            console.log("Histórico del instrumento:", res.data);
             setHistoricoInstrumento(res.data);
             setIsOpenHistoricoInstrumento(true);
             toast.success(res.message);

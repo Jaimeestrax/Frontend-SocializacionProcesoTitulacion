@@ -391,7 +391,7 @@ export default function GestionSubprocesos() {
                 <Table className="bg-white dark:bg-gray-900 rounded-lg">
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="text-center">Nro</TableHead>
+                            <TableHead className="text-center">Orden</TableHead>
                             <TableHead className="text-center">Identificador</TableHead>
                             <TableHead className="text-center">Nombre</TableHead>
                             <TableHead className="text-center">Descripción</TableHead>

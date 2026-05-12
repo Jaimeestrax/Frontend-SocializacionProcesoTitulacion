@@ -27,12 +27,17 @@ function obtenerPlanificacionPorId(id: string) {
     return ejecutarQueryGet<Respuesta>("obtener-planificacion-por-id", id);
 }
 
+function obtenerPlanificacionVigente() {
+    return ejecutarQueryGet<Respuesta>("obtener-planificacion-vigente");
+}
+
 const planificacionesService = {
     registrarPlanificacion,
     obtenerPlanificaciones,
     actualizarPlanificacion,
     actualizarEstadoPlanificacion,
-    obtenerPlanificacionPorId
+    obtenerPlanificacionPorId,
+    obtenerPlanificacionVigente
 }
 
 export default planificacionesService;

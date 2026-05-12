@@ -370,7 +370,7 @@ export default function GestionPlanificacion() {
                                         </Tooltip>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button variant="ghost" className="hover:bg-primary/10" onClick={() => handleEditar(plan)}>
+                                                <Button variant="ghost" className="hover:bg-primary/10" disabled={!plan.estado} onClick={() => handleEditar(plan)}>
                                                     <FileEdit className="text-primary" />
                                                 </Button>
                                             </TooltipTrigger>
@@ -388,7 +388,7 @@ export default function GestionPlanificacion() {
                                         ) : (
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button variant="ghost" className="hover:bg-success/60" onClick={() => handleCambioEstado(plan._id, !plan.estado)}>
+                                                    <Button variant="ghost" className="hover:bg-success/60" disabled={!plan.estado} onClick={() => handleCambioEstado(plan._id, !plan.estado)}>
                                                         <ToggleLeft className="text-success-foreground" />
                                                     </Button>
                                                 </TooltipTrigger>

@@ -35,13 +35,13 @@ export const data = {
                 },
                 {
                     title: "Planificación",
-                    url: "/planificacion",
+                    url: "/gestion-planificaciones",
                     icon: Route,
                     roles: [1, 2]
                 },
                 {
                     title: "Noticias",
-                    url: "#",
+                    url: "/gestion-noticias",
                     icon: Newspaper,
                     roles: [1, 2]
                 },

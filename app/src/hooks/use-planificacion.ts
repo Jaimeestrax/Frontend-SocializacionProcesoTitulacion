@@ -68,12 +68,25 @@ export function usePlanificacion() {
         }
     };
 
+    const obtenerPlanificacionVigente = async () => {
+        try {
+            setLoading(true);
+            const response = await planificacionesService.obtenerPlanificacionVigente();
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         loading,
         registrarPlanificacion,
         obtenerPlanificaciones,
         actualizarPlanificacion,
         actualizarEstadoPlanificacion,
-        obtenerPlanificacionPorId
+        obtenerPlanificacionPorId,
+        obtenerPlanificacionVigente
     };
 }
