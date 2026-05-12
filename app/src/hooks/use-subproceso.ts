@@ -80,6 +80,18 @@ export function useSubprocesos() {
         }
     };
 
+    const listarSubprocesosActivos = async () => {
+        try {
+            setLoading(true);
+            const response = await subprocesosService.listarSubprocesosActivos();
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         loading,
         registrarSubproceso,
@@ -87,6 +99,7 @@ export function useSubprocesos() {
         actualizarSubproceso,
         actualizarEstadoSubproceso,
         obtenerSubprocesoPorId,
-        contarSubprocesosActivos
+        contarSubprocesosActivos,
+        listarSubprocesosActivos
     };
 }

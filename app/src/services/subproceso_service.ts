@@ -31,13 +31,18 @@ function contarSubprocesosActivos() {
     return ejecutarQueryGet<Respuesta>("contar-subprocesos-activos");
 }
 
+function listarSubprocesosActivos() {
+    return ejecutarQueryGet<Respuesta>("listar-subprocesos-activos");
+}
+
 const subprocesosService = {
     registrarSubproceso,
     obtenerSubprocesos,
     actualizarSubproceso,
     actualizarEstadoSubproceso,
     obtenerSubprocesoPorId,
-    contarSubprocesosActivos
+    contarSubprocesosActivos,
+    listarSubprocesosActivos
 }
 
 export default subprocesosService;
