@@ -2,7 +2,7 @@
 
 import { toast } from "@/components/ui/toast-custom";
 
-import { CalendarPlus, CalendarRange, FileEdit, CircleX, Info, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronRight } from 'lucide-react';
+import { CalendarPlus, CalendarRange, FileEdit, Download, Info, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronRight } from 'lucide-react';
 
 import {
     Drawer,
@@ -53,6 +53,9 @@ import { usePlanificacion } from "@/hooks/use-planificacion";
 import { useSubprocesos } from "@/hooks/use-subproceso";
 import { Planificacion, SubprocesoSnapshot } from "@/DTOs/planificacion";
 import { Busqueda } from "@/constants/busqueda";
+// Plantilla para generar planificación como PDF
+import { PlanificacionPDF } from "@/components/planificacion-pdf";
+import { pdf } from "@react-pdf/renderer";
 
 const planificacionVacia = (): Planificacion => ({
     periodo: "",
@@ -221,9 +224,9 @@ export default function GestionPlanificacion() {
     };
 
     // Detalle de la planificación
-    const handleDetalle = async (plan: any) => {
+    const handleDetalle = async (id: any) => {
         try {
-            const res = await obtenerPlanificacionPorId(plan._id);
+            const res = await obtenerPlanificacionPorId(id);
             setDetallePlanificacion(res.data);
             setExpandido({});
             setIsOpenDetallePlanificacion(true);
@@ -244,6 +247,27 @@ export default function GestionPlanificacion() {
             toast.success(res.message);
         } catch (error: any) {
             console.error("Error al actualizar estado:", error.message);
+            toast.error(error.message);
+        }
+    };
+
+    const handleDescargar = async (id: any) => {
+        try {
+            const res = await obtenerPlanificacionPorId(id);
+            const detalle = res.data;
+            // Crea el archivo PDF en memoria
+            const blob = await pdf(<PlanificacionPDF detalle={detalle} />).toBlob();
+            // Crea el enlace de descarga
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `planificacion-${detalle.periodo}.pdf`;
+            link.click();
+            // Libera la memoria
+            URL.revokeObjectURL(url);
+            toast.success("Planificación descargada correctamente");
+        } catch (error: any) {
+            console.error("Error al intentar descargar de planificación: ", error.message);
             toast.error(error.message);
         }
     };
@@ -362,7 +386,15 @@ export default function GestionPlanificacion() {
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button variant="ghost" className="hover:bg-primary/10" onClick={() => handleDetalle(plan)}>
+                                                <Button variant="ghost" className="hover:bg-destructive/10" onClick={() => handleDescargar(plan._id)}>
+                                                    <Download className="text-destructive" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Descargar PDF</TooltipContent>
+                                        </Tooltip>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button variant="ghost" className="hover:bg-primary/10" onClick={() => handleDetalle(plan._id)}>
                                                     <Info className="text-primary" />
                                                 </Button>
                                             </TooltipTrigger>

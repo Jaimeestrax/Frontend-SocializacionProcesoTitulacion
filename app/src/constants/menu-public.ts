@@ -1,7 +1,8 @@
 import {
     LayoutDashboard,
     GitBranch,
-    Newspaper
+    Newspaper,
+    FileQuestionMark
 } from "lucide-react"
 
 export const data = {
@@ -12,14 +13,19 @@ export const data = {
             icon: LayoutDashboard,
         },
         {
-            title: "Subprocesos",
+            title: "Calendario",
             url: "/subprocesos",
             icon: GitBranch,
         },
         {
             title: "Noticias",
-            url: "#",
+            url: "/noticias",
             icon: Newspaper,
+        },
+        {
+            title: "Soporte",
+            url: "/soporte",
+            icon: FileQuestionMark,
         },
     ]
 }

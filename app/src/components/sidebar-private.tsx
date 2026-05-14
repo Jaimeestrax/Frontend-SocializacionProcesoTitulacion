@@ -104,7 +104,7 @@ export function SidebarPrivate({ ...props }: React.ComponentProps<typeof Sidebar
     };
 
     const periodo = planificacion?.fechaInicio && planificacion?.fechaFin
-        ? formatearPeriodo(planificacion.fechaInicio, planificacion.fechaFin) : "";
+        ? formatearPeriodo(planificacion.fechaInicio, planificacion.fechaFin) : "SIN INFORMACIÓN";
 
     return (
         <Sidebar collapsible="icon" {...props}>
@@ -114,6 +114,7 @@ export function SidebarPrivate({ ...props }: React.ComponentProps<typeof Sidebar
                     <span>{periodo}</span>
                 </SidebarGroupLabel>
             </SidebarHeader>
+
             <SidebarContent>
                 {menuFiltrado.map((group) => (
                     <SidebarGroup key={group.title}>
@@ -132,8 +133,8 @@ export function SidebarPrivate({ ...props }: React.ComponentProps<typeof Sidebar
                         </SidebarMenu>
                     </SidebarGroup>
                 ))}
-
             </SidebarContent>
+
             <SidebarFooter>
                 <SidebarMenu>
                     {/* Perfil */}

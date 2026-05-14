@@ -28,7 +28,7 @@ export async function proxy(request: NextRequest) {
     // Obtiene la ruta actual
     const { pathname } = request.nextUrl;
 
-    // Verifica los roles que pueden acceder a esa ruta
+    // Obtener roles que pueden acceder a la ruta actual
     const rolesPermitidos = rutasProtegidas[pathname];
     // Verifica que la ruta exista en el diccionario -> determina si es una ruta protegida
     const esRutaProtegida = Boolean(rolesPermitidos);

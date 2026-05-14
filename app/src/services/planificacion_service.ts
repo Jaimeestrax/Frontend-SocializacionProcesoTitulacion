@@ -31,13 +31,18 @@ function obtenerPlanificacionVigente() {
     return ejecutarQueryGet<Respuesta>("obtener-planificacion-vigente");
 }
 
+function obtenerPeriodoActual() {
+    return ejecutarQueryGet<Respuesta>("obtener-periodo-actual");
+}
+
 const planificacionesService = {
     registrarPlanificacion,
     obtenerPlanificaciones,
     actualizarPlanificacion,
     actualizarEstadoPlanificacion,
     obtenerPlanificacionPorId,
-    obtenerPlanificacionVigente
+    obtenerPlanificacionVigente,
+    obtenerPeriodoActual
 }
 
 export default planificacionesService;
