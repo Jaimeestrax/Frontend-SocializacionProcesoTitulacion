@@ -92,6 +92,36 @@ function SidebarProvider({
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
   }, [isMobile, setOpen, setOpenMobile])
 
+  // Automatically compress sidebar on md size, expand on lg size
+  React.useEffect(() => {
+    const mqlMd = window.matchMedia("(min-width: 768px) and (max-width: 1023px)")
+    const mqlLg = window.matchMedia("(min-width: 1024px)")
+
+    const handleMdChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setOpen(false)
+    }
+    
+    const handleLgChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setOpen(true)
+    }
+
+    // Check initial state
+    if (mqlMd.matches) {
+      setOpen(false)
+    } else if (mqlLg.matches) {
+      // Optional: force open on lg initially if you want, but usually cookie handles this.
+      // We will leave the cookie to decide the initial state for lg.
+    }
+
+    mqlMd.addEventListener("change", handleMdChange)
+    mqlLg.addEventListener("change", handleLgChange)
+
+    return () => {
+      mqlMd.removeEventListener("change", handleMdChange)
+      mqlLg.removeEventListener("change", handleLgChange)
+    }
+  }, [setOpen])
+
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

@@ -501,25 +501,25 @@ export default function GestionNoticias() {
                         <DialogDescription className="text-xs lg:text-sm">
                             Revise el detalle de su comunicado.
                         </DialogDescription>
-                        <div className="mt-2 no-scrollbar max-h-[50vh] overflow-y-auto">
-                            <p className="px-1 text-sm">{detalleNoticia?.descripcion}</p>
-                            {detalleNoticia?.imagen && (
-                                <div className="relative flex items-center justify-center p-3 bg-secondary rounded-md mt-2">
-                                    <img src={`${environment.baseUrl}/${detalleNoticia.imagen}`} alt="Imagen" className="object-cover w-45 h-45" />
-                                </div>
-                            )}
-                            <div className="px-4 flex items-center justify-between mt-4">
-                                <div className="flex flex-col gap-2">
-                                    <Badge variant="secondary">{detalleNoticia?.idEncargadoGenerar?.nombres + " " + detalleNoticia?.idEncargadoGenerar?.apellidos}</Badge>
-                                    <Badge variant="outline" className="text-xs">{formatearFecha(detalleNoticia?.fechaRegistro)}</Badge>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <p className="text-xs font-medium">Prioridad:</p>
-                                    <Badge variant="default">{detalleNoticia?.prioridad}</Badge>
-                                </div>
+                    </DialogHeader>
+                    <div className="mt-2 no-scrollbar max-h-[50vh] overflow-y-auto">
+                        <p className="px-1 text-sm">{detalleNoticia?.descripcion}</p>
+                        {detalleNoticia?.imagen && (
+                            <div className="relative flex items-center justify-center p-3 bg-secondary rounded-md mt-2">
+                                <img src={`${environment.baseUrl}/${detalleNoticia.imagen}`} alt="Imagen" className="object-cover w-45 h-45" />
+                            </div>
+                        )}
+                        <div className="px-4 flex items-center justify-between mt-4">
+                            <div className="flex flex-col gap-2">
+                                <Badge variant="secondary">{detalleNoticia?.idEncargadoGenerar?.nombres + " " + detalleNoticia?.idEncargadoGenerar?.apellidos}</Badge>
+                                <Badge variant="outline" className="text-xs">{formatearFecha(detalleNoticia?.fechaRegistro)}</Badge>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <p className="text-xs font-medium">Prioridad:</p>
+                                <Badge variant="default">{detalleNoticia?.prioridad}</Badge>
                             </div>
                         </div>
-                    </DialogHeader>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

@@ -27,12 +27,29 @@ function obtenerPlanificacionPorId(id: string) {
     return ejecutarQueryGet<Respuesta>("obtener-planificacion-por-id", id);
 }
 
+// Funciones públicas
 function obtenerPlanificacionVigente() {
     return ejecutarQueryGet<Respuesta>("obtener-planificacion-vigente");
 }
 
 function obtenerPeriodoActual() {
     return ejecutarQueryGet<Respuesta>("obtener-periodo-actual");
+}
+
+function obtenerPorcentajeAvance() {
+    return ejecutarQueryGet<Respuesta>("obtener-porcentaje-avance");
+}
+
+function obtenerProximasActividades() {
+    return ejecutarQueryGet<Respuesta>("obtener-proximas-actividades");
+}
+
+function obtenerSubprocesoActual() {
+    return ejecutarQueryGet<Respuesta>("obtener-subproceso-actual");
+}
+
+function obtenerActividadPorId(id: string) {
+    return ejecutarQueryGet<Respuesta>("obtener-actividad-por-id", id);
 }
 
 const planificacionesService = {
@@ -42,7 +59,11 @@ const planificacionesService = {
     actualizarEstadoPlanificacion,
     obtenerPlanificacionPorId,
     obtenerPlanificacionVigente,
-    obtenerPeriodoActual
+    obtenerPeriodoActual,
+    obtenerPorcentajeAvance,
+    obtenerProximasActividades,
+    obtenerSubprocesoActual,
+    obtenerActividadPorId
 }
 
 export default planificacionesService;

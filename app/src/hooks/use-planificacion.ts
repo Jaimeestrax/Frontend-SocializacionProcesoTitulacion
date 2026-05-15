@@ -92,6 +92,54 @@ export function usePlanificacion() {
         }
     };
 
+    const obtenerPorcentajeAvance = async () => {
+        try {
+            setLoading(true);
+            const response = await planificacionesService.obtenerPorcentajeAvance();
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const obtenerProximasActividades = async () => {
+        try {
+            setLoading(true);
+            const response = await planificacionesService.obtenerProximasActividades();
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const obtenerSubprocesoActual = async () => {
+        try {
+            setLoading(true);
+            const response = await planificacionesService.obtenerSubprocesoActual();
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const obtenerActividadPorId = async (id: string) => {
+        try {
+            setLoading(true);
+            const response = await planificacionesService.obtenerActividadPorId(id);
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         loading,
         registrarPlanificacion,
@@ -100,6 +148,10 @@ export function usePlanificacion() {
         actualizarEstadoPlanificacion,
         obtenerPlanificacionPorId,
         obtenerPlanificacionVigente,
-        obtenerPeriodoActual
+        obtenerPeriodoActual,
+        obtenerPorcentajeAvance,
+        obtenerProximasActividades,
+        obtenerSubprocesoActual,
+        obtenerActividadPorId
     };
 }

@@ -29,9 +29,9 @@ import { environment } from "@/lib/api/client";
 export function SidebarPrivate({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { logout, loading: authLoading } = useAuth();
     const { obtenerUsuarioAutenticado, loading: usuarioLoading } = useUsuarios();
-    const { obtenerPlanificacionVigente, loading: planificacionLoading } = usePlanificacion();
+    const { obtenerPeriodoActual, loading: planificacionLoading } = usePlanificacion();
     const [user, setUser] = useState<any>(null);
-    const [planificacion, setPlanificacion] = useState<any>(null);
+    const [periodoActual, setPeriodoActual] = useState<any>(null);
     const pathname = usePathname();
 
     const cargarUsuario = async () => {
@@ -47,18 +47,18 @@ export function SidebarPrivate({ ...props }: React.ComponentProps<typeof Sidebar
         }
     };
 
-    const cargarPlanificacionVigente = async () => {
+    const cargarPeriodoActual = async () => {
         try {
-            const res = await obtenerPlanificacionVigente();
-            setPlanificacion(res.data);
+            const res = await obtenerPeriodoActual();
+            setPeriodoActual(res.data);
         } catch (error: any) {
-            console.error("Error al obtener planificacion vigente:", error.message);
+            console.error("Error al obtener periodo actual:", error.message);
         }
     };
 
     useEffect(() => {
         cargarUsuario();
-        cargarPlanificacionVigente();
+        cargarPeriodoActual();
     }, []);
 
     // Filtra el menú según el rol
@@ -71,47 +71,12 @@ export function SidebarPrivate({ ...props }: React.ComponentProps<typeof Sidebar
         // grupos que no esten vacios
         .filter(group => group.items.length > 0);
 
-    const formatearPeriodo = (fechaInicio: string, fechaFin: string) => {
-        const meses = [
-            "ENERO",
-            "FEBRERO",
-            "MARZO",
-            "ABRIL",
-            "MAYO",
-            "JUNIO",
-            "JULIO",
-            "AGOSTO",
-            "SEPTIEMBRE",
-            "OCTUBRE",
-            "NOVIEMBRE",
-            "DICIEMBRE"
-        ];
-
-        // Tomamos solo YYYY-MM-DD
-        const [anioInicio, mesInicio] = fechaInicio.split("T")[0].split("-");
-        const [anioFin, mesFin] = fechaFin.split("T")[0].split("-");
-
-        const nombreMesInicio = meses[Number(mesInicio) - 1];
-        const nombreMesFin = meses[Number(mesFin) - 1];
-
-        // Mismo año
-        if (anioInicio === anioFin) {
-            return `${nombreMesInicio}-${nombreMesFin} ${anioInicio}`;
-        }
-
-        // Diferente año
-        return `${nombreMesInicio} ${anioInicio}-${nombreMesFin} ${anioFin}`;
-    };
-
-    const periodo = planificacion?.fechaInicio && planificacion?.fechaFin
-        ? formatearPeriodo(planificacion.fechaInicio, planificacion.fechaFin) : "SIN INFORMACIÓN";
-
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
                 <SidebarGroupLabel className="flex flex-col items-start gap-1">
                     <span className="font-bold text-primary">PERIODO: </span>
-                    <span>{periodo}</span>
+                    <span>{periodoActual}</span>
                 </SidebarGroupLabel>
             </SidebarHeader>
 
