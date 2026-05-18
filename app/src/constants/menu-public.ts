@@ -1,6 +1,6 @@
 import {
     LayoutDashboard,
-    GitBranch,
+    CalendarClock,
     Newspaper,
     FileQuestionMark
 } from "lucide-react"
@@ -15,7 +15,7 @@ export const data = {
         {
             title: "Calendario",
             url: "/subprocesos",
-            icon: GitBranch,
+            icon: CalendarClock,
         },
         {
             title: "Noticias",
