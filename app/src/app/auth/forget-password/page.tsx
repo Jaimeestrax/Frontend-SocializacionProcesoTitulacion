@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
                             <Button variant="default" type="submit" className="py-5 font-bold text-md xl:text-lg" disabled={loading}>
                                 {loading ? <><Spinner data-icon="inline-start" />Cargando...</> : <>Recuperar contraseña</>}
                             </Button>
-                            <Button variant="link" type="button" className="py-5 font-bold text-md xl:text-lg border-2"
+                            <Button variant="link" type="button" className="py-5 font-bold text-md xl:text-lg border-2 border-primary"
                                 onClick={() => router.push("/auth/sign-in")}>
                                 Iniciar sesión
                             </Button>

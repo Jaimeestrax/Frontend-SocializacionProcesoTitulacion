@@ -4,6 +4,8 @@ import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/sonner";
+import { CursorProvider } from '@/components/cursor-provider'
+import CustomCursor from "@/components/custom-cursor";
 
 const robotoSans = Roboto({
   variable: "--font-sans",
@@ -37,8 +39,11 @@ export default function RootLayout({
     >
       <body className="h-full">
         <Providers>
-          {children}
-          <Toaster expand visibleToasts={1} />
+          <CursorProvider>
+            <CustomCursor />
+            {children}
+            <Toaster expand visibleToasts={1} />
+          </CursorProvider>
         </Providers>
       </body>
     </html>

@@ -86,9 +86,13 @@ export default function FormLogin() {
                         </InputGroupAddon>
                     </InputGroup>
                 </Field>
-                <Field>
+                <Field className='flex flex-col gap-2'>
                     <Button variant="default" type="submit" className="py-5 font-bold text-md xl:text-lg" disabled={loading}>
                         {loading ? <><Spinner data-icon="inline-start" />Cargando...</> : <>Iniciar <LogIn /></>}
+                    </Button>
+                    <Button variant="link" type="button" className="py-5 font-bold text-md xl:text-lg border-2 border-primary"
+                        onClick={() => router.push("/")}>
+                        Regresar al inicio
                     </Button>
                 </Field>
             </FieldGroup>

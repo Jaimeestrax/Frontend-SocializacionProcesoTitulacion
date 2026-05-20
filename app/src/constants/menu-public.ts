@@ -1,31 +1,31 @@
-import {
-    LayoutDashboard,
-    CalendarClock,
-    Newspaper,
-    FileQuestionMark
-} from "lucide-react"
+// import {
+//     LayoutDashboard,
+//     CalendarClock,
+//     Newspaper,
+//     FileQuestionMark
+// } from "lucide-react"
 
 export const data = {
     items: [
         {
             title: "Inicio",
-            url: "/home",
-            icon: LayoutDashboard,
+            url: "/",
+            //icon: LayoutDashboard,
         },
         {
             title: "Calendario",
             url: "/subprocesos",
-            icon: CalendarClock,
+            //icon: CalendarClock,
         },
         {
             title: "Noticias",
             url: "/noticias",
-            icon: Newspaper,
+            //icon: Newspaper,
         },
         {
             title: "Soporte",
             url: "/soporte",
-            icon: FileQuestionMark,
+            //icon: FileQuestionMark,
         },
     ]
 }

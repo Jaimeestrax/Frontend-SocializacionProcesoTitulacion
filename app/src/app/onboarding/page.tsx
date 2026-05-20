@@ -25,7 +25,7 @@ export default function OnboardingPage() {
                             ESTAS MUY CERCA DE LOGRAR TU META
                         </p>
                         <p className="text-lg font-bold md:text-2xl lg:text-4xl mb-2 md:mb-4">
-                            Bienvenido a conocer el proceso de <span className="text-primary">titulación</span>
+                            ¡Bienvenido a conocer <span className="text-primary">SOPTI-SOFT</span>!
                         </p>
                         <p className="text-sm text-muted-foreground mb-8">
                             La manera mas simple y efectiva de conocer el proceso de titulación paso a paso
