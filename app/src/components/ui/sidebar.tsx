@@ -105,13 +105,9 @@ function SidebarProvider({
       if (e.matches) setOpen(true)
     }
 
-    // Check initial state
-    if (mqlMd.matches) {
-      setOpen(false)
-    } else if (mqlLg.matches) {
-      // Optional: force open on lg initially if you want, but usually cookie handles this.
-      // We will leave the cookie to decide the initial state for lg.
-    }
+    // Estado inicial
+    if (mqlMd.matches) setOpen(false)
+    if (mqlLg.matches) setOpen(true)
 
     mqlMd.addEventListener("change", handleMdChange)
     mqlLg.addEventListener("change", handleLgChange)
@@ -120,7 +116,7 @@ function SidebarProvider({
       mqlMd.removeEventListener("change", handleMdChange)
       mqlLg.removeEventListener("change", handleLgChange)
     }
-  }, [setOpen])
+  }, [])
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {

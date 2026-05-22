@@ -54,7 +54,7 @@ import FileUploadField from "@/components/ui/fileUpload";
 import { Badge } from "@/components/ui/badge";
 
 // Iconos
-import { FilePlusCorner, FileEdit, CircleX, FileDown, CircleCheck, History } from 'lucide-react';
+import { FilePlusCorner, FileEdit, CircleX, FileDown, CircleCheck, History, TextSearch } from 'lucide-react';
 
 // Utilidades
 import { useState, useEffect } from "react";
@@ -93,6 +93,20 @@ export default function GestionInstrumentos() {
         palabra: ""
     });
 
+    const [textoBusqueda, setTextoBusqueda] = useState("");
+
+    const [erroresRegistro, setErroresRegistro] = useState<{
+        nombre?: string;
+        descripcion?: string;
+        archivo?: string;
+    }>({});
+
+    const [erroresActualizar, setErroresActualizar] = useState<{
+        nombre?: string;
+        descripcion?: string;
+        archivo?: string;
+    }>({});
+
     // Llamada asincrona reutilizable
     const cargarInstrumentos = async () => {
         try {
@@ -114,6 +128,18 @@ export default function GestionInstrumentos() {
         cargarInstrumentos();
     }, [busqueda]);
 
+    // Ejecuta busqueda
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setBusqueda(prev => ({
+                ...prev,
+                pagina: 1,
+                palabra: textoBusqueda
+            }));
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [textoBusqueda]);
+
     // Registro de instrumentos
     const [isOpenNuevoInstrumento, setIsOpenNuevoInstrumento] = useState(false);
 
@@ -126,6 +152,24 @@ export default function GestionInstrumentos() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: {
+            nombre?: string,
+            descripcion?: string,
+            archivo?: string
+        } = {};
+        if (!instrumento.nombre.trim()) nuevosErrores.nombre = "El nombre del instrumento es requerido";
+        if (!instrumento.descripcion) nuevosErrores.descripcion = "La descripción del instrumento es requerida";
+        if (!instrumento.archivo) nuevosErrores.archivo = "El archivo es requerido";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresRegistro(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresRegistro({});
 
         try {
             const user = JSON.parse(localStorage.getItem("identity") || "{}");
@@ -193,6 +237,24 @@ export default function GestionInstrumentos() {
 
     const handleActualizar = async (e: React.FormEvent) => {
         e.preventDefault();
+        // Validación
+        const nuevosErrores: {
+            nombre?: string,
+            descripcion?: string,
+            archivo?: string
+        } = {};
+        if (!instrumentoEditar.nombre.trim()) nuevosErrores.nombre = "El nombre del instrumento es requerido";
+        if (!instrumentoEditar.descripcion) nuevosErrores.descripcion = "La descripción del instrumento es requerida";
+        if (!instrumentoEditar.archivo) nuevosErrores.archivo = "El archivo es requerido";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresActualizar(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresActualizar({});
+
         try {
             const user = JSON.parse(localStorage.getItem("identity") || "{}");
             const res = await actualizarInstrumento(instrumentoEditarId, { ...instrumentoEditar, idEncargadoActualizar: user._id });
@@ -262,9 +324,21 @@ export default function GestionInstrumentos() {
                     </Card>
                 </div>
                 <p className="p-4 font-bold text-sm md:text-md">Listado de instrumentos</p>
+                {/** Buscador */}
+                <div className="flex items-center justify-center mb-4">
+                    <InputGroup className="p-2 bg-background w-full md:w-1/2 hover:border-primary">
+                        <InputGroupAddon align="inline-start">
+                            <TextSearch />
+                        </InputGroupAddon>
+                        <InputGroupInput type="text" placeholder="Buscar por nombre o descripción..."
+                            value={textoBusqueda} onChange={(e) => setTextoBusqueda(e.target.value)}
+                            className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
+                        />
+                    </InputGroup>
+                </div>
                 <Table className="bg-white dark:bg-gray-900 rounded-lg">
                     {/* <TableCaption>Listado de instrumentos</TableCaption> */}
-                    <TableHeader>
+                    <TableHeader className="text-xs lg:text-sm bg-muted-foreground/25">
                         <TableRow>
                             <TableHead className="text-center">Nro</TableHead>
                             {/* <TableHead className="text-center">Código</TableHead> */}
@@ -288,9 +362,9 @@ export default function GestionInstrumentos() {
                                 <TableCell>{instrumento.idEncargadoGenerar.nombres + ' ' + instrumento.idEncargadoGenerar.apellidos}</TableCell>
                                 <TableCell>{
                                     instrumento.vigente ? (
-                                        <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground text-xs md:text-sm">Vigente</Badge>
+                                        <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground">Vigente</Badge>
                                     ) : (
-                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground text-xs md:text-sm">No vigente</Badge>
+                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground">No vigente</Badge>
                                     )
                                 }</TableCell>
                                 <TableCell>{formatearFecha(instrumento.fechaInicio)}</TableCell>
@@ -354,7 +428,7 @@ export default function GestionInstrumentos() {
                         </PaginationItem>
                         {/** Actual */}
                         <PaginationItem>
-                            <PaginationLink href="#">{busqueda.pagina}</PaginationLink>
+                            <PaginationLink isActive href="#">{busqueda.pagina}</PaginationLink>
                         </PaginationItem>
                         {/** Siguiente */}
                         <PaginationItem>
@@ -370,7 +444,7 @@ export default function GestionInstrumentos() {
             </div>
 
             {/** Drawer de registro de instrumentos */}
-            <Drawer open={isOpenNuevoInstrumento} onOpenChange={setIsOpenNuevoInstrumento} direction={drawerDirection} onClose={() => { setInstrumento({ nombre: '', descripcion: '', idEncargadoGenerar: '', archivo: null as unknown as File }) }}>
+            <Drawer open={isOpenNuevoInstrumento} onOpenChange={setIsOpenNuevoInstrumento} direction={drawerDirection} onClose={() => { setInstrumento({ nombre: '', descripcion: '', idEncargadoGenerar: '', archivo: null as unknown as File }); setErroresRegistro({}); }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Registro Instrumento</DrawerTitle>
@@ -379,38 +453,48 @@ export default function GestionInstrumentos() {
                         </DrawerDescription>
                     </DrawerHeader>
 
-                    <form className="px-12 py-8 md:px-6 md:py-6" onSubmit={handleSubmit}>
+                    <form className="px-12 py-8 md:px-6 md:py-6 overflow-y-auto" onSubmit={handleSubmit}>
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE DEL INSTRUMENTO</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del instrumento" required
-                                        value={instrumento.nombre} onChange={(e) => setInstrumento({ ...instrumento, nombre: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.nombre ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del instrumento"
+                                        value={instrumento.nombre} onChange={(e) => {
+                                            setInstrumento({ ...instrumento, nombre: e.target.value });
+                                            if (erroresRegistro.nombre) setErroresRegistro({ ...erroresRegistro, nombre: undefined });
+                                        }}
+                                        className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
                                 </InputGroup>
+                                {erroresRegistro.nombre && <span className="text-xs text-destructive mt-1">{erroresRegistro.nombre}</span>}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCION</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                     <textarea id="descripcion" placeholder="Ingrese la descripcion del instrumento" rows={4}
-                                        value={instrumento.descripcion} onChange={(e) => setInstrumento({ ...instrumento, descripcion: e.target.value })}
-                                        className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none"
+                                        value={instrumento.descripcion} onChange={(e) => {
+                                            setInstrumento({ ...instrumento, descripcion: e.target.value });
+                                            if (erroresRegistro.descripcion) setErroresRegistro({ ...erroresRegistro, descripcion: undefined });
+                                        }}
+                                        className="w-full text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none"
                                     />
                                 </InputGroup>
+                                {erroresRegistro.descripcion && <span className="text-xs text-destructive mt-1">{erroresRegistro.descripcion}</span>}
                             </Field>
                             <Field>
-                                <FileUploadField id="archivo" label="ARCHIVO" accept=".pdf,.docx" required
-                                    onChange={(file) =>
-                                        setInstrumento({ ...instrumento, archivo: file as File })
-                                    }
+                                <FileUploadField id="archivo" label="ARCHIVO" accept=".pdf,.docx"
+                                    onChange={(file) => {
+                                        setInstrumento({ ...instrumento, archivo: file as File });
+                                        if (erroresRegistro.archivo) setErroresRegistro({ ...erroresRegistro, archivo: undefined });
+                                    }}
                                 />
+                                {erroresRegistro.archivo && <span className="text-xs text-destructive mt-1">{erroresRegistro.archivo}</span>}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Guardando..." : "Guardar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenNuevoInstrumento(false)}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenNuevoInstrumento(false); setErroresRegistro({}); setInstrumento({ nombre: '', descripcion: '', idEncargadoGenerar: '', archivo: null as unknown as File }) }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>
@@ -419,31 +503,39 @@ export default function GestionInstrumentos() {
             </Drawer>
 
             {/** Drawer de edición de instrumentos */}
-            <Drawer open={isOpenEditarInstrumento} onOpenChange={setIsOpenEditarInstrumento} direction={drawerDirection}>
+            <Drawer open={isOpenEditarInstrumento} onOpenChange={setIsOpenEditarInstrumento} direction={drawerDirection} onClose={() => { setIsOpenEditarInstrumento(false); setErroresActualizar({}); }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Editar Instrumento</DrawerTitle>
                         <DrawerDescription className="text-xs md:text-sm">Ingrese la información necesaria para editar el instrumento.</DrawerDescription>
                     </DrawerHeader>
 
-                    <form className="px-12 py-8 md:px-6 md:py-6">
+                    <form className="px-12 py-8 md:px-6 md:py-6 overflow-y-auto" onSubmit={handleActualizar}>
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE DEL INSTRUMENTO</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del instrumento" required
-                                        value={instrumentoEditar.nombre} onChange={(e) => setInstrumentoEditar({ ...instrumentoEditar, nombre: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresActualizar.nombre ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del instrumento"
+                                        value={instrumentoEditar.nombre} onChange={(e) => {
+                                            setInstrumentoEditar({ ...instrumentoEditar, nombre: e.target.value });
+                                            if (erroresActualizar.nombre) setErroresActualizar({ ...erroresActualizar, nombre: undefined });
+                                        }}
+                                        className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
                                 </InputGroup>
+                                {erroresActualizar.nombre && <span className="text-xs text-destructive mt-1">{erroresActualizar.nombre}</span>}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCION</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
+                                <InputGroup className={`py-5 px-2 ${erroresActualizar.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                     <textarea id="descripcion" placeholder="Ingrese la descripcion del instrumento" rows={4}
-                                        value={instrumentoEditar.descripcion} onChange={(e) => setInstrumentoEditar({ ...instrumentoEditar, descripcion: e.target.value })}
-                                        className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none"
+                                        value={instrumentoEditar.descripcion} onChange={(e) => {
+                                            setInstrumentoEditar({ ...instrumentoEditar, descripcion: e.target.value });
+                                            if (erroresActualizar.descripcion) setErroresActualizar({ ...erroresActualizar, descripcion: undefined });
+                                        }}
+                                        className="w-full text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none"
                                     />
                                 </InputGroup>
+                                {erroresActualizar.descripcion && <span className="text-xs text-destructive mt-1">{erroresActualizar.descripcion}</span>}
                             </Field>
                             <Field>
                                 {typeof instrumentoEditar.archivo === 'string' && (
@@ -461,15 +553,23 @@ export default function GestionInstrumentos() {
                                     </div>
                                 )}
                                 {typeof instrumentoEditar.archivo !== 'string' && (
-                                    <FileUploadField id="archivo-editar" label="NUEVO ARCHIVO" accept=".pdf,.docx"
-                                        onChange={(file) => setInstrumentoEditar({ ...instrumentoEditar, archivo: file as File })}
+                                    <FileUploadField id="archivo-editar" label="ARCHIVO" accept=".pdf,.docx"
+                                        onChange={(file) => {
+                                            setInstrumentoEditar({ ...instrumentoEditar, archivo: file as File });
+                                            if (erroresActualizar.archivo) setErroresActualizar({ ...erroresActualizar, archivo: undefined });
+                                        }}
                                     />
                                 )}
+                                {erroresActualizar.archivo && <span className="text-xs text-destructive mt-1">{erroresActualizar.archivo}</span>}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                            <Button onClick={handleActualizar} className="md:py-6">Actualizar</Button>
-                            <Button onClick={() => setIsOpenEditarInstrumento(false)} variant="outline" className="md:py-6">Cancelar</Button>
+                            <Button type="submit" className="md:py-6" disabled={loading}>
+                                {loading ? "Actualizando..." : "Actualizar"}
+                            </Button>
+                            <Button variant="outline" className="md:py-6" onClick={() => { setIsOpenEditarInstrumento(false); setErroresActualizar({}); }}>
+                                Cancelar
+                            </Button>
                         </DrawerFooter>
                     </form>
                 </DrawerContent>

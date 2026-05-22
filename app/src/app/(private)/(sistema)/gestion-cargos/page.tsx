@@ -38,11 +38,11 @@ import {
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { toast } from "@/components/ui/toast-custom";
 import { Badge } from "@/components/ui/badge";
 
-import { BookUser, ContactRound, FileEdit, CircleX, ToggleLeft, ToggleRight } from 'lucide-react';
+import { BookUser, ContactRound, FileEdit, CircleX, ToggleLeft, ToggleRight, TextSearch } from 'lucide-react';
 
 import { useState, useEffect } from "react";
 import { Busqueda } from "@/constants/busqueda";
@@ -69,6 +69,12 @@ export default function GestionCargos() {
         palabra: ""
     });
 
+    // Estado para el texto del input
+    const [textoBusqueda, setTextoBusqueda] = useState("");
+
+    const [erroresRegistro, setErroresRegistro] = useState<{ nombre?: string }>({});
+    const [erroresActualizar, setErroresActualizar] = useState<{ nombre?: string }>({});
+
     const cargarCargos = async () => {
         try {
             const res = await obtenerCargos(busqueda);
@@ -88,6 +94,18 @@ export default function GestionCargos() {
         cargarCargos();
     }, [busqueda]);
 
+    // Debounce -> Actualiza busqueda.palabra después de 400ms de que el usuario deje de escribir
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setBusqueda(prev => ({
+                ...prev,
+                pagina: 1,
+                palabra: textoBusqueda
+            }));
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [textoBusqueda]);
+
     // Registro de cargos
     const [isOpenNuevoCargo, setIsOpenNuevoCargo] = useState(false);
 
@@ -97,6 +115,18 @@ export default function GestionCargos() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: { nombre?: string } = {};
+        if (!cargo.nombre.trim()) nuevosErrores.nombre = "El nombre del cargo es requerido";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresRegistro(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresRegistro({});
 
         try {
             const res = await registrarCargo(cargo);
@@ -151,6 +181,19 @@ export default function GestionCargos() {
 
     const handleActualizar = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: { nombre?: string } = {};
+        if (!cargoEditar.nombre.trim()) nuevosErrores.nombre = "El nombre del cargo es requerido";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresActualizar(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresActualizar({});
+
         try {
             const res = await actualizarCargo(cargoEditarId, cargoEditar);
             setIsOpenEditarCargo(false);
@@ -193,9 +236,21 @@ export default function GestionCargos() {
                     </Card>
                 </div>
                 <p className="p-4 font-bold text-sm md:text-md">Listado de cargos</p>
+                {/** Buscador */}
+                <div className="flex items-center justify-center mb-4">
+                    <InputGroup className="p-2 bg-background w-full md:w-1/2 hover:border-primary">
+                        <InputGroupAddon align="inline-start">
+                            <TextSearch />
+                        </InputGroupAddon>
+                        <InputGroupInput type="text" placeholder="Buscar por nombre..."
+                            value={textoBusqueda} onChange={(e) => setTextoBusqueda(e.target.value)}
+                            className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
+                        />
+                    </InputGroup>
+                </div>
                 <Table className="bg-white dark:bg-gray-900 rounded-lg">
                     {/* <TableCaption>Listado de cargos</TableCaption> */}
-                    <TableHeader>
+                    <TableHeader className="text-xs lg:text-sm bg-muted-foreground/25">
                         <TableRow>
                             <TableHead className="text-center">Nro</TableHead>
                             <TableHead className="text-center">Nombre</TableHead>
@@ -203,16 +258,16 @@ export default function GestionCargos() {
                             <TableHead className="text-center">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody className="text-xs lg:text-sm">
                         {cargos.map((cargo, i) => (
                             <TableRow key={cargo._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
                                 <TableCell>{cargo.nombre}</TableCell>
                                 <TableCell>{
                                     cargo.estado ? (
-                                        <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground text-xs md:text-sm">Activo</Badge>
+                                        <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground">Activo</Badge>
                                     ) : (
-                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground text-xs md:text-sm">Inactivo</Badge>
+                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground">Inactivo</Badge>
                                     )
                                 }</TableCell>
                                 <TableCell>
@@ -275,7 +330,7 @@ export default function GestionCargos() {
                         </PaginationItem>
                         {/** Actual */}
                         <PaginationItem>
-                            <PaginationLink href="#">{busqueda.pagina}</PaginationLink>
+                            <PaginationLink isActive href="#">{busqueda.pagina}</PaginationLink>
                         </PaginationItem>
                         {/** Siguiente */}
                         <PaginationItem>
@@ -290,8 +345,8 @@ export default function GestionCargos() {
                 </Pagination>
             </div>
 
-            {/** Drawer de registro de roles */}
-            <Drawer open={isOpenNuevoCargo} onOpenChange={setIsOpenNuevoCargo} direction={drawerDirection} onClose={() => { setCargo({ nombre: '' }) }}>
+            {/** Drawer de registro de cargos */}
+            <Drawer open={isOpenNuevoCargo} onOpenChange={setIsOpenNuevoCargo} direction={drawerDirection} onClose={() => { setCargo({ nombre: '' }); setErroresRegistro({}); }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Registro Cargo</DrawerTitle>
@@ -304,18 +359,24 @@ export default function GestionCargos() {
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE DEL CARGO</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del cargo" required
-                                        value={cargo.nombre} onChange={(e) => setCargo({ ...cargo, nombre: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.nombre ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del cargo"
+                                        value={cargo.nombre} onChange={(e) => {
+                                            setCargo({ ...cargo, nombre: e.target.value });
+                                            if (erroresRegistro.nombre) setErroresRegistro({ ...erroresRegistro, nombre: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresRegistro.nombre && (
+                                    <p className="text-destructive text-xs mt-1">{erroresRegistro.nombre}</p>
+                                )}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Guardando..." : "Guardar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenNuevoCargo(false)}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenNuevoCargo(false); setCargo({ nombre: '' }); setErroresRegistro({}); }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>
@@ -323,28 +384,38 @@ export default function GestionCargos() {
                 </DrawerContent>
             </Drawer>
 
-            {/** Drawer de edición de roles */}
-            <Drawer open={isOpenEditarCargo} onOpenChange={setIsOpenEditarCargo} direction={drawerDirection}>
+            {/** Drawer de edición de cargos*/}
+            <Drawer open={isOpenEditarCargo} onOpenChange={setIsOpenEditarCargo} direction={drawerDirection} onClose={() => { setIsOpenEditarCargo(false); setErroresActualizar({}); }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Editar Cargo</DrawerTitle>
                         <DrawerDescription className="text-xs md:text-sm">Ingrese la información necesaria para editar el cargo.</DrawerDescription>
                     </DrawerHeader>
 
-                    <form className="px-12 py-8 md:px-6 md:py-6">
+                    <form className="px-12 py-8 md:px-6 md:py-6" onSubmit={handleActualizar}>
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE DEL CARGO</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del cargo" required
-                                        value={cargoEditar.nombre} onChange={(e) => setCargoEditar({ ...cargoEditar, nombre: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresActualizar.nombre ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del cargo"
+                                        value={cargoEditar.nombre} onChange={(e) => {
+                                            setCargoEditar({ ...cargoEditar, nombre: e.target.value });
+                                            if (erroresActualizar.nombre) setErroresActualizar({ ...erroresActualizar, nombre: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresActualizar.nombre && (
+                                    <p className="text-destructive text-xs mt-1">{erroresActualizar.nombre}</p>
+                                )}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                            <Button onClick={handleActualizar} className="md:py-6">Actualizar</Button>
-                            <Button onClick={() => setIsOpenEditarCargo(false)} variant="outline" className="md:py-6">Cancelar</Button>
+                            <Button type="submit" className="md:py-6" disabled={loading}>
+                                {loading ? "Actualizando..." : "Actualizar"}
+                            </Button>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenEditarCargo(false); setErroresActualizar({}); }}>
+                                Cancelar
+                            </Button>
                         </DrawerFooter>
                     </form>
                 </DrawerContent>

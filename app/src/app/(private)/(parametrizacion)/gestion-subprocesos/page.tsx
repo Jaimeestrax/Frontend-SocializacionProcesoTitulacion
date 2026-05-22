@@ -2,7 +2,7 @@
 
 import { toast } from "@/components/ui/toast-custom";
 
-import { GitBranchPlus, GitFork, FileEdit, CircleX, Plus, Trash2, ToggleLeft, ToggleRight, Info, FileDown } from 'lucide-react';
+import { GitBranchPlus, GitFork, FileEdit, CircleX, Plus, Trash2, ToggleLeft, ToggleRight, Info, FileDown, TextSearch } from 'lucide-react';
 
 import {
     Drawer,
@@ -25,7 +25,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
 import {
     Table,
@@ -44,6 +44,15 @@ import {
     PaginationNext,
     PaginationPrevious
 } from "@/components/ui/pagination";
+
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -74,6 +83,20 @@ const subprocesoVacio = (): Subproceso => ({
     idEncargadoActualizar: ""
 });
 
+type ErroresActividad = {
+    nombre?: string;
+    descripcion?: string;
+    idParticipante?: string;
+};
+
+type ErroresSubproceso = {
+    identificador?: string;
+    orden?: string;
+    nombre?: string;
+    descripcion?: string;
+    actividades?: ErroresActividad[];
+};
+
 export default function GestionSubprocesos() {
     // Hooks de subproceso
     const { registrarSubproceso, obtenerSubprocesos, actualizarEstadoSubproceso, actualizarSubproceso, obtenerSubprocesoPorId, contarSubprocesosActivos, loading } = useSubprocesos();
@@ -92,9 +115,14 @@ export default function GestionSubprocesos() {
     // Configuracion de paginación
     const [busqueda, setBusqueda] = useState<Busqueda>({
         pagina: 1,
-        limite: 20,
+        limite: 10,
         palabra: ""
     });
+
+    const [textoBusqueda, setTextoBusqueda] = useState("");
+
+    const [erroresRegistro, setErroresRegistro] = useState<ErroresSubproceso>({});
+    const [erroresActualizar, setErroresActualizar] = useState<ErroresSubproceso>({});
 
     // Listados de instrumentos y cargos
     const [instrumentosDisponibles, setInstrumentosDisponibles] = useState<any[]>([]);
@@ -144,6 +172,18 @@ export default function GestionSubprocesos() {
     // Carga inicial de la página
     useEffect(() => { cargarSubprocesos(); }, [busqueda]);
     useEffect(() => { cargarSelectores(); }, []);
+
+    // Ejecuta busqueda
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setBusqueda(prev => ({
+                ...prev,
+                pagina: 1,
+                palabra: textoBusqueda
+            }));
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [textoBusqueda]);
 
     // Helper de actividades -> actualizar actividad
     const actualizarActividad = (index: number, campo: keyof Actividad, valor: any) => {
@@ -240,6 +280,16 @@ export default function GestionSubprocesos() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const nuevosErrores = validarSubproceso(subproceso);
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresRegistro(nuevosErrores);
+            toast.error("Complete los campos obligatorios del formulario.");
+            return;
+        }
+
+        setErroresRegistro({});
+
         try {
             const user = JSON.parse(localStorage.getItem("identity") || "{}");
             const res = await registrarSubproceso({ ...subproceso, idEncargadoGenerar: user._id });
@@ -266,6 +316,17 @@ export default function GestionSubprocesos() {
 
     const handleActualizar = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const nuevosErrores = validarSubproceso(subprocesoActualizar);
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresActualizar(nuevosErrores);
+            toast.error("Complete los campos obligatorios del formulario.");
+            return;
+        }
+
+        setErroresActualizar({});
+
         try {
             const user = JSON.parse(localStorage.getItem("identity") || "{}");
             const res = await actualizarSubproceso(subprocesoActualizarId, { ...subprocesoActualizar, idEncargadoActualizar: user._id });
@@ -355,6 +416,30 @@ export default function GestionSubprocesos() {
         );
     };
 
+    const validarSubproceso = (sp: Subproceso): ErroresSubproceso => {
+        const nuevosErrores: ErroresSubproceso = {};
+
+        if (!sp.identificador.trim()) nuevosErrores.identificador = "El identificador del subproceso es requerido";
+        if (!sp.orden || sp.orden === 0) nuevosErrores.orden = "El orden a ocupar es requerido";
+        if (!sp.nombre.trim()) nuevosErrores.nombre = "El nombre del subproceso es requerido";
+        if (!sp.descripcion) nuevosErrores.descripcion = "La descripción del subproceso es requerida";
+
+        const erroresActividades = sp.actividades.map(act => {
+            const err: ErroresActividad = {};
+            if (!act.nombre.trim()) err.nombre = "El nombre de la actividad es requerido";
+            if (!act.idParticipante) err.idParticipante = "El participante de la actividad es requerido";
+            if (!act.descripcion) err.descripcion = "La descripción de la actividad es requerida";
+            return err;
+        });
+
+        // Solo incluir si hay al menos un error en alguna actividad
+        if (erroresActividades.some(e => Object.keys(e).length > 0)) {
+            nuevosErrores.actividades = erroresActividades;
+        }
+
+        return nuevosErrores;
+    };
+
     return (
         <div className="container mx-auto">
 
@@ -388,8 +473,19 @@ export default function GestionSubprocesos() {
                 </div>
 
                 <p className="p-4 font-bold text-sm md:text-md">Listado de subprocesos</p>
+                <div className="flex items-center justify-center mb-4">
+                    <InputGroup className="p-2 bg-background w-full md:w-1/2 hover:border-primary">
+                        <InputGroupAddon align="inline-start">
+                            <TextSearch />
+                        </InputGroupAddon>
+                        <InputGroupInput type="text" placeholder="Buscar por identificador o nombre..."
+                            value={textoBusqueda} onChange={(e) => setTextoBusqueda(e.target.value)}
+                            className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
+                        />
+                    </InputGroup>
+                </div>
                 <Table className="bg-white dark:bg-gray-900 rounded-lg">
-                    <TableHeader>
+                    <TableHeader className="text-xs lg:text-sm bg-muted-foreground/25">
                         <TableRow>
                             <TableHead className="text-center">Orden</TableHead>
                             <TableHead className="text-center">Identificador</TableHead>
@@ -408,8 +504,8 @@ export default function GestionSubprocesos() {
                                 <TableCell className="max-w-xl whitespace-normal wrap-break-word">{sp.descripcion}</TableCell>
                                 <TableCell>
                                     {sp.estado == 1
-                                        ? <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground text-xs md:text-sm">Activo</Badge>
-                                        : <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground text-xs md:text-sm">Inactivo</Badge>
+                                        ? <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground">Activo</Badge>
+                                        : <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground">Inactivo</Badge>
                                     }
                                 </TableCell>
                                 <TableCell>
@@ -476,7 +572,7 @@ export default function GestionSubprocesos() {
                                 }} />
                         </PaginationItem>
                         <PaginationItem>
-                            <PaginationLink href="#">{busqueda.pagina}</PaginationLink>
+                            <PaginationLink isActive href="#">{busqueda.pagina}</PaginationLink>
                         </PaginationItem>
                         <PaginationItem>
                             <PaginationNext href="#" className={!siguiente ? "pointer-events-none opacity-50" : ""}
@@ -491,7 +587,7 @@ export default function GestionSubprocesos() {
             </div>
 
             {/** Drawer de registro */}
-            <Drawer open={isOpenNuevoSubproceso} onOpenChange={setIsOpenNuevoSubproceso} direction={drawerDirection} onClose={() => setSubproceso(subprocesoVacio())}>
+            <Drawer open={isOpenNuevoSubproceso} onOpenChange={setIsOpenNuevoSubproceso} direction={drawerDirection} onClose={() => { setSubproceso(subprocesoVacio()); setErroresRegistro({}); }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Registro de subproceso</DrawerTitle>
@@ -508,46 +604,73 @@ export default function GestionSubprocesos() {
                                 <div className="flex items-center justify-between gap-2">
                                     <Field>
                                         <FieldLabel htmlFor="identificador" className="text-xs">ID SUBPROCESO</FieldLabel>
-                                        <InputGroup className="py-5 px-2 bg-secondary">
-                                            <InputGroupInput id="identificador" type="text" placeholder="OM" required
-                                                value={subproceso.identificador} onChange={e => setSubproceso(p => ({ ...p, identificador: e.target.value }))}
-                                                className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                        <InputGroup className={`py-5 px-2 ${erroresRegistro.identificador ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                            <InputGroupInput id="identificador" type="text" placeholder="OM, AT, ..."
+                                                value={subproceso.identificador} onChange={e => {
+                                                    setSubproceso(p => ({ ...p, identificador: e.target.value }));
+                                                    if (erroresRegistro.identificador) setErroresRegistro(p => ({ ...p, identificador: undefined }));
+                                                }}
+                                                className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.identificador ? 'placeholder:text-destructive/50' : ''}`} />
                                         </InputGroup>
+                                        {erroresRegistro.identificador && (
+                                            <p className="text-destructive text-xs mt-1">{erroresRegistro.identificador}</p>
+                                        )}
                                     </Field>
                                     <Field>
                                         <FieldLabel htmlFor="orden" className="text-xs">ORDEN</FieldLabel>
-                                        <InputGroup className="py-5 px-2 bg-secondary">
-                                            <select id="orden" required value={subproceso.orden}
-                                                onChange={e => setSubproceso(p => ({ ...p, orden: Number(e.target.value) }))}
-                                                className="w-full text-sm bg-transparent outline-none py-2">
-                                                <option value={0}>Indique el orden</option>
-                                                {Array.from(
-                                                    { length: totalSubprocesos + 1 },
-                                                    (_, i) => (
-                                                        <option key={i + 1} value={i + 1}>
-                                                            {i + 1}
-                                                        </option>
-                                                    )
-                                                )}
-                                            </select>
-                                        </InputGroup>
+                                        <Select value={String(subproceso.orden)}
+                                            onValueChange={(e) => {
+                                                setSubproceso({ ...subproceso, orden: Number(e) })
+                                                if (erroresRegistro.orden) setErroresRegistro({ ...erroresRegistro, orden: undefined });
+                                            }}>
+                                            <SelectTrigger className={`py-5 px-2 w-full ${erroresRegistro.orden ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                                <SelectValue placeholder="Indique el orden" />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper">
+                                                <SelectGroup>
+                                                    {Array.from(
+                                                        { length: totalSubprocesos + 1 },
+                                                        (_, i) => (
+                                                            <SelectItem key={i + 1} value={String(i + 1)} className="text-xs md:text-sm">
+                                                                {i + 1}
+                                                            </SelectItem>
+                                                        )
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                        {erroresRegistro.orden && (
+                                            <p className="text-xs text-destructive mt-1">{erroresRegistro.orden}</p>
+                                        )}
                                     </Field>
                                 </div>
                                 <Field>
                                     <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE</FieldLabel>
-                                    <InputGroup className="py-5 px-2 bg-secondary">
-                                        <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del subproceso" required
-                                            value={subproceso.nombre} onChange={e => setSubproceso(p => ({ ...p, nombre: e.target.value }))}
-                                            className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                    <InputGroup className={`py-5 px-2 ${erroresRegistro.nombre ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                        <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del subproceso"
+                                            value={subproceso.nombre} onChange={e => {
+                                                setSubproceso(p => ({ ...p, nombre: e.target.value }));
+                                                if (erroresRegistro.nombre) setErroresRegistro({ ...erroresRegistro, nombre: undefined });
+                                            }}
+                                            className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                     </InputGroup>
+                                    {erroresRegistro.nombre && (
+                                        <p className="text-xs text-destructive mt-1">{erroresRegistro.nombre}</p>
+                                    )}
                                 </Field>
                                 <Field>
                                     <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCIÓN</FieldLabel>
-                                    <InputGroup className="py-5 px-2 bg-secondary">
+                                    <InputGroup className={`py-5 px-2 ${erroresRegistro.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                         <textarea id="descripcion" rows={3} placeholder="Ingrese la descripción del subproceso"
-                                            value={subproceso.descripcion} onChange={e => setSubproceso(p => ({ ...p, descripcion: e.target.value }))}
-                                            className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-sm" />
+                                            value={subproceso.descripcion} onChange={e => {
+                                                setSubproceso(p => ({ ...p, descripcion: e.target.value }));
+                                                if (erroresRegistro.descripcion) setErroresRegistro({ ...erroresRegistro, descripcion: undefined });
+                                            }}
+                                            className={`w-full text-xs md:text-sm placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-sm ${erroresRegistro.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                     </InputGroup>
+                                    {erroresRegistro.descripcion && (
+                                        <p className="text-xs text-destructive mt-1">{erroresRegistro.descripcion}</p>
+                                    )}
                                 </Field>
                             </FieldGroup>
                         </section>
@@ -564,9 +687,11 @@ export default function GestionSubprocesos() {
                             {subproceso.actividades.map((act, index) => (
                                 <div key={index} className="border border-dashed rounded-lg p-4 space-y-4 relative">
                                     <div className="flex items-center justify-end mt-4">
-                                        <Button type="button" variant="default" size="sm" onClick={() => agregarActividad(index, "arriba")}>
-                                            <Plus className="w-4 h-4" /> Agregar actividad antes
-                                        </Button>
+                                        {subproceso.actividades.length > 1 && (
+                                            <Button type="button" variant="default" size="sm" onClick={() => agregarActividad(index, "arriba")}>
+                                                <Plus className="w-4 h-4" /> Agregar actividad antes
+                                            </Button>
+                                        )}
                                     </div>
 
                                     {/** Cabecera de actividad */}
@@ -586,39 +711,75 @@ export default function GestionSubprocesos() {
                                     <FieldGroup>
                                         <Field>
                                             <FieldLabel className="text-xs">NOMBRE ACTIVIDAD</FieldLabel>
-                                            <InputGroup className="py-5 px-2 bg-secondary">
-                                                <InputGroupInput type="text" placeholder="Nombre de la actividad" required
+                                            <InputGroup className={`py-5 px-2 ${erroresRegistro.actividades?.[index]?.nombre ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                                <InputGroupInput type="text" placeholder="Nombre de la actividad"
                                                     value={act.nombre}
-                                                    onChange={e => actualizarActividad(index, "nombre", e.target.value)}
-                                                    className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                                    onChange={e => {
+                                                        actualizarActividad(index, "nombre", e.target.value);
+                                                        if (erroresRegistro.actividades?.[index]?.nombre) {
+                                                            setErroresRegistro(prev => {
+                                                                const acts = [...(prev.actividades || [])];
+                                                                acts[index] = { ...acts[index], nombre: undefined };
+                                                                return { ...prev, actividades: acts };
+                                                            });
+                                                        }
+                                                    }}
+                                                    className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.actividades?.[index]?.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                             </InputGroup>
+                                            {erroresRegistro.actividades?.[index]?.nombre && (
+                                                <p className="text-xs text-destructive mt-1">{erroresRegistro.actividades[index].nombre}</p>
+                                            )}
                                         </Field>
 
                                         <Field>
                                             <FieldLabel className="text-xs">DESCRIPCIÓN ACTIVIDAD</FieldLabel>
-                                            <InputGroup className="py-5 px-2 bg-secondary">
+                                            <InputGroup className={`py-5 px-2 ${erroresRegistro.actividades?.[index]?.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                                 <textarea rows={2} placeholder="Descripción de la actividad"
                                                     value={act.descripcion}
-                                                    onChange={e => actualizarActividad(index, "descripcion", e.target.value)}
-                                                    className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none bg-transparent" />
+                                                    onChange={e => {
+                                                        actualizarActividad(index, "descripcion", e.target.value);
+                                                        if (erroresRegistro.actividades?.[index]?.descripcion) {
+                                                            setErroresRegistro(prev => {
+                                                                const acts = [...(prev.actividades || [])];
+                                                                acts[index] = { ...acts[index], descripcion: undefined };
+                                                                return { ...prev, actividades: acts };
+                                                            });
+                                                        }
+                                                    }}
+                                                    className={`w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none bg-transparent ${erroresRegistro.actividades?.[index]?.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                             </InputGroup>
+                                            {erroresRegistro.actividades?.[index]?.descripcion && (
+                                                <p className="text-xs text-destructive mt-1">{erroresRegistro.actividades[index].descripcion}</p>
+                                            )}
                                         </Field>
 
                                         <Field>
                                             <FieldLabel className="text-xs">PARTICIPANTE</FieldLabel>
-                                            <InputGroup className="py-5 px-2 bg-secondary">
-                                                <select
-                                                    value={act.idParticipante}
-                                                    onChange={e => actualizarActividad(index, "idParticipante", e.target.value)}
-                                                    className="w-full text-sm bg-transparent outline-none py-2">
-                                                    <option value="">Seleccione un participante</option>
-                                                    {cargosDisponibles.map(cargo => (
-                                                        <option key={cargo._id} value={cargo._id}>
-                                                            {cargo.nombre}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </InputGroup>
+                                            <Select value={act.idParticipante}
+                                                onValueChange={(e) => {
+                                                    actualizarActividad(index, "idParticipante", e);
+                                                    if (erroresRegistro.actividades?.[index]?.idParticipante) setErroresRegistro(prev => {
+                                                        const acts = [...(prev.actividades || [])];
+                                                        acts[index] = { ...acts[index], idParticipante: undefined };
+                                                        return { ...prev, actividades: acts };
+                                                    });
+                                                }}>
+                                                <SelectTrigger className={`w-full ${erroresRegistro.actividades?.[index]?.idParticipante ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                                    <SelectValue placeholder="Seleccione un participante" />
+                                                </SelectTrigger>
+                                                <SelectContent position="popper">
+                                                    <SelectGroup>
+                                                        {cargosDisponibles.map(cargo => (
+                                                            <SelectItem key={cargo._id} value={cargo._id} className="text-xs md:text-sm">
+                                                                {cargo.nombre}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            {erroresRegistro.actividades?.[index]?.idParticipante && (
+                                                <p className="text-xs text-destructive mt-1">{erroresRegistro.actividades[index].idParticipante}</p>
+                                            )}
                                         </Field>
 
                                         <Field>
@@ -659,7 +820,7 @@ export default function GestionSubprocesos() {
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Guardando..." : "Guardar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenNuevoSubproceso(false)}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenNuevoSubproceso(false); setErroresRegistro({}) }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>
@@ -668,7 +829,7 @@ export default function GestionSubprocesos() {
             </Drawer>
 
             {/** Drawer de actualización */}
-            <Drawer open={isOpenActualizarSubproceso} onOpenChange={setIsOpenActualizarSubproceso} direction={drawerDirection} onClose={() => setSubprocesoActualizar(subprocesoVacio())}>
+            <Drawer open={isOpenActualizarSubproceso} onOpenChange={setIsOpenActualizarSubproceso} direction={drawerDirection} onClose={() => { setSubprocesoActualizar(subprocesoVacio()); setErroresActualizar({}) }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Actualizar subproceso</DrawerTitle>
@@ -685,46 +846,73 @@ export default function GestionSubprocesos() {
                                 <div className="flex items-center justify-between gap-2">
                                     <Field>
                                         <FieldLabel htmlFor="identificador" className="text-xs">ID SUBPROCESO</FieldLabel>
-                                        <InputGroup className="py-5 px-2 bg-secondary">
-                                            <InputGroupInput id="identificador" type="text" placeholder="OM" required
-                                                value={subprocesoActualizar.identificador} onChange={e => setSubprocesoActualizar(p => ({ ...p, identificador: e.target.value }))}
-                                                className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                        <InputGroup className={`py-5 px-2 ${erroresActualizar.identificador ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                            <InputGroupInput id="identificador" type="text" placeholder="OM, AT, ..."
+                                                value={subprocesoActualizar.identificador} onChange={e => {
+                                                    setSubprocesoActualizar(p => ({ ...p, identificador: e.target.value }));
+                                                    if (erroresActualizar.identificador) setErroresActualizar(p => ({ ...p, identificador: "" }))
+                                                }}
+                                                className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.identificador ? 'placeholder:text-destructive/50' : ''}`} />
                                         </InputGroup>
+                                        {erroresActualizar.identificador && (
+                                            <p className="text-xs text-destructive mt-1">{erroresActualizar.identificador}</p>
+                                        )}
                                     </Field>
                                     <Field>
                                         <FieldLabel htmlFor="orden" className="text-xs">ORDEN</FieldLabel>
-                                        <InputGroup className="py-5 px-2 bg-secondary">
-                                            <select id="orden" required value={subprocesoActualizar.orden}
-                                                onChange={e => setSubprocesoActualizar(p => ({ ...p, orden: Number(e.target.value) }))}
-                                                className="w-full text-sm bg-transparent outline-none py-2">
-                                                <option value={0}>Indique el orden</option>
-                                                {Array.from(
-                                                    { length: totalSubprocesos },
-                                                    (_, i) => (
-                                                        <option key={i + 1} value={i + 1}>
-                                                            {i + 1}
-                                                        </option>
-                                                    )
-                                                )}
-                                            </select>
-                                        </InputGroup>
+                                        <Select value={String(subprocesoActualizar.orden)}
+                                            onValueChange={(e) => {
+                                                setSubprocesoActualizar(p => ({ ...p, orden: Number(e) }))
+                                                if (erroresActualizar.orden) setErroresActualizar(p => ({ ...p, orden: undefined }));
+                                            }}>
+                                            <SelectTrigger className={`py-5 px-2 w-full ${erroresActualizar.orden ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                                <SelectValue placeholder="Indique el orden" />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper">
+                                                <SelectGroup>
+                                                    {Array.from(
+                                                        { length: totalSubprocesos },
+                                                        (_, i) => (
+                                                            <SelectItem key={i + 1} value={String(i + 1)} className="text-xs md:text-sm">
+                                                                {i + 1}
+                                                            </SelectItem>
+                                                        )
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                        {erroresActualizar.orden && (
+                                            <p className="text-xs text-destructive mt-1">{erroresActualizar.orden}</p>
+                                        )}
                                     </Field>
                                 </div>
                                 <Field>
                                     <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE</FieldLabel>
-                                    <InputGroup className="py-5 px-2 bg-secondary">
-                                        <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del subproceso" required
-                                            value={subprocesoActualizar.nombre} onChange={e => setSubprocesoActualizar(p => ({ ...p, nombre: e.target.value }))}
-                                            className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                    <InputGroup className={`py-5 px-2 ${erroresActualizar.nombre ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                        <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del subproceso"
+                                            value={subprocesoActualizar.nombre} onChange={e => {
+                                                setSubprocesoActualizar(p => ({ ...p, nombre: e.target.value }));
+                                                if (erroresActualizar.nombre) setErroresActualizar(p => ({ ...p, nombre: undefined }));
+                                            }}
+                                            className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                     </InputGroup>
+                                    {erroresActualizar.nombre && (
+                                        <p className="text-xs text-destructive mt-1">{erroresActualizar.nombre}</p>
+                                    )}
                                 </Field>
                                 <Field>
                                     <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCIÓN</FieldLabel>
-                                    <InputGroup className="py-5 px-2 bg-secondary">
+                                    <InputGroup className={`py-5 px-2 ${erroresActualizar.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                         <textarea id="descripcion" rows={3} placeholder="Ingrese la descripción del subproceso"
-                                            value={subprocesoActualizar.descripcion} onChange={e => setSubprocesoActualizar(p => ({ ...p, descripcion: e.target.value }))}
-                                            className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-sm" />
+                                            value={subprocesoActualizar.descripcion} onChange={e => {
+                                                setSubprocesoActualizar(p => ({ ...p, descripcion: e.target.value }))
+                                                if (erroresActualizar.descripcion) setErroresActualizar(p => ({ ...p, descripcion: undefined }));
+                                            }}
+                                            className={`w-full text-xs md:text-sm placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-sm ${erroresActualizar.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                     </InputGroup>
+                                    {erroresActualizar.descripcion && (
+                                        <p className="text-xs text-destructive mt-1">{erroresActualizar.descripcion}</p>
+                                    )}
                                 </Field>
                             </FieldGroup>
                         </section>
@@ -763,38 +951,75 @@ export default function GestionSubprocesos() {
                                     <FieldGroup>
                                         <Field>
                                             <FieldLabel className="text-xs">NOMBRE ACTIVIDAD</FieldLabel>
-                                            <InputGroup className="py-5 px-2 bg-secondary">
-                                                <InputGroupInput type="text" placeholder="Nombre de la actividad" required
+                                            <InputGroup className={`py-5 px-2 ${erroresActualizar.actividades?.[index]?.nombre ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                                <InputGroupInput id="nombre" type="text" placeholder="Nombre de la actividad"
                                                     value={act.nombre}
-                                                    onChange={e => actualizarActividadEditar(index, "nombre", e.target.value)}
-                                                    className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                                    onChange={e => {
+                                                        actualizarActividadEditar(index, "nombre", e.target.value);
+                                                        if (erroresActualizar.actividades?.[index]?.nombre) {
+                                                            setErroresActualizar(prev => {
+                                                                const acts = [...(prev.actividades || [])];
+                                                                acts[index] = { ...acts[index], nombre: undefined };
+                                                                return { ...prev, actividades: acts };
+                                                            })
+                                                        };
+                                                    }}
+                                                    className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.actividades?.[index]?.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                             </InputGroup>
+                                            {erroresActualizar.actividades?.[index]?.nombre && (
+                                                <p className="text-xs text-destructive mt-1">{erroresActualizar.actividades?.[index]?.nombre}</p>
+                                            )}
                                         </Field>
 
                                         <Field>
                                             <FieldLabel className="text-xs">DESCRIPCIÓN ACTIVIDAD</FieldLabel>
-                                            <InputGroup className="py-5 px-2 bg-secondary">
+                                            <InputGroup className={`py-5 px-2 ${erroresActualizar.actividades?.[index]?.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                                 <textarea rows={2} placeholder="Descripción de la actividad"
                                                     value={act.descripcion}
-                                                    onChange={e => actualizarActividadEditar(index, "descripcion", e.target.value)}
-                                                    className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none bg-transparent" />
+                                                    onChange={e => {
+                                                        actualizarActividadEditar(index, "descripcion", e.target.value)
+                                                        if (erroresActualizar.actividades?.[index]?.descripcion) {
+                                                            setErroresActualizar(prev => {
+                                                                const acts = [...(prev.actividades || [])];
+                                                                acts[index] = { ...acts[index], descripcion: undefined };
+                                                                return { ...prev, actividades: acts };
+                                                            })
+                                                        };
+                                                    }}
+                                                    className={`w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none bg-transparent ${erroresActualizar.actividades?.[index]?.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                             </InputGroup>
+                                            {erroresActualizar.actividades?.[index]?.descripcion && (
+                                                <p className="text-xs text-destructive mt-1">{erroresActualizar.actividades?.[index]?.descripcion}</p>
+                                            )}
                                         </Field>
 
                                         <Field>
                                             <FieldLabel className="text-xs">PARTICIPANTE</FieldLabel>
-                                            <InputGroup className="py-5 px-2 bg-secondary">
-                                                <select value={act.idParticipante}
-                                                    onChange={e => actualizarActividadEditar(index, "idParticipante", e.target.value)}
-                                                    className="w-full text-sm bg-transparent outline-none py-2">
-                                                    <option value="">Seleccione un participante</option>
-                                                    {cargosDisponibles.map(cargo => (
-                                                        <option key={cargo._id} value={cargo._id}>
-                                                            {cargo.nombre}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </InputGroup>
+                                            <Select value={act.idParticipante}
+                                                onValueChange={(e) => {
+                                                    actualizarActividadEditar(index, "idParticipante", e);
+                                                    if (erroresActualizar.actividades?.[index]?.idParticipante) setErroresActualizar(prev => {
+                                                        const acts = [...(prev.actividades || [])];
+                                                        acts[index] = { ...acts[index], idParticipante: undefined };
+                                                        return { ...prev, actividades: acts };
+                                                    });
+                                                }}>
+                                                <SelectTrigger className={`w-full ${erroresActualizar.actividades?.[index]?.idParticipante ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                                    <SelectValue placeholder="Seleccione un participante" />
+                                                </SelectTrigger>
+                                                <SelectContent position="popper">
+                                                    <SelectGroup>
+                                                        {cargosDisponibles.map(cargo => (
+                                                            <SelectItem key={cargo._id} value={cargo._id} className="text-xs md:text-sm">
+                                                                {cargo.nombre}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            {erroresActualizar.actividades?.[index]?.idParticipante && (
+                                                <p className="text-xs text-destructive mt-1">{erroresActualizar.actividades[index].idParticipante}</p>
+                                            )}
                                         </Field>
 
                                         <Field>
@@ -835,7 +1060,7 @@ export default function GestionSubprocesos() {
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Actualizando..." : "Actualizar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenActualizarSubproceso(false)}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenActualizarSubproceso(false); setErroresActualizar({}); }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>

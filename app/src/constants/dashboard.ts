@@ -1,4 +1,4 @@
-import { GitFork, FileText, Users, Route, Newspaper } from 'lucide-react';
+import { GitFork, FileText, Users, Route, Newspaper, ShieldUser, BookUser } from 'lucide-react';
 
 export const cards = [
     {
@@ -6,7 +6,7 @@ export const cards = [
         title: "Gestión de instrumentos",
         description: "Administre los instrumentos relacionados a cada actividad.",
         buttonLabel: "Gestionar",
-        buttonClass: "border-success-foreground bg-success/20 text-success-foreground",
+        buttonClass: "border-purple-600 bg-purple-600/10 text-purple-600",
         route: "/gestion-instrumentos",
         roles: [1, 2]
     },
@@ -42,12 +42,12 @@ export const cards = [
         title: "Control de usuarios",
         description: "Gestione accesos y perfiles del personal administrativo.",
         buttonLabel: "Administrar",
-        buttonClass: "border-warning bg-warning/10 text-warning",
+        buttonClass: "border-amber-600 bg-amber-600/10 text-amber-600",
         route: "/gestion-usuarios",
         roles: [1]
     },
     {
-        icon: Users,
+        icon: ShieldUser,
         title: "Gestión de roles",
         description: "Administre los roles y permisos de los usuarios del sistema.",
         buttonLabel: "Administrar",
@@ -56,7 +56,7 @@ export const cards = [
         roles: [1]
     },
     {
-        icon: Users,
+        icon: BookUser,
         title: "Gestión de cargos",
         description: "Gestione los tipos de participantes del proceso de titulación.",
         buttonLabel: "Gestionar",

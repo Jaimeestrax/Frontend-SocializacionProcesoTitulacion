@@ -1,6 +1,6 @@
 import {
     House,
-    GitBranch,
+    GitFork,
     FileText,
     Users,
     Newspaper,
@@ -30,7 +30,7 @@ export const data = {
                 {
                     title: "Subprocesos",
                     url: "/gestion-subprocesos",
-                    icon: GitBranch,
+                    icon: GitFork,
                     roles: [1, 2]
                 },
                 {

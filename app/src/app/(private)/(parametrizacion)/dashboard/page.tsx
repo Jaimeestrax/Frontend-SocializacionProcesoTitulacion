@@ -239,7 +239,11 @@ export default function Dashboard() {
                 {cardsFiltradas.map((card) => (
                     <Card key={card.title}>
                         <CardHeader>
-                            <CardTitle><card.icon /></CardTitle>
+                            <CardTitle>
+                                <div className={`w-fit p-3 rounded-xl ${card.buttonClass}`}>
+                                    <card.icon />
+                                </div>
+                            </CardTitle>
                             <CardDescription className="font-bold text-foreground text-lg">
                                 {card.title}
                             </CardDescription>

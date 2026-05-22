@@ -53,7 +53,7 @@ import {
 } from "@/components/ui/select"
 
 // Iconos
-import { Users, UserPlus, CircleUser, FileEdit, CircleX, ToggleLeft, ToggleRight, EyeOffIcon, EyeIcon } from 'lucide-react';
+import { Users, UserPlus, CircleUser, FileEdit, CircleX, ToggleLeft, ToggleRight, EyeOffIcon, EyeIcon, TextSearch } from 'lucide-react';
 
 // Utilidades
 import { useState, useEffect } from "react";
@@ -92,6 +92,28 @@ export default function GestionUsuarios() {
         limite: 10,
         palabra: ""
     });
+
+    const [textoBusqueda, setTextoBusqueda] = useState("");
+
+    const [erroresRegistro, setErroresRegistro] = useState<{
+        nombres?: string,
+        apellidos?: string,
+        correo?: string,
+        usuario?: string,
+        contrasena?: string,
+        idRol?: string,
+        idCargo?: string
+    }>({});
+
+    const [erroresActualizar, setErroresActualizar] = useState<{
+        nombres?: string,
+        apellidos?: string,
+        correo?: string,
+        usuario?: string,
+        contrasena?: string,
+        idRol?: string,
+        idCargo?: string
+    }>({});
 
     // Roles
     const [rolesDisponibles, setRolesDisponibles] = useState<any[]>([]);
@@ -133,6 +155,17 @@ export default function GestionUsuarios() {
     useEffect(() => { cargarSelectores(); }, []);
     useEffect(() => { cargarUsuarios(); }, [busqueda]);
 
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setBusqueda(prev => ({
+                ...prev,
+                pagina: 1,
+                palabra: textoBusqueda
+            }));
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [textoBusqueda]);
+
     // Registro de usuarios
     const [isOpenNuevoUsuario, setIsOpenNuevoUsuario] = useState(false);
 
@@ -148,6 +181,32 @@ export default function GestionUsuarios() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: {
+            nombres?: string,
+            apellidos?: string,
+            correo?: string,
+            usuario?: string,
+            contrasena?: string,
+            idRol?: string,
+            idCargo?: string
+        } = {};
+        if (!usuario.nombres.trim()) nuevosErrores.nombres = "El nombre del usuario es requerido";
+        if (!usuario.apellidos.trim()) nuevosErrores.apellidos = "El apellido del usuario es requerido";
+        if (!usuario.correo.trim()) nuevosErrores.correo = "El correo del usuario es requerido";
+        if (!usuario.usuario) nuevosErrores.usuario = "El usuario es requerido";
+        if (!usuario.contrasena) nuevosErrores.contrasena = "La contraseña es requerida";
+        if (!usuario.idRol) nuevosErrores.idRol = "El rol es requerido";
+        if (!usuario.idCargo) nuevosErrores.idCargo = "El cargo es requerido";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresRegistro(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresRegistro({});
 
         try {
             const res = await registrarUsuario(usuario);
@@ -215,6 +274,33 @@ export default function GestionUsuarios() {
 
     const handleActualizar = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: {
+            nombres?: string,
+            apellidos?: string,
+            correo?: string,
+            usuario?: string,
+            contrasena?: string,
+            idRol?: string,
+            idCargo?: string
+        } = {};
+        if (!usuarioEditar.nombres.trim()) nuevosErrores.nombres = "El nombre del usuario es requerido";
+        if (!usuarioEditar.apellidos.trim()) nuevosErrores.apellidos = "El apellido del usuario es requerido";
+        if (!usuarioEditar.correo.trim()) nuevosErrores.correo = "El correo del usuario es requerido";
+        if (!usuarioEditar.usuario) nuevosErrores.usuario = "El usuario es requerido";
+        if (!usuarioEditar.contrasena) nuevosErrores.contrasena = "La contraseña es requerida";
+        if (!usuarioEditar.idRol) nuevosErrores.idRol = "El rol es requerido";
+        if (!usuarioEditar.idCargo) nuevosErrores.idCargo = "El cargo es requerido";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresActualizar(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresActualizar({});
+
         try {
             const res = await actualizarUsuario(usuarioEditarId, usuarioEditar);
             setIsOpenEditarUsuario(false);
@@ -276,9 +362,21 @@ export default function GestionUsuarios() {
                     </Card>
                 </div>
                 <p className="p-4 font-bold text-sm md:text-md">Listado de usuarios</p>
+                {/** Buscador */}
+                <div className="flex items-center justify-center mb-4">
+                    <InputGroup className="p-2 bg-background w-full md:w-1/2 hover:border-primary">
+                        <InputGroupAddon align="inline-start">
+                            <TextSearch />
+                        </InputGroupAddon>
+                        <InputGroupInput type="text" placeholder="Buscar por nombres, apellidos, correo o usuario..."
+                            value={textoBusqueda} onChange={(e) => setTextoBusqueda(e.target.value)}
+                            className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
+                        />
+                    </InputGroup>
+                </div>
                 <Table className="bg-white dark:bg-gray-900 rounded-lg">
                     {/* <TableCaption>Listado de usuarios</TableCaption> */}
-                    <TableHeader>
+                    <TableHeader className="text-xs lg:text-sm bg-muted-foreground/25">
                         <TableRow>
                             <TableHead className="text-center">Nro</TableHead>
                             <TableHead className="text-center">Foto</TableHead>
@@ -291,7 +389,7 @@ export default function GestionUsuarios() {
                             <TableHead className="text-center">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody className="text-xs lg:text-sm">
                         {usuarios.map((usuario, i) => (
                             <TableRow key={usuario._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
@@ -309,7 +407,7 @@ export default function GestionUsuarios() {
                                 </TableCell>
                                 <TableCell>{usuario.idRol.nombre}</TableCell>
                                 <TableCell>{
-                                    <Badge className={`px-5 py-3 text-xs md:text-sm ${cargoColors[usuario.idCargo.nombre] || "bg-primary/60 text-foreground"}`}>
+                                    <Badge className={`px-5 py-3 ${cargoColors[usuario.idCargo.nombre] || "bg-primary/60 text-foreground"}`}>
                                         {usuario.idCargo.nombre}
                                     </Badge>
                                 }</TableCell>
@@ -317,9 +415,9 @@ export default function GestionUsuarios() {
                                 <TableCell>{formatearFecha(usuario.fechaFin)}</TableCell>
                                 <TableCell>{
                                     usuario.estado ? (
-                                        <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground text-xs md:text-sm">Activo</Badge>
+                                        <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground">Activo</Badge>
                                     ) : (
-                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground text-xs md:text-sm">Inactivo</Badge>
+                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground">Inactivo</Badge>
                                     )
                                 }</TableCell>
                                 <TableCell>
@@ -380,7 +478,7 @@ export default function GestionUsuarios() {
                         </PaginationItem>
                         {/** Actual */}
                         <PaginationItem>
-                            <PaginationLink href="#">{busqueda.pagina}</PaginationLink>
+                            <PaginationLink isActive href="#">{busqueda.pagina}</PaginationLink>
                         </PaginationItem>
                         {/** Siguiente */}
                         <PaginationItem>
@@ -396,7 +494,11 @@ export default function GestionUsuarios() {
             </div>
 
             {/** Drawer de registro de usuarios */}
-            <Drawer open={isOpenNuevoUsuario} onOpenChange={setIsOpenNuevoUsuario} direction={drawerDirection} onClose={() => { setUsuario({ nombres: '', apellidos: '', correo: '', usuario: '', contrasena: '', idRol: '', idCargo: '' }) }}>
+            <Drawer open={isOpenNuevoUsuario} onOpenChange={setIsOpenNuevoUsuario} direction={drawerDirection}
+                onClose={() => {
+                    setUsuario({ nombres: '', apellidos: '', correo: '', usuario: '', contrasena: '', idRol: '', idCargo: '' });
+                    setErroresRegistro({});
+                }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Registro Usuario</DrawerTitle>
@@ -409,90 +511,133 @@ export default function GestionUsuarios() {
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="nombres" className="text-xs">NOMBRES</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="nombres" type="text" placeholder="Ingrese los nombres del usuario" required
-                                        value={usuario.nombres} onChange={(e) => setUsuario({ ...usuario, nombres: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.nombres ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="nombres" type="text" placeholder="Ingrese los nombres del usuario"
+                                        value={usuario.nombres} onChange={(e) => {
+                                            setUsuario({ ...usuario, nombres: e.target.value });
+                                            if (erroresRegistro.nombres) setErroresRegistro({ ...erroresRegistro, nombres: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.nombres ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresRegistro.nombres && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.nombres}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="apellidos" className="text-xs">APELLIDOS</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="apellidos" type="text" placeholder="Ingrese los apellidos del usuario" required
-                                        value={usuario.apellidos} onChange={(e) => setUsuario({ ...usuario, apellidos: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.apellidos ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="apellidos" type="text" placeholder="Ingrese los apellidos del usuario"
+                                        value={usuario.apellidos} onChange={(e) => {
+                                            setUsuario({ ...usuario, apellidos: e.target.value });
+                                            if (erroresRegistro.apellidos) setErroresRegistro({ ...erroresRegistro, apellidos: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.apellidos ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresRegistro.apellidos && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.apellidos}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="correo" className="text-xs">CORREO</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="correo" type="text" placeholder="Ingrese el correo institucional del usuario" required
-                                        value={usuario.correo} onChange={(e) => setUsuario({ ...usuario, correo: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.correo ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="correo" type="text" placeholder="Ingrese el correo institucional del usuario"
+                                        value={usuario.correo} onChange={(e) => {
+                                            setUsuario({ ...usuario, correo: e.target.value });
+                                            if (erroresRegistro.correo) setErroresRegistro({ ...erroresRegistro, correo: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.correo ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresRegistro.correo && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.correo}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="usuario" className="text-xs">USUARIO</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="usuario" type="text" placeholder="Ingrese el nombre de usuario" required
-                                        value={usuario.usuario} onChange={(e) => setUsuario({ ...usuario, usuario: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
-                                    />
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.usuario ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="usuario" type="text" placeholder="Ingrese el nombre de usuario"
+                                        value={usuario.usuario} onChange={(e) => {
+                                            setUsuario({ ...usuario, usuario: e.target.value });
+                                            if (erroresRegistro.usuario) setErroresRegistro({ ...erroresRegistro, usuario: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.usuario ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresRegistro.usuario && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.usuario}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="contrasena" className="text-xs">CONTRASEÑA</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="contrasena" type={mostrarContrasena ? "text" : "password"} placeholder="Ingrese la contraseña" required
-                                        value={usuario.contrasena} onChange={(e) => setUsuario({ ...usuario, contrasena: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.contrasena ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="contrasena" type={mostrarContrasena ? "text" : "password"} placeholder="Ingrese la contraseña"
+                                        value={usuario.contrasena} onChange={(e) => {
+                                            setUsuario({ ...usuario, contrasena: e.target.value });
+                                            if (erroresRegistro.contrasena) setErroresRegistro({ ...erroresRegistro, contrasena: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.contrasena ? 'placeholder:text-destructive/50' : ''}`} />
                                     <InputGroupAddon align="inline-end">
                                         <Button type="button" variant="ghost" onClick={toggleMostrarContrasena} className="cursor-pointer">
                                             {mostrarContrasena ? <EyeOffIcon /> : <EyeIcon />}
                                         </Button>
                                     </InputGroupAddon>
                                 </InputGroup>
+                                {erroresRegistro.contrasena && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.contrasena}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="idRol" className="text-xs">ROL</FieldLabel>
-                                <Select value={usuario.idRol} onValueChange={(e) => setUsuario({ ...usuario, idRol: e })}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Escoja un rol" />
+                                <Select value={usuario.idRol}
+                                    onValueChange={(e) => {
+                                        setUsuario({ ...usuario, idRol: e })
+                                        if (erroresRegistro.idRol) setErroresRegistro({ ...erroresRegistro, idRol: undefined });
+                                    }}>
+                                    <SelectTrigger className={`w-full ${erroresRegistro.idRol ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                        <SelectValue placeholder="Seleccione un rol" />
                                     </SelectTrigger>
                                     <SelectContent position="popper">
                                         <SelectGroup>
                                             {rolesDisponibles?.map((rol) => (
-                                                <SelectItem key={rol._id} value={rol._id}>
+                                                <SelectItem key={rol._id} value={rol._id} className="text-xs md:text-sm">
                                                     {rol.nombre}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                                {erroresRegistro.idRol && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.idRol}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="idCargo" className="text-xs">CARGO</FieldLabel>
-                                <Select value={usuario.idCargo} onValueChange={(e) => setUsuario({ ...usuario, idCargo: e })}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Indique el cargo" />
+                                <Select value={usuario.idCargo}
+                                    onValueChange={(e) => {
+                                        setUsuario({ ...usuario, idCargo: e })
+                                        if (erroresRegistro.idCargo) setErroresRegistro({ ...erroresRegistro, idCargo: undefined });
+                                    }}>
+                                    <SelectTrigger className={`w-full ${erroresRegistro.idCargo ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                        <SelectValue placeholder="Seleccione un cargo" />
                                     </SelectTrigger>
                                     <SelectContent position="popper">
                                         <SelectGroup>
                                             {cargosDisponibles?.map((cargo) => (
-                                                <SelectItem key={cargo._id} value={cargo._id}>
+                                                <SelectItem key={cargo._id} value={cargo._id} className="text-xs md:text-sm">
                                                     {cargo.nombre}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                                {erroresRegistro.idCargo && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.idCargo}</p>
+                                )}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Guardando..." : "Guardar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenNuevoUsuario(false)}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenNuevoUsuario(false); setErroresRegistro({}); setUsuario({ nombres: "", apellidos: "", correo: "", usuario: "", contrasena: "", idRol: "", idCargo: "" }); }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>
@@ -501,7 +646,7 @@ export default function GestionUsuarios() {
             </Drawer>
 
             {/** Drawer de edición de usuarios */}
-            <Drawer open={isOpenEditarUsuario} onOpenChange={setIsOpenEditarUsuario} direction={drawerDirection} onClose={() => setCambiarContrasena(false)} >
+            <Drawer open={isOpenEditarUsuario} onOpenChange={setIsOpenEditarUsuario} direction={drawerDirection} onClose={() => { setIsOpenEditarUsuario(false); setCambiarContrasena(false); setErroresActualizar({}); }} >
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Editar Usuario</DrawerTitle>
@@ -512,36 +657,59 @@ export default function GestionUsuarios() {
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="nombres" className="text-xs">NOMBRES</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="nombres" type="text" placeholder="Ingrese los nombres del usuario" required
-                                        value={usuarioEditar.nombres} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, nombres: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresActualizar.nombres ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="nombres" type="text" placeholder="Ingrese los nombres del usuario"
+                                        value={usuarioEditar.nombres} onChange={(e) => {
+                                            setUsuarioEditar({ ...usuarioEditar, nombres: e.target.value });
+                                            if (erroresActualizar.nombres) setErroresActualizar({ ...erroresActualizar, nombres: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.nombres ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresActualizar.nombres && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.nombres}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="apellidos" className="text-xs">APELLIDOS</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="apellidos" type="text" placeholder="Ingrese los apellidos del usuario" required
-                                        value={usuarioEditar.apellidos} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, apellidos: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresActualizar.apellidos ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="apellidos" type="text" placeholder="Ingrese los apellidos del usuario"
+                                        value={usuarioEditar.apellidos} onChange={(e) => {
+                                            setUsuarioEditar({ ...usuarioEditar, apellidos: e.target.value });
+                                            if (erroresActualizar.apellidos) setErroresActualizar({ ...erroresActualizar, apellidos: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.apellidos ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresActualizar.apellidos && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.apellidos}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="correo" className="text-xs">CORREO</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="correo" type="text" placeholder="Ingrese el correo institucional del usuario" required
-                                        value={usuarioEditar.correo} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresActualizar.correo ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="correo" type="text" placeholder="Ingrese el correo institucional del usuario"
+                                        value={usuarioEditar.correo} onChange={(e) => {
+                                            setUsuarioEditar({ ...usuarioEditar, correo: e.target.value });
+                                            if (erroresActualizar.correo) setErroresActualizar({ ...erroresActualizar, correo: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.correo ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresActualizar.correo && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.correo}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="usuario" className="text-xs">USUARIO</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="usuario" type="text" placeholder="Ingrese el nombre de usuario" required
-                                        value={usuarioEditar.usuario} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, usuario: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
-                                    />
+                                <InputGroup className={`py-5 px-2 ${erroresActualizar.usuario ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="usuario" type="text" placeholder="Ingrese el nombre de usuario"
+                                        value={usuarioEditar.usuario} onChange={(e) => {
+                                            setUsuarioEditar({ ...usuarioEditar, usuario: e.target.value });
+                                            if (erroresActualizar.usuario) setErroresActualizar({ ...erroresActualizar, usuario: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.usuario ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresActualizar.usuario && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.usuario}</p>
+                                )}
                             </Field>
                             <Field>
                                 <div className="flex">
@@ -560,7 +728,7 @@ export default function GestionUsuarios() {
                                 {cambiarContrasena && (
                                     <InputGroup className='py-5 px-2 bg-secondary'>
                                         <InputGroupInput id="contrasena" type={mostrarContrasena ? "text" : "password"}
-                                            placeholder="Ingrese la nueva contraseña" required
+                                            placeholder="Ingrese la nueva contraseña"
                                             value={usuarioEditar.contrasena} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, contrasena: e.target.value })}
                                             className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
                                         <InputGroupAddon align="inline-end">
@@ -573,44 +741,58 @@ export default function GestionUsuarios() {
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="idRol" className="text-xs">ROL</FieldLabel>
-                                <Select value={usuarioEditar.idRol} onValueChange={(e) => setUsuarioEditar({ ...usuarioEditar, idRol: e })}>
-                                    <SelectTrigger className="w-full">
+                                <Select value={usuarioEditar.idRol}
+                                    onValueChange={(e) => {
+                                        setUsuarioEditar({ ...usuarioEditar, idRol: e });
+                                        if (erroresActualizar.idRol) setErroresActualizar({ ...erroresActualizar, idRol: undefined });
+                                    }}>
+                                    <SelectTrigger className={`w-full ${erroresActualizar.idRol ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                         <SelectValue placeholder="Escoja un rol" />
                                     </SelectTrigger>
                                     <SelectContent position="popper">
                                         <SelectGroup>
                                             {rolesDisponibles?.map((rol) => (
-                                                <SelectItem key={rol._id} value={rol._id}>
+                                                <SelectItem key={rol._id} value={rol._id} className="text-xs md:text-sm">
                                                     {rol.nombre}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                                {erroresActualizar.idRol && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.idRol}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="idCargo" className="text-xs">CARGO</FieldLabel>
-                                <Select value={usuarioEditar.idCargo} onValueChange={(e) => setUsuarioEditar({ ...usuarioEditar, idCargo: e })}>
-                                    <SelectTrigger className="w-full">
+                                <Select value={usuarioEditar.idCargo}
+                                    onValueChange={(e) => {
+                                        setUsuarioEditar({ ...usuarioEditar, idCargo: e });
+                                        if (erroresActualizar.idCargo) setErroresActualizar({ ...erroresActualizar, idCargo: undefined });
+                                    }}>
+                                    <SelectTrigger className={`w-full ${erroresActualizar.idCargo ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                         <SelectValue placeholder="Indique el cargo" />
                                     </SelectTrigger>
                                     <SelectContent position="popper">
                                         <SelectGroup>
                                             {cargosDisponibles?.map((cargo) => (
-                                                <SelectItem key={cargo._id} value={cargo._id}>
+                                                <SelectItem key={cargo._id} value={cargo._id} className="text-xs md:text-sm">
                                                     {cargo.nombre}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                                {erroresActualizar.idCargo && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.idCargo}</p>
+                                )}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Actualizando..." : "Actualizar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenEditarUsuario(false)}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenEditarUsuario(false); setErroresActualizar({}); }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>

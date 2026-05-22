@@ -69,6 +69,9 @@ export default function GestionRoles() {
         palabra: ""
     });
 
+    const [erroresRegistro, setErroresRegistro] = useState<{ nombre?: string }>({});
+    const [erroresActualizar, setErroresActualizar] = useState<{ nombre?: string }>({});
+
     const cargarRoles = async () => {
         try {
             const res = await obtenerRoles(busqueda);
@@ -97,6 +100,18 @@ export default function GestionRoles() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: { nombre?: string } = {};
+        if (!rol.nombre.trim()) nuevosErrores.nombre = "El nombre del rol es requerido";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresRegistro(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresRegistro({});
 
         try {
             const res = await registrarRol(rol);
@@ -151,6 +166,19 @@ export default function GestionRoles() {
 
     const handleActualizar = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: { nombre?: string } = {};
+        if (!rolEditar.nombre.trim()) nuevosErrores.nombre = "El nombre del rol es requerido";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresActualizar(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresActualizar({});
+
         try {
             const res = await actualizarRol(rolEditarId, rolEditar);
             setIsOpenEditarRol(false);
@@ -195,7 +223,7 @@ export default function GestionRoles() {
                 <p className="p-4 font-bold text-sm md:text-md">Listado de roles</p>
                 <Table className="bg-white dark:bg-gray-900 rounded-lg">
                     {/* <TableCaption>Listado de roles</TableCaption> */}
-                    <TableHeader>
+                    <TableHeader className="text-xs lg:text-sm bg-muted-foreground/25">
                         <TableRow>
                             <TableHead className="text-center">Nro</TableHead>
                             <TableHead className="text-center">Nombre</TableHead>
@@ -203,16 +231,16 @@ export default function GestionRoles() {
                             <TableHead className="text-center">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody className="text-xs lg:text-sm">
                         {roles.map((rol, i) => (
                             <TableRow key={rol._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
                                 <TableCell>{rol.nombre}</TableCell>
                                 <TableCell>{
                                     rol.estado === 1 ? (
-                                        <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground text-xs md:text-sm">Activo</Badge>
+                                        <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground">Activo</Badge>
                                     ) : (
-                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground text-xs md:text-sm">Inactivo</Badge>
+                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground">Inactivo</Badge>
                                     )
                                 }</TableCell>
                                 <TableCell>
@@ -275,7 +303,7 @@ export default function GestionRoles() {
                         </PaginationItem>
                         {/** Actual */}
                         <PaginationItem>
-                            <PaginationLink href="#">{busqueda.pagina}</PaginationLink>
+                            <PaginationLink isActive href="#">{busqueda.pagina}</PaginationLink>
                         </PaginationItem>
                         {/** Siguiente */}
                         <PaginationItem>
@@ -291,7 +319,7 @@ export default function GestionRoles() {
             </div>
 
             {/** Drawer de registro de roles */}
-            <Drawer open={isOpenNuevoRol} onOpenChange={setIsOpenNuevoRol} direction={drawerDirection} onClose={() => { setRol({ nombre: '' }) }}>
+            <Drawer open={isOpenNuevoRol} onOpenChange={setIsOpenNuevoRol} direction={drawerDirection} onClose={() => { setRol({ nombre: '' }); setErroresRegistro({}); }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Registro Rol</DrawerTitle>
@@ -304,18 +332,26 @@ export default function GestionRoles() {
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE DEL ROL</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del rol" required
-                                        value={rol.nombre} onChange={(e) => setRol({ ...rol, nombre: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.nombre ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del rol"
+                                        value={rol.nombre} onChange={(e) => {
+                                            setRol({ ...rol, nombre: e.target.value });
+                                            // Limpia el error al escribir
+                                            if (erroresRegistro.nombre) setErroresRegistro({ ...erroresRegistro, nombre: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {/* Mensaje de error debajo del input */}
+                                {erroresRegistro.nombre && (
+                                    <p className="text-destructive text-xs mt-1">{erroresRegistro.nombre}</p>
+                                )}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Guardando..." : "Guardar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenNuevoRol(false)}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenNuevoRol(false); setRol({ nombre: '' }); setErroresRegistro({}); }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>
@@ -324,27 +360,39 @@ export default function GestionRoles() {
             </Drawer>
 
             {/** Drawer de edición de roles */}
-            <Drawer open={isOpenEditarRol} onOpenChange={setIsOpenEditarRol} direction={drawerDirection}>
+            <Drawer open={isOpenEditarRol} onOpenChange={setIsOpenEditarRol} direction={drawerDirection} onClose={() => { setIsOpenEditarRol(false); setErroresActualizar({}); }} >
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Editar Rol</DrawerTitle>
                         <DrawerDescription className="text-xs md:text-sm">Ingrese la información necesaria para editar el rol.</DrawerDescription>
                     </DrawerHeader>
 
-                    <form className="px-12 py-8 md:px-6 md:py-6">
+                    <form className="px-12 py-8 md:px-6 md:py-6" onSubmit={handleActualizar}>
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="nombre" className="text-xs">NOMBRE DEL ROL</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del rol" required
-                                        value={rolEditar.nombre} onChange={(e) => setRolEditar({ ...rolEditar, nombre: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresActualizar.nombre ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="nombre" type="text" placeholder="Ingrese el nombre del rol"
+                                        value={rolEditar.nombre} onChange={(e) => {
+                                            setRolEditar({ ...rolEditar, nombre: e.target.value });
+                                            // Limpia el error al escribir
+                                            if (erroresActualizar.nombre) setErroresActualizar({ ...erroresActualizar, nombre: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {/* Mensaje de error debajo del input */}
+                                {erroresActualizar.nombre && (
+                                    <p className="text-destructive text-xs mt-1">{erroresActualizar.nombre}</p>
+                                )}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                            <Button onClick={handleActualizar} className="md:py-6">Actualizar</Button>
-                            <Button onClick={() => setIsOpenEditarRol(false)} variant="outline" className="md:py-6">Cancelar</Button>
+                            <Button type="submit" className="md:py-6" disabled={loading}>
+                                {loading ? "Actualizando..." : "Actualizar"}
+                            </Button>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenEditarRol(false); setErroresActualizar({}); }}>
+                                Cancelar
+                            </Button>
                         </DrawerFooter>
                     </form>
                 </DrawerContent>

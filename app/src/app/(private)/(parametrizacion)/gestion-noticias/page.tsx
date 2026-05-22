@@ -55,7 +55,7 @@ import { toast } from "@/components/ui/toast-custom";
 import FileUploadField from "@/components/ui/fileUpload";
 
 // Iconos
-import { MessageSquarePlus, CalendarRange, FileEdit, CircleX, Info } from 'lucide-react';
+import { MessageSquarePlus, CalendarRange, FileEdit, CircleX, Info, TextSearch } from 'lucide-react';
 
 // Utilidades
 import { useState, useEffect } from "react";
@@ -88,6 +88,20 @@ export default function GestionNoticias() {
         palabra: ""
     });
 
+    const [textoBusqueda, setTextoBusqueda] = useState("");
+
+    const [erroresRegistro, setErroresRegistro] = useState<{
+        titulo?: string,
+        descripcion?: string,
+        prioridad?: string
+    }>({});
+
+    const [erroresActualizar, setErroresActualizar] = useState<{
+        titulo?: string,
+        descripcion?: string,
+        prioridad?: string
+    }>({});
+
     // Llamada asincrona reutilizable
     const cargarNoticias = async () => {
         try {
@@ -119,6 +133,18 @@ export default function GestionNoticias() {
         cargarPlanificacionVigente();
     }, [busqueda]);
 
+    // Ejecuta busqueda
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setBusqueda(prev => ({
+                ...prev,
+                pagina: 1,
+                palabra: textoBusqueda
+            }));
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [textoBusqueda]);
+
     // Registro de noticias
     const [isOpenNuevaNoticia, setIsOpenNuevaNoticia] = useState(false);
 
@@ -133,6 +159,20 @@ export default function GestionNoticias() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: { titulo?: string, descripcion?: string, prioridad?: string } = {};
+        if (!noticia.titulo.trim()) nuevosErrores.titulo = "El titulo de la noticia es requerido";
+        if (!noticia.descripcion.trim()) nuevosErrores.descripcion = "La descripcion de la noticia es requerida";
+        if (!noticia.prioridad.trim()) nuevosErrores.prioridad = "La prioridad de la noticia es requerida";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresRegistro(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresRegistro({});
 
         try {
             const user = JSON.parse(localStorage.getItem("identity") || "{}");
@@ -197,6 +237,21 @@ export default function GestionNoticias() {
 
     const handleActualizar = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: { titulo?: string, descripcion?: string, prioridad?: string } = {};
+        if (!noticiaEditar.titulo.trim()) nuevosErrores.titulo = "El titulo de la noticia es requerido";
+        if (!noticiaEditar.descripcion.trim()) nuevosErrores.descripcion = "La descripcion de la noticia es requerida";
+        if (!noticiaEditar.prioridad.trim()) nuevosErrores.prioridad = "La prioridad de la noticia es requerida";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresActualizar(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresActualizar({});
+
         try {
             const user = JSON.parse(localStorage.getItem("identity") || "{}");
             const res = await actualizarNoticia(noticiaEditarId, { ...noticiaEditar, idEncargadoActualizar: user._id });
@@ -264,8 +319,20 @@ export default function GestionNoticias() {
                     </Card>
                 </div>
                 <p className="p-4 font-bold text-sm md:text-md">Listado de noticias</p>
+                {/** Buscador */}
+                <div className="flex items-center justify-center mb-4">
+                    <InputGroup className="p-2 bg-background w-full md:w-1/2 hover:border-primary">
+                        <InputGroupAddon align="inline-start">
+                            <TextSearch />
+                        </InputGroupAddon>
+                        <InputGroupInput type="text" placeholder="Buscar por titulo..."
+                            value={textoBusqueda} onChange={(e) => setTextoBusqueda(e.target.value)}
+                            className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
+                        />
+                    </InputGroup>
+                </div>
                 <Table className="bg-white dark:bg-gray-900 rounded-lg">
-                    <TableHeader>
+                    <TableHeader className="text-xs lg:text-sm bg-muted-foreground/25">
                         <TableRow>
                             <TableHead className="text-center">Nro</TableHead>
                             <TableHead className="text-center">Titulo</TableHead>
@@ -336,7 +403,7 @@ export default function GestionNoticias() {
                         </PaginationItem>
                         {/** Actual */}
                         <PaginationItem>
-                            <PaginationLink href="#">{busqueda.pagina}</PaginationLink>
+                            <PaginationLink isActive href="#">{busqueda.pagina}</PaginationLink>
                         </PaginationItem>
                         {/** Siguiente */}
                         <PaginationItem>
@@ -351,8 +418,12 @@ export default function GestionNoticias() {
                 </Pagination>
             </div>
 
-            {/** Drawer de registro de instrumentos */}
-            <Drawer open={isOpenNuevaNoticia} onOpenChange={setIsOpenNuevaNoticia} direction={drawerDirection} onClose={() => { setNoticia({ titulo: '', descripcion: '', prioridad: "", idPlanificacion: '', imagen: null as unknown as File, idEncargadoGenerar: '' }) }}>
+            {/** Drawer de registro de noticias */}
+            <Drawer open={isOpenNuevaNoticia} onOpenChange={setIsOpenNuevaNoticia} direction={drawerDirection}
+                onClose={() => {
+                    setNoticia({ titulo: '', descripcion: '', prioridad: "", idPlanificacion: '', imagen: null as unknown as File, idEncargadoGenerar: '' });
+                    setErroresRegistro({})
+                }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Registro Noticia</DrawerTitle>
@@ -365,37 +436,53 @@ export default function GestionNoticias() {
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="titulo" className="text-xs">TITULO DE LA NOTICIA/AVISO</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <InputGroupInput id="titulo" type="text" placeholder="Ingrese el titulo para la noticia, aviso o comunicado" required
-                                        value={noticia.titulo} onChange={(e) => setNoticia({ ...noticia, titulo: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.titulo ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                    <InputGroupInput id="titulo" type="text" placeholder="Ingrese el titulo para la noticia, aviso o comunicado"
+                                        value={noticia.titulo} onChange={(e) => {
+                                            setNoticia({ ...noticia, titulo: e.target.value });
+                                            if (erroresRegistro.titulo) setErroresRegistro({ ...erroresRegistro, titulo: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.titulo ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresRegistro.titulo && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.titulo}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCION</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
+                                <InputGroup className={`py-5 px-2 ${erroresRegistro.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                     <textarea id="descripcion" placeholder="Ingrese la descripcion del instrumento" rows={4}
-                                        value={noticia.descripcion} onChange={(e) => setNoticia({ ...noticia, descripcion: e.target.value })}
-                                        className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none"
-                                    />
+                                        value={noticia.descripcion} onChange={(e) => {
+                                            setNoticia({ ...noticia, descripcion: e.target.value });
+                                            if (erroresRegistro.descripcion) setErroresRegistro({ ...erroresRegistro, descripcion: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.descripcion ? 'placeholder:text-destructive/50' : ''} resize-none outline-none`} />
                                 </InputGroup>
+                                {erroresRegistro.descripcion && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.descripcion}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="prioridad" className="text-xs">PRIORIDAD</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <Select onValueChange={(e) => setNoticia({ ...noticia, prioridad: e.toString() })} defaultValue={noticia.prioridad} required>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Indique la prioridad de su comunicado" />
-                                        </SelectTrigger>
-                                        <SelectContent position="popper">
-                                            <SelectGroup>
-                                                <SelectItem value="Baja">Baja</SelectItem>
-                                                <SelectItem value="Media">Media</SelectItem>
-                                                <SelectItem value="Alta">Alta</SelectItem>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                </InputGroup>
+                                <Select defaultValue={noticia.prioridad}
+                                    onValueChange={(e) => {
+                                        setNoticia({ ...noticia, prioridad: e });
+                                        if (erroresRegistro.prioridad) setErroresRegistro({ ...erroresRegistro, prioridad: undefined });
+                                    }}>
+                                    <SelectTrigger className={`w-full ${erroresRegistro.prioridad ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                        <SelectValue placeholder="Indique la prioridad de su comunicado" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectGroup>
+                                            <SelectItem value="Baja">Baja</SelectItem>
+                                            <SelectItem value="Media">Media</SelectItem>
+                                            <SelectItem value="Alta">Alta</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {erroresRegistro.prioridad && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.prioridad}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FileUploadField id="imagen" label="IMAGEN" accept=".jpg,.png,.jpeg"
@@ -409,7 +496,7 @@ export default function GestionNoticias() {
                             <Button type="submit" className="md:py-6" disabled={loadingNoticias}>
                                 {loadingNoticias ? "Guardando..." : "Guardar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenNuevaNoticia(false)}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenNuevaNoticia(false); setErroresRegistro({}) }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>
@@ -418,7 +505,11 @@ export default function GestionNoticias() {
             </Drawer>
 
             {/** Drawer de edición de noticias */}
-            <Drawer open={isOpenEditarNoticia} onOpenChange={setIsOpenEditarNoticia} direction={drawerDirection} onClose={() => { setNoticia({ titulo: '', descripcion: '', prioridad: "", imagen: null as unknown as File, idEncargadoActualizar: '' }) }}>
+            <Drawer open={isOpenEditarNoticia} onOpenChange={setIsOpenEditarNoticia} direction={drawerDirection}
+                onClose={() => {
+                    setNoticia({ titulo: '', descripcion: '', prioridad: "", imagen: null as unknown as File, idEncargadoActualizar: '' });
+                    setErroresActualizar({})
+                }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Editar Noticia</DrawerTitle>
@@ -431,37 +522,53 @@ export default function GestionNoticias() {
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="titulo" className="text-xs">TITULO DE LA NOTICIA/AVISO</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
+                                <InputGroup className={`py-5 px-2 ${erroresActualizar.titulo ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                     <InputGroupInput id="titulo" type="text" placeholder="Ingrese el titulo para la noticia, aviso o comunicado" required
-                                        value={noticiaEditar.titulo} onChange={(e) => setNoticiaEditar({ ...noticiaEditar, titulo: e.target.value })}
-                                        className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                        value={noticiaEditar.titulo} onChange={(e) => {
+                                            setNoticiaEditar({ ...noticiaEditar, titulo: e.target.value });
+                                            if (erroresActualizar.titulo) setErroresActualizar({ ...erroresActualizar, titulo: undefined });
+                                        }}
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.titulo ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
+                                {erroresActualizar.titulo && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.titulo}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCION</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
+                                <InputGroup className={`py-5 px-2 ${erroresActualizar.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                     <textarea id="descripcion" placeholder="Ingrese la descripcion del instrumento" rows={4}
-                                        value={noticiaEditar.descripcion} onChange={(e) => setNoticiaEditar({ ...noticiaEditar, descripcion: e.target.value })}
-                                        className="w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none"
+                                        value={noticiaEditar.descripcion} onChange={(e) => {
+                                            setNoticiaEditar({ ...noticiaEditar, descripcion: e.target.value })
+                                            if (erroresActualizar.descripcion) setErroresActualizar({ ...erroresActualizar, descripcion: undefined });
+                                        }}
+                                        className={`w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none ${erroresActualizar.descripcion ? 'placeholder:text-destructive/50' : ''}`}
                                     />
                                 </InputGroup>
+                                {erroresActualizar.descripcion && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.descripcion}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="prioridad" className="text-xs">PRIORIDAD</FieldLabel>
-                                <InputGroup className='py-5 px-2 bg-secondary'>
-                                    <Select onValueChange={(e) => setNoticiaEditar({ ...noticiaEditar, prioridad: e.toString() })} defaultValue={noticiaEditar.prioridad} required>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Indique la prioridad de su comunicado" />
-                                        </SelectTrigger>
-                                        <SelectContent position="popper">
-                                            <SelectGroup>
-                                                <SelectItem value="Baja">Baja</SelectItem>
-                                                <SelectItem value="Media">Media</SelectItem>
-                                                <SelectItem value="Alta">Alta</SelectItem>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                </InputGroup>
+                                <Select onValueChange={(e) => {
+                                    setNoticiaEditar({ ...noticiaEditar, prioridad: e.toString() });
+                                    if (erroresActualizar.prioridad) setErroresActualizar({ ...erroresActualizar, prioridad: undefined });
+                                }} defaultValue={noticiaEditar.prioridad} required>
+                                    <SelectTrigger className={`w-full ${erroresActualizar.prioridad ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                        <SelectValue placeholder="Indique la prioridad de su comunicado" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectGroup>
+                                            <SelectItem value="Baja">Baja</SelectItem>
+                                            <SelectItem value="Media">Media</SelectItem>
+                                            <SelectItem value="Alta">Alta</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {erroresActualizar.prioridad && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.prioridad}</p>
+                                )}
                             </Field>
                             <Field>
                                 {typeof noticiaEditar.imagen === 'string' && (
@@ -485,7 +592,7 @@ export default function GestionNoticias() {
                             <Button type="submit" className="md:py-6" disabled={loadingNoticias}>
                                 {loadingNoticias ? "Actualizando..." : "Actualizar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenEditarNoticia(false)}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenEditarNoticia(false); setErroresActualizar({}) }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>
@@ -493,7 +600,7 @@ export default function GestionNoticias() {
                 </DrawerContent>
             </Drawer>
 
-            {/** Modal para mostrar el historico de un instrumento */}
+            {/** Modal para mostrar el detalle de la noticia */}
             <Dialog open={isOpenDetalleNoticia} onOpenChange={setIsOpenDetalleNoticia}>
                 <DialogContent className="overflow-x-auto sm:max-w-xl md:max-w-3xl lg:max-w-4xl">
                     <DialogHeader>
