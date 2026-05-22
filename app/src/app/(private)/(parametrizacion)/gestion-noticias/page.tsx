@@ -343,6 +343,13 @@ export default function GestionNoticias() {
                         </TableRow>
                     </TableHeader>
                     <TableBody className="text-xs lg:text-sm">
+                        {noticias.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                                    No hay noticias registradas
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {noticias.map((noticia, i) => (
                             <TableRow key={noticia._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>

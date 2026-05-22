@@ -4,9 +4,10 @@ import {
     FileText,
     Users,
     Newspaper,
-    Settings,
+    BadgeQuestionMark,
     ShieldUser,
     BookUser,
+    GraduationCap,
     Route
 } from "lucide-react"
 
@@ -47,8 +48,8 @@ export const data = {
                 },
                 {
                     title: "Soporte al usuario",
-                    url: "#",
-                    icon: Settings,
+                    url: "/gestion-soporte",
+                    icon: BadgeQuestionMark,
                     roles: [1, 2]
                 },
             ]
@@ -63,6 +64,12 @@ export const data = {
                     roles: [1]
                 },
                 {
+                    title: "Carreras",
+                    url: "/gestion-carreras",
+                    icon: GraduationCap,
+                    roles: [1]
+                },
+                {
                     title: "Roles",
                     url: "/gestion-roles",
                     icon: ShieldUser,
@@ -73,7 +80,7 @@ export const data = {
                     url: "/gestion-usuarios",
                     icon: Users,
                     roles: [1]
-                },
+                }
             ]
         }
     ]

@@ -232,6 +232,13 @@ export default function GestionRoles() {
                         </TableRow>
                     </TableHeader>
                     <TableBody className="text-xs lg:text-sm">
+                        {roles.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                                    No hay roles registrados
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {roles.map((rol, i) => (
                             <TableRow key={rol._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>

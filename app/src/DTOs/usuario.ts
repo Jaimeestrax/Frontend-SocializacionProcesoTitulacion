@@ -6,5 +6,6 @@ export type Usuario = {
     contrasena?: string,
     foto?: File,
     idRol?: string,
-    idCargo?: string
+    idCargo?: string,
+    idCarrera?: string
 }

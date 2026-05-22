@@ -102,7 +102,8 @@ export default function GestionUsuarios() {
         usuario?: string,
         contrasena?: string,
         idRol?: string,
-        idCargo?: string
+        idCargo?: string,
+        idCarrera?: string
     }>({});
 
     const [erroresActualizar, setErroresActualizar] = useState<{
@@ -112,7 +113,8 @@ export default function GestionUsuarios() {
         usuario?: string,
         contrasena?: string,
         idRol?: string,
-        idCargo?: string
+        idCargo?: string,
+        idCarrera?: string
     }>({});
 
     // Roles
@@ -176,7 +178,8 @@ export default function GestionUsuarios() {
         usuario: "",
         contrasena: "",
         idRol: "",
-        idCargo: ""
+        idCargo: "",
+        idCarrera: ""
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -190,7 +193,8 @@ export default function GestionUsuarios() {
             usuario?: string,
             contrasena?: string,
             idRol?: string,
-            idCargo?: string
+            idCargo?: string,
+            idCarrera?: string
         } = {};
         if (!usuario.nombres.trim()) nuevosErrores.nombres = "El nombre del usuario es requerido";
         if (!usuario.apellidos.trim()) nuevosErrores.apellidos = "El apellido del usuario es requerido";
@@ -199,6 +203,7 @@ export default function GestionUsuarios() {
         if (!usuario.contrasena) nuevosErrores.contrasena = "La contraseña es requerida";
         if (!usuario.idRol) nuevosErrores.idRol = "El rol es requerido";
         if (!usuario.idCargo) nuevosErrores.idCargo = "El cargo es requerido";
+        if (!usuario.idCarrera) nuevosErrores.idCarrera = "La carrera es requerida";
 
         if (Object.keys(nuevosErrores).length > 0) {
             setErroresRegistro(nuevosErrores);
@@ -222,7 +227,8 @@ export default function GestionUsuarios() {
                 usuario: "",
                 contrasena: "",
                 idRol: "",
-                idCargo: ""
+                idCargo: "",
+                idCarrera: ""
             });
             setIsOpenNuevoUsuario(false);
 
@@ -252,7 +258,8 @@ export default function GestionUsuarios() {
         correo: "",
         usuario: "",
         idRol: "",
-        idCargo: ""
+        idCargo: "",
+        idCarrera: ""
     });
 
     const [usuarioEditarId, setUsuarioEditarId] = useState<string>("");
@@ -283,7 +290,8 @@ export default function GestionUsuarios() {
             usuario?: string,
             contrasena?: string,
             idRol?: string,
-            idCargo?: string
+            idCargo?: string,
+            idCarrera?: string
         } = {};
         if (!usuarioEditar.nombres.trim()) nuevosErrores.nombres = "El nombre del usuario es requerido";
         if (!usuarioEditar.apellidos.trim()) nuevosErrores.apellidos = "El apellido del usuario es requerido";
@@ -292,6 +300,7 @@ export default function GestionUsuarios() {
         if (!usuarioEditar.contrasena) nuevosErrores.contrasena = "La contraseña es requerida";
         if (!usuarioEditar.idRol) nuevosErrores.idRol = "El rol es requerido";
         if (!usuarioEditar.idCargo) nuevosErrores.idCargo = "El cargo es requerido";
+        if (!usuarioEditar.idCarrera) nuevosErrores.idCarrera = "La carrera es requerida";
 
         if (Object.keys(nuevosErrores).length > 0) {
             setErroresActualizar(nuevosErrores);
@@ -383,13 +392,21 @@ export default function GestionUsuarios() {
                             <TableHead className="text-center">Usuario</TableHead>
                             <TableHead className="text-center">Rol</TableHead>
                             <TableHead className="text-center">Cargo</TableHead>
+                            <TableHead className="text-center">Carrera</TableHead>
                             <TableHead className="text-center">Desde</TableHead>
-                            <TableHead className="text-center">Hasta</TableHead>
+                            {/* <TableHead className="text-center">Hasta</TableHead> */}
                             <TableHead className="text-center">Estado</TableHead>
                             <TableHead className="text-center">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody className="text-xs lg:text-sm">
+                        {usuarios.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                                    No hay usuarios registrados
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {usuarios.map((usuario, i) => (
                             <TableRow key={usuario._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
@@ -411,8 +428,13 @@ export default function GestionUsuarios() {
                                         {usuario.idCargo.nombre}
                                     </Badge>
                                 }</TableCell>
+                                <TableCell>{
+                                    <Badge className="px-5 py-3 bg-primary/60 text-foreground">
+                                        {usuario.idCarrera.nombre}
+                                    </Badge>
+                                }</TableCell>
                                 <TableCell>{formatearFecha(usuario.fechaInicio)}</TableCell>
-                                <TableCell>{formatearFecha(usuario.fechaFin)}</TableCell>
+                                {/* <TableCell>{formatearFecha(usuario.fechaFin)}</TableCell> */}
                                 <TableCell>{
                                     usuario.estado ? (
                                         <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground">Activo</Badge>

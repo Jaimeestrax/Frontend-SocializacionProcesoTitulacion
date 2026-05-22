@@ -1,4 +1,4 @@
-import { GitFork, FileText, Users, Route, Newspaper, ShieldUser, BookUser } from 'lucide-react';
+import { GitFork, FileText, Users, Route, Newspaper, ShieldUser, BookUser, GraduationCap, BadgeQuestionMark } from 'lucide-react';
 
 export const cards = [
     {
@@ -38,12 +38,21 @@ export const cards = [
         roles: [1, 2]
     },
     {
-        icon: Users,
-        title: "Control de usuarios",
-        description: "Gestione accesos y perfiles del personal administrativo.",
-        buttonLabel: "Administrar",
-        buttonClass: "border-amber-600 bg-amber-600/10 text-amber-600",
-        route: "/gestion-usuarios",
+        icon: BadgeQuestionMark,
+        title: "Soporte al usuario",
+        description: "Gestione las preguntas frecuentes del proceso de titulación.",
+        buttonLabel: "Gestionar",
+        buttonClass: "border-violet-600 bg-violet-600/10 text-violet-600",
+        route: "/gestion-soporte",
+        roles: [1, 2]
+    },
+    {
+        icon: BookUser,
+        title: "Gestión de cargos",
+        description: "Gestione los tipos de participantes del proceso de titulación.",
+        buttonLabel: "Gestionar",
+        buttonClass: "border-pink-600 bg-pink-600/10 text-pink-600",
+        route: "/gestion-cargos",
         roles: [1]
     },
     {
@@ -56,12 +65,21 @@ export const cards = [
         roles: [1]
     },
     {
-        icon: BookUser,
-        title: "Gestión de cargos",
-        description: "Gestione los tipos de participantes del proceso de titulación.",
+        icon: GraduationCap,
+        title: "Gestión de carreras",
+        description: "Organice las carreras de la facultad.",
         buttonLabel: "Gestionar",
-        buttonClass: "border-pink-600 bg-pink-600/10 text-pink-600",
-        route: "/gestion-cargos",
+        buttonClass: "border-rose-600 bg-rose-600/10 text-rose-600",
+        route: "/gestion-carreras",
         roles: [1]
     },
+    {
+        icon: Users,
+        title: "Control de usuarios",
+        description: "Gestione accesos y perfiles del personal administrativo.",
+        buttonLabel: "Administrar",
+        buttonClass: "border-amber-600 bg-amber-600/10 text-amber-600",
+        route: "/gestion-usuarios",
+        roles: [1]
+    }
 ];

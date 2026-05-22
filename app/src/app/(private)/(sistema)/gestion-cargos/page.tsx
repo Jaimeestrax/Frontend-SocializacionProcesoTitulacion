@@ -259,6 +259,13 @@ export default function GestionCargos() {
                         </TableRow>
                     </TableHeader>
                     <TableBody className="text-xs lg:text-sm">
+                        {cargos.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                                    No hay cargos registrados
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {cargos.map((cargo, i) => (
                             <TableRow key={cargo._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>

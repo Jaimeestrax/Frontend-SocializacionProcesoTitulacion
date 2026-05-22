@@ -2,7 +2,7 @@
 
 import { toast } from "@/components/ui/toast-custom";
 
-import { CalendarPlus, CalendarRange, FileEdit, Download, Info, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronRight } from 'lucide-react';
+import { CalendarPlus, CalendarRange, FileEdit, Download, Info, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronRight, TextSearch } from 'lucide-react';
 
 import {
     Drawer,
@@ -25,7 +25,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { DatePickerInput } from "@/components/date-picker";
 
 import {
     Table,
@@ -64,6 +65,25 @@ const planificacionVacia = (): Planificacion => ({
     subprocesos: []
 });
 
+type ErroresActividad = {
+    fechaInicio?: string;
+    fechaFin?: string;
+};
+
+type ErroresSubproceso = {
+    fechaInicio?: string;
+    fechaFin?: string;
+    actividades?: ErroresActividad[];
+};
+
+type ErroresPlanificacion = {
+    periodo?: string;
+    fechaInicio?: string;
+    fechaFin?: string;
+    subprocesos?: ErroresSubproceso[];
+    sinSubprocesos?: string;
+};
+
 export default function GestionPlanificacion() {
     // Hooks de planificacion
     const { registrarPlanificacion, obtenerPlanificaciones, actualizarPlanificacion, actualizarEstadoPlanificacion, obtenerPlanificacionPorId, loading } = usePlanificacion();
@@ -83,6 +103,11 @@ export default function GestionPlanificacion() {
         limite: 10,
         palabra: ""
     });
+
+    const [textoBusqueda, setTextoBusqueda] = useState("");
+
+    const [erroresRegistro, setErroresRegistro] = useState<ErroresPlanificacion>({});
+    const [erroresActualizar, setErroresActualizar] = useState<ErroresPlanificacion>({});
 
     // Subprocesos activos disponibles
     const [subprocesosActivos, setSubprocesosActivos] = useState<any[]>([]);
@@ -130,6 +155,18 @@ export default function GestionPlanificacion() {
     useEffect(() => { cargarPlanificaciones(); }, [busqueda]);
     useEffect(() => { cargarSubprocesosActivos(); }, []);
 
+    // Ejecuta busqueda
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setBusqueda(prev => ({
+                ...prev,
+                pagina: 1,
+                palabra: textoBusqueda
+            }));
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [textoBusqueda]);
+
     // Helper para agregar subproceso
     const agregarSubproceso = (spOriginal: any) => {
         // Evita duplicados
@@ -166,6 +203,16 @@ export default function GestionPlanificacion() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const nuevosErrores = validarPlanificacion(planificacion);
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresRegistro(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresRegistro({});
+
         try {
             const user = JSON.parse(localStorage.getItem("identity") || "{}");
             const res = await registrarPlanificacion({ ...planificacion, idEncargadoGenerar: user._id });
@@ -210,6 +257,16 @@ export default function GestionPlanificacion() {
 
     const handleActualizar = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const nuevosErrores = validarPlanificacion(planificacionActualizar);
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresActualizar(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresActualizar({});
+
         try {
             const user = JSON.parse(localStorage.getItem("identity") || "{}");
             const res = await actualizarPlanificacion(planificacionActualizarId, { ...planificacionActualizar, idEncargadoActualizar: user._id });
@@ -283,6 +340,13 @@ export default function GestionPlanificacion() {
         });
     };
 
+    const parsearFechaLocal = (fecha: string): Date | undefined => {
+        if (!fecha) return undefined;
+        const solo = fecha.split("T")[0];
+        const [year, month, day] = solo.split("-").map(Number);
+        return new Date(year, month - 1, day); // Constructor local sin UTC
+    };
+
     const generarIdentificadoresInstrumentos = (subproceso: any) => {
         let contadorInstrumentos = 0;
 
@@ -310,6 +374,56 @@ export default function GestionPlanificacion() {
                 nombreParticipante: actividad.idParticipante?.nombre,
                 instrumentos
             };
+        });
+    };
+
+    const validarPlanificacion = (plan: Planificacion): ErroresPlanificacion => {
+        const e: ErroresPlanificacion = {};
+
+        if (!plan.periodo.trim()) e.periodo = "El período de la planificación es requerido";
+        if (!plan.fechaInicio) e.fechaInicio = "La fecha de inicio de la planificación es requerida";
+        if (!plan.fechaFin) e.fechaFin = "La fecha de finalización es requerida";
+        if (plan.subprocesos.length === 0) e.sinSubprocesos = "Se debe agregar al menos un subproceso";
+
+        const errSubs = plan.subprocesos.map(sp => {
+            const eSp: ErroresSubproceso = {};
+            if (!sp.fechaInicio) eSp.fechaInicio = "La fecha de inicio del subproceso es requerida";
+            if (!sp.fechaFin) eSp.fechaFin = "La fecha de finalización del subproceso es requerida";
+
+            const errActs = sp.actividades.map(act => {
+                const eAct: ErroresActividad = {};
+                if (!act.fechaInicio) eAct.fechaInicio = "La fecha de inicio de la actividad es requerida";
+                if (!act.fechaFin) eAct.fechaFin = "La fecha de finalización de la actividad es requerida";
+                return eAct;
+            });
+
+            if (errActs.some(a => Object.keys(a).length > 0)) eSp.actividades = errActs;
+            return eSp;
+        });
+
+        if (errSubs.some(s => Object.keys(s).length > 0)) e.subprocesos = errSubs;
+
+        return e;
+    };
+
+    // Para limpiar los inputs cuando ya se ha corregido el error
+    const limpiarErrorSp = (errSet: Function, si: number, campo: keyof ErroresSubproceso) => {
+        errSet((prev: ErroresPlanificacion) => {
+            if (!prev.subprocesos?.[si]) return prev;
+            const subs = [...prev.subprocesos];
+            subs[si] = { ...subs[si], [campo]: undefined };
+            return { ...prev, subprocesos: subs };
+        });
+    };
+
+    const limpiarErrorAct = (errSet: Function, si: number, ai: number, campo: keyof ErroresActividad) => {
+        errSet((prev: ErroresPlanificacion) => {
+            if (!prev.subprocesos?.[si]?.actividades?.[ai]) return prev;
+            const subs = [...prev.subprocesos!];
+            const acts = [...subs[si].actividades!];
+            acts[ai] = { ...acts[ai], [campo]: undefined };
+            subs[si] = { ...subs[si], actividades: acts };
+            return { ...prev, subprocesos: subs };
         });
     };
 
@@ -346,8 +460,19 @@ export default function GestionPlanificacion() {
                 </div>
 
                 <p className="p-4 font-bold text-sm md:text-md">Listado de planificaciones</p>
+                <div className="flex items-center justify-center mb-4">
+                    <InputGroup className="p-2 bg-background w-full md:w-1/2 hover:border-primary">
+                        <InputGroupAddon align="inline-start">
+                            <TextSearch />
+                        </InputGroupAddon>
+                        <InputGroupInput type="text" placeholder="Buscar por periodo académico..."
+                            value={textoBusqueda} onChange={(e) => setTextoBusqueda(e.target.value)}
+                            className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
+                        />
+                    </InputGroup>
+                </div>
                 <Table className="bg-white dark:bg-gray-900 rounded-lg">
-                    <TableHeader>
+                    <TableHeader className="text-xs lg:text-sm bg-muted-foreground/25">
                         <TableRow>
                             <TableHead className="text-center">Nro</TableHead>
                             <TableHead className="text-center">Periodo</TableHead>
@@ -374,12 +499,12 @@ export default function GestionPlanificacion() {
                                 <TableCell>{formatearFecha(plan.fechaInicio)}</TableCell>
                                 <TableCell>{formatearFecha(plan.fechaFin)}</TableCell>
                                 <TableCell>
-                                    <Badge variant={"default"} className="px-5 py-3 text-xs md:text-sm">{plan.subprocesos?.length || 0} subproceso(s)</Badge>
+                                    <Badge variant={"default"} className="px-5 py-3">{plan.subprocesos?.length || 0} subproceso(s)</Badge>
                                 </TableCell>
                                 <TableCell>
                                     {plan.estado
-                                        ? <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground text-xs md:text-sm">Vigente</Badge>
-                                        : <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground text-xs md:text-sm">No vigente</Badge>
+                                        ? <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground">Vigente</Badge>
+                                        : <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground">No vigente</Badge>
                                     }
                                 </TableCell>
                                 <TableCell>
@@ -445,7 +570,7 @@ export default function GestionPlanificacion() {
                                 }} />
                         </PaginationItem>
                         <PaginationItem>
-                            <PaginationLink href="#">{busqueda.pagina}</PaginationLink>
+                            <PaginationLink isActive href="#">{busqueda.pagina}</PaginationLink>
                         </PaginationItem>
                         <PaginationItem>
                             <PaginationNext href="#" className={!siguiente ? "pointer-events-none opacity-50" : ""}
@@ -460,7 +585,7 @@ export default function GestionPlanificacion() {
             </div>
 
             {/** Drawer de regsitro */}
-            <Drawer open={isOpenNuevaPlanificacion} onOpenChange={setIsOpenNuevaPlanificacion} direction={drawerDirection} onClose={() => setPlanificacion(planificacionVacia())}>
+            <Drawer open={isOpenNuevaPlanificacion} onOpenChange={setIsOpenNuevaPlanificacion} direction={drawerDirection} onClose={() => { setPlanificacion(planificacionVacia()); setErroresRegistro({}); }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Registro de planificación</DrawerTitle>
@@ -476,30 +601,39 @@ export default function GestionPlanificacion() {
                             <FieldGroup>
                                 <Field>
                                     <FieldLabel htmlFor="periodo" className="text-xs">CODIGO PAO</FieldLabel>
-                                    <InputGroup className="py-5 px-2 bg-secondary">
-                                        <InputGroupInput id="periodo" type="text" placeholder="Ingrese el nombre del periodo académico" required
-                                            value={planificacion.periodo} onChange={e => setPlanificacion(p => ({ ...p, periodo: e.target.value }))}
-                                            className="text-sm md:text-sm"
+                                    <InputGroup className={`py-5 px-2 ${erroresRegistro.periodo ? 'border border-destructive bg-destructive/10' : 'bg-secondary'}`}>
+                                        <InputGroupInput id="periodo" type="text" placeholder="Ingrese el nombre del periodo académico"
+                                            value={planificacion.periodo}
+                                            onChange={e => {
+                                                setPlanificacion(p => ({ ...p, periodo: e.target.value }));
+                                                if (erroresRegistro.periodo) setErroresRegistro(p => ({ ...p, periodo: undefined }));
+                                            }}
+                                            className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.periodo ? 'placeholder:text-destructive/50' : ''}`}
                                         />
                                     </InputGroup>
+                                    {erroresRegistro.periodo && (
+                                        <p className="text-destructive text-xs mt-1">{erroresRegistro.periodo}</p>
+                                    )}
                                 </Field>
-                                <div className="flex items-center justify-between gap-2">
-                                    <Field>
-                                        <FieldLabel htmlFor="fechaInicio" className="text-xs">FECHA INICIO</FieldLabel>
-                                        <InputGroup className="py-5 px-2 bg-secondary">
-                                            <InputGroupInput id="fechaInicio" type="date" required value={planificacion.fechaInicio}
-                                                onChange={e => setPlanificacion(p => ({ ...p, fechaInicio: e.target.value }))}
-                                                className="text-sm md:text-sm" />
-                                        </InputGroup>
-                                    </Field>
-                                    <Field>
-                                        <FieldLabel className="text-xs">FECHA FIN</FieldLabel>
-                                        <InputGroup className="py-5 px-2 bg-secondary">
-                                            <InputGroupInput id="fechaFin" type="date" required value={planificacion.fechaFin}
-                                                onChange={e => setPlanificacion(p => ({ ...p, fechaFin: e.target.value }))}
-                                                className="text-sm md:text-sm" />
-                                        </InputGroup>
-                                    </Field>
+                                <div className="flex md:flex-col items-center justify-between gap-2">
+                                    <DatePickerInput id="fechaInicio" label="FECHA INICIO"
+                                        value={parsearFechaLocal(planificacion.fechaInicio)}
+                                        onChange={(date) => {
+                                            setPlanificacion(p => ({ ...p, fechaInicio: date ? date.toISOString().split("T")[0] : "" }));
+                                            if (erroresRegistro.fechaInicio) setErroresRegistro(p => ({ ...p, fechaInicio: undefined }));
+                                        }}
+                                        error={erroresRegistro.fechaInicio}
+                                        className="flex-1"
+                                    />
+                                    <DatePickerInput id="fechaFin" label="FECHA FIN"
+                                        value={parsearFechaLocal(planificacion.fechaFin)}
+                                        onChange={(date) => {
+                                            setPlanificacion(p => ({ ...p, fechaFin: date ? date.toISOString().split("T")[0] : "" }));
+                                            if (erroresRegistro.fechaFin) setErroresRegistro(p => ({ ...p, fechaFin: undefined }));
+                                        }}
+                                        error={erroresRegistro.fechaFin}
+                                        className="flex-1"
+                                    />
                                 </div>
                             </FieldGroup>
                         </section>
@@ -520,52 +654,31 @@ export default function GestionPlanificacion() {
                                                 <Trash2 className="w-4 h-4 text-destructive" />
                                             </Button>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <Field>
-                                                <FieldLabel className="text-xs">INICIO SUBPROCESO</FieldLabel>
-                                                <InputGroup className="py-5 px-2 bg-secondary">
-                                                    <InputGroupInput type="date" required value={sp.fechaInicio}
-                                                        onChange={(e) => {
-                                                            setPlanificacion(prev => {
-                                                                const subprocesos = [...prev.subprocesos];
-
-                                                                subprocesos[si] = {
-                                                                    ...subprocesos[si],
-                                                                    fechaInicio: e.target.value
-                                                                };
-
-                                                                return {
-                                                                    ...prev,
-                                                                    subprocesos
-                                                                };
-                                                            });
-                                                        }}
-                                                        className="text-xs md:text-xs"
-                                                    />
-                                                </InputGroup>
-                                            </Field>
-                                            <Field>
-                                                <FieldLabel className="text-xs">FIN SUBPROCESO</FieldLabel>
-                                                <InputGroup className="py-5 px-2 bg-secondary">
-                                                    <InputGroupInput type="date" required value={sp.fechaFin}
-                                                        onChange={(e) => {
-                                                            setPlanificacion(prev => {
-                                                                const subprocesos = [...prev.subprocesos];
-
-                                                                subprocesos[si] = {
-                                                                    ...subprocesos[si],
-                                                                    fechaFin: e.target.value
-                                                                };
-
-                                                                return {
-                                                                    ...prev,
-                                                                    subprocesos
-                                                                };
-                                                            });
-                                                        }}
-                                                        className="text-xs md:text-xs" />
-                                                </InputGroup>
-                                            </Field>
+                                        <div className="flex md:flex-col items-center justify-between gap-2">
+                                            <DatePickerInput id={`sp-inicio-${si}`} label="INICIO SUBPROCESO"
+                                                value={parsearFechaLocal(sp.fechaInicio)}
+                                                onChange={(date) => {
+                                                    setPlanificacion(prev => {
+                                                        const subprocesos = [...prev.subprocesos];
+                                                        subprocesos[si] = { ...subprocesos[si], fechaInicio: date ? date.toISOString().split("T")[0] : "" };
+                                                        return { ...prev, subprocesos };
+                                                    });
+                                                    limpiarErrorSp(setErroresRegistro, si, "fechaInicio");
+                                                }}
+                                                error={erroresRegistro.subprocesos?.[si]?.fechaInicio}
+                                            />
+                                            <DatePickerInput id={`sp-fin-${si}`} label="FIN SUBPROCESO"
+                                                value={parsearFechaLocal(sp.fechaFin)}
+                                                onChange={(date) => {
+                                                    setPlanificacion(prev => {
+                                                        const subprocesos = [...prev.subprocesos];
+                                                        subprocesos[si] = { ...subprocesos[si], fechaFin: date ? date.toISOString().split("T")[0] : "" };
+                                                        return { ...prev, subprocesos };
+                                                    });
+                                                    limpiarErrorSp(setErroresRegistro, si, "fechaFin");
+                                                }}
+                                                error={erroresRegistro.subprocesos?.[si]?.fechaFin}
+                                            />
                                         </div>
 
                                         {/** Actividades */}
@@ -590,66 +703,36 @@ export default function GestionPlanificacion() {
                                                         </span>
                                                     </div>
 
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                        <Field>
-                                                            <FieldLabel className="text-xs">INICIO ACTIVIDAD</FieldLabel>
-                                                            <InputGroup className="bg-secondary">
-                                                                <InputGroupInput type="date" required value={act.fechaInicio}
-                                                                    onChange={(e) => {
-                                                                        setPlanificacion(prev => {
-                                                                            const subprocesos = [...prev.subprocesos];
-                                                                            const actividades = [...subprocesos[si].actividades];
+                                                    <div className="flex md:flex-col items-center justify-between gap-2">
+                                                        <DatePickerInput id={`act-inicio-${si}-${ai}`} label="INICIO ACTIVIDAD"
+                                                            value={parsearFechaLocal(act.fechaInicio)}
+                                                            onChange={(date) => {
+                                                                setPlanificacion(prev => {
+                                                                    const subprocesos = [...prev.subprocesos];
+                                                                    const actividades = [...subprocesos[si].actividades];
+                                                                    actividades[ai] = { ...actividades[ai], fechaInicio: date ? date.toISOString().split("T")[0] : "" };
+                                                                    subprocesos[si] = { ...subprocesos[si], actividades };
+                                                                    return { ...prev, subprocesos };
+                                                                });
+                                                                limpiarErrorAct(setErroresRegistro, si, ai, "fechaInicio");
+                                                            }}
+                                                            error={erroresRegistro.subprocesos?.[si]?.actividades?.[ai]?.fechaInicio}
+                                                        />
 
-                                                                            actividades[ai] = {
-                                                                                ...actividades[ai],
-                                                                                fechaInicio: e.target.value
-                                                                            };
-
-                                                                            subprocesos[si] = {
-                                                                                ...subprocesos[si],
-                                                                                actividades
-                                                                            };
-
-                                                                            return {
-                                                                                ...prev,
-                                                                                subprocesos
-                                                                            };
-                                                                        });
-                                                                    }}
-                                                                    className="text-xs md:text-xs"
-                                                                />
-                                                            </InputGroup>
-                                                        </Field>
-
-                                                        <Field>
-                                                            <FieldLabel className="text-xs">FIN ACTIVIDAD</FieldLabel>
-                                                            <InputGroup className="bg-secondary">
-                                                                <InputGroupInput type="date" required value={act.fechaFin}
-                                                                    onChange={(e) => {
-                                                                        setPlanificacion(prev => {
-                                                                            const subprocesos = [...prev.subprocesos];
-                                                                            const actividades = [...subprocesos[si].actividades];
-
-                                                                            actividades[ai] = {
-                                                                                ...actividades[ai],
-                                                                                fechaFin: e.target.value
-                                                                            };
-
-                                                                            subprocesos[si] = {
-                                                                                ...subprocesos[si],
-                                                                                actividades
-                                                                            };
-
-                                                                            return {
-                                                                                ...prev,
-                                                                                subprocesos
-                                                                            };
-                                                                        });
-                                                                    }}
-                                                                    className="text-xs md:text-xs"
-                                                                />
-                                                            </InputGroup>
-                                                        </Field>
+                                                        <DatePickerInput id={`act-fin-${si}-${ai}`} label="FIN ACTIVIDAD"
+                                                            value={parsearFechaLocal(act.fechaFin)}
+                                                            onChange={(date) => {
+                                                                setPlanificacion(prev => {
+                                                                    const subprocesos = [...prev.subprocesos];
+                                                                    const actividades = [...subprocesos[si].actividades];
+                                                                    actividades[ai] = { ...actividades[ai], fechaFin: date ? date.toISOString().split("T")[0] : "" };
+                                                                    subprocesos[si] = { ...subprocesos[si], actividades };
+                                                                    return { ...prev, subprocesos };
+                                                                });
+                                                                limpiarErrorAct(setErroresRegistro, si, ai, "fechaFin");
+                                                            }}
+                                                            error={erroresRegistro.subprocesos?.[si]?.actividades?.[ai]?.fechaFin}
+                                                        />
                                                     </div>
 
                                                     {act.instrumentos.length > 0 && (
@@ -693,13 +776,17 @@ export default function GestionPlanificacion() {
                                     );
                                 })}
                             </div>
+                            {erroresRegistro.sinSubprocesos && (
+                                <p className="text-destructive text-xs mt-2">{erroresRegistro.sinSubprocesos}</p>
+                            )}
                         </section>
 
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Guardando..." : "Guardar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenNuevaPlanificacion(false)}>
+                            <Button type="button" variant="outline" className="md:py-6"
+                                onClick={() => { setIsOpenNuevaPlanificacion(false); setErroresRegistro({}); setPlanificacion(planificacionVacia()); }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>
@@ -708,7 +795,7 @@ export default function GestionPlanificacion() {
             </Drawer>
 
             {/** Drawer de actualización */}
-            <Drawer open={isOpenActualizarPlanificacion} onOpenChange={setIsOpenActualizarPlanificacion} direction={drawerDirection}>
+            <Drawer open={isOpenActualizarPlanificacion} onOpenChange={setIsOpenActualizarPlanificacion} direction={drawerDirection} onClose={() => { setIsOpenActualizarPlanificacion(false); setErroresActualizar({}); }}>
                 <DrawerContent className="p-2 md:p-4">
                     <DrawerHeader>
                         <DrawerTitle className="font-bold text-md md:text-lg">Actualizar planificación</DrawerTitle>
@@ -725,30 +812,38 @@ export default function GestionPlanificacion() {
                                 <FieldGroup>
                                     <Field>
                                         <FieldLabel htmlFor="periodo" className="text-xs">CODIGO PAO</FieldLabel>
-                                        <InputGroup className="py-5 px-2 bg-secondary">
+                                        <InputGroup className={`py-5 px-2 ${erroresActualizar.periodo ? 'border border-destructive bg-destructive/10' : 'bg-secondary'}`}>
                                             <InputGroupInput id="periodo" type="text" placeholder="Ingrese el nombre del periodo académico" required
-                                                value={planificacionActualizar.periodo} onChange={e => setPlanificacionActualizar(p => ({ ...p, periodo: e.target.value }))}
-                                                className="text-sm md:text-sm"
+                                                value={planificacionActualizar.periodo} onChange={e => {
+                                                    setPlanificacionActualizar(p => ({ ...p, periodo: e.target.value }));
+                                                    if (erroresActualizar.periodo) setErroresActualizar(p => ({ ...p, periodo: undefined }))
+                                                }}
+                                                className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.periodo ? 'placeholder:text-destructive/50' : ''}`}
                                             />
                                         </InputGroup>
+                                        {erroresActualizar.periodo && (
+                                            <p className="text-destructive text-xs mt-1">{erroresActualizar.periodo}</p>
+                                        )}
                                     </Field>
-                                    <div className="flex items-center justify-between gap-2">
-                                        <Field>
-                                            <FieldLabel htmlFor="fechaInicio" className="text-xs">FECHA INICIO</FieldLabel>
-                                            <InputGroup className="py-5 px-2 bg-secondary">
-                                                <InputGroupInput id="fechaInicio" type="date" required value={planificacionActualizar.fechaInicio}
-                                                    onChange={e => setPlanificacionActualizar(p => ({ ...p, fechaInicio: e.target.value }))}
-                                                    className="text-sm md:text-sm" />
-                                            </InputGroup>
-                                        </Field>
-                                        <Field>
-                                            <FieldLabel className="text-xs">FECHA FIN</FieldLabel>
-                                            <InputGroup className="py-5 px-2 bg-secondary">
-                                                <InputGroupInput id="fechaFin" type="date" required value={planificacionActualizar.fechaFin}
-                                                    onChange={e => setPlanificacionActualizar(p => ({ ...p, fechaFin: e.target.value }))}
-                                                    className="text-sm md:text-sm" />
-                                            </InputGroup>
-                                        </Field>
+                                    <div className="flex md:flex-col items-center justify-between gap-2">
+                                        <DatePickerInput id="fechaInicio" label="FECHA INICIO"
+                                            value={parsearFechaLocal(planificacionActualizar.fechaInicio)}
+                                            onChange={(date) => {
+                                                setPlanificacionActualizar(p => ({ ...p, fechaInicio: date ? date.toISOString().split("T")[0] : "" }));
+                                                if (erroresActualizar.fechaInicio) setErroresActualizar(p => ({ ...p, fechaInicio: undefined }));
+                                            }}
+                                            error={erroresActualizar.fechaInicio}
+                                            className="flex-1"
+                                        />
+                                        <DatePickerInput id="fechaFin" label="FECHA FIN"
+                                            value={parsearFechaLocal(planificacionActualizar.fechaFin)}
+                                            onChange={(date) => {
+                                                setPlanificacionActualizar(p => ({ ...p, fechaFin: date ? date.toISOString().split("T")[0] : "" }));
+                                                if (erroresActualizar.fechaFin) setErroresActualizar(p => ({ ...p, fechaFin: undefined }));
+                                            }}
+                                            error={erroresActualizar.fechaFin}
+                                            className="flex-1"
+                                        />
                                     </div>
                                 </FieldGroup>
                             </section>
@@ -762,52 +857,31 @@ export default function GestionPlanificacion() {
                                             <span className="text-xs font-semibold">{si + 1}. {sp.identificador}: {sp.nombre}</span>
                                             <span className="text-xs text-muted-foreground">Descripción: {sp.descripcion}</span>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                            <Field>
-                                                <FieldLabel className="text-xs">INICIO SUBPROCESO</FieldLabel>
-                                                <InputGroup className="py-5 px-2 bg-secondary">
-                                                    <InputGroupInput type="date" required value={sp.fechaInicio}
-                                                        onChange={(e) => {
-                                                            setPlanificacionActualizar(prev => {
-                                                                const subprocesos = [...prev.subprocesos];
-
-                                                                subprocesos[si] = {
-                                                                    ...subprocesos[si],
-                                                                    fechaInicio: e.target.value
-                                                                };
-
-                                                                return {
-                                                                    ...prev,
-                                                                    subprocesos
-                                                                };
-                                                            });
-                                                        }}
-                                                        className="text-xs md:text-xs"
-                                                    />
-                                                </InputGroup>
-                                            </Field>
-                                            <Field>
-                                                <FieldLabel className="text-xs">FIN SUBPROCESO</FieldLabel>
-                                                <InputGroup className="py-5 px-2 bg-secondary">
-                                                    <InputGroupInput type="date" required value={sp.fechaFin}
-                                                        onChange={(e) => {
-                                                            setPlanificacionActualizar(prev => {
-                                                                const subprocesos = [...prev.subprocesos];
-
-                                                                subprocesos[si] = {
-                                                                    ...subprocesos[si],
-                                                                    fechaFin: e.target.value
-                                                                };
-
-                                                                return {
-                                                                    ...prev,
-                                                                    subprocesos
-                                                                };
-                                                            });
-                                                        }}
-                                                        className="text-xs md:text-xs" />
-                                                </InputGroup>
-                                            </Field>
+                                        <div className="flex md:flex-col items-center justify-between gap-2">
+                                            <DatePickerInput id={`sp-inicio-${si}`} label="INICIO SUBPROCESO"
+                                                value={parsearFechaLocal(sp.fechaInicio)}
+                                                onChange={(date) => {
+                                                    setPlanificacionActualizar(prev => {
+                                                        const subprocesos = [...prev.subprocesos];
+                                                        subprocesos[si] = { ...subprocesos[si], fechaInicio: date ? date.toISOString().split("T")[0] : "" };
+                                                        return { ...prev, subprocesos };
+                                                    });
+                                                    limpiarErrorSp(setErroresActualizar, si, "fechaInicio");
+                                                }}
+                                                error={erroresActualizar.subprocesos?.[si]?.fechaInicio}
+                                            />
+                                            <DatePickerInput id={`sp-fin-${si}`} label="FIN SUBPROCESO"
+                                                value={parsearFechaLocal(sp.fechaFin)}
+                                                onChange={(date) => {
+                                                    setPlanificacionActualizar(prev => {
+                                                        const subprocesos = [...prev.subprocesos];
+                                                        subprocesos[si] = { ...subprocesos[si], fechaFin: date ? date.toISOString().split("T")[0] : "" };
+                                                        return { ...prev, subprocesos };
+                                                    });
+                                                    limpiarErrorSp(setErroresActualizar, si, "fechaFin");
+                                                }}
+                                                error={erroresActualizar.subprocesos?.[si]?.fechaFin}
+                                            />
                                         </div>
 
                                         {/** Actividades */}
@@ -832,66 +906,36 @@ export default function GestionPlanificacion() {
                                                         </span>
                                                     </div>
 
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                        <Field>
-                                                            <FieldLabel className="text-xs">INICIO ACTIVIDAD</FieldLabel>
-                                                            <InputGroup className="bg-secondary">
-                                                                <InputGroupInput type="date" required value={act.fechaInicio}
-                                                                    onChange={(e) => {
-                                                                        setPlanificacionActualizar(prev => {
-                                                                            const subprocesos = [...prev.subprocesos];
-                                                                            const actividades = [...subprocesos[si].actividades];
+                                                    <div className="flex md:flex-col items-center justify-between gap-2">
+                                                        <DatePickerInput id={`act-inicio-${si}-${ai}`} label="INICIO ACTIVIDAD"
+                                                            value={parsearFechaLocal(act.fechaInicio)}
+                                                            onChange={(date) => {
+                                                                setPlanificacionActualizar(prev => {
+                                                                    const subprocesos = [...prev.subprocesos];
+                                                                    const actividades = [...subprocesos[si].actividades];
+                                                                    actividades[ai] = { ...actividades[ai], fechaInicio: date ? date.toISOString().split("T")[0] : "" };
+                                                                    subprocesos[si] = { ...subprocesos[si], actividades };
+                                                                    return { ...prev, subprocesos };
+                                                                });
+                                                                limpiarErrorAct(setErroresActualizar, si, ai, "fechaInicio");
+                                                            }}
+                                                            error={erroresActualizar.subprocesos?.[si]?.actividades?.[ai]?.fechaInicio}
+                                                        />
 
-                                                                            actividades[ai] = {
-                                                                                ...actividades[ai],
-                                                                                fechaInicio: e.target.value
-                                                                            };
-
-                                                                            subprocesos[si] = {
-                                                                                ...subprocesos[si],
-                                                                                actividades
-                                                                            };
-
-                                                                            return {
-                                                                                ...prev,
-                                                                                subprocesos
-                                                                            };
-                                                                        });
-                                                                    }}
-                                                                    className="text-xs md:text-xs"
-                                                                />
-                                                            </InputGroup>
-                                                        </Field>
-
-                                                        <Field>
-                                                            <FieldLabel className="text-xs">FIN ACTIVIDAD</FieldLabel>
-                                                            <InputGroup className="bg-secondary">
-                                                                <InputGroupInput type="date" required value={act.fechaFin}
-                                                                    onChange={(e) => {
-                                                                        setPlanificacionActualizar(prev => {
-                                                                            const subprocesos = [...prev.subprocesos];
-                                                                            const actividades = [...subprocesos[si].actividades];
-
-                                                                            actividades[ai] = {
-                                                                                ...actividades[ai],
-                                                                                fechaFin: e.target.value
-                                                                            };
-
-                                                                            subprocesos[si] = {
-                                                                                ...subprocesos[si],
-                                                                                actividades
-                                                                            };
-
-                                                                            return {
-                                                                                ...prev,
-                                                                                subprocesos
-                                                                            };
-                                                                        });
-                                                                    }}
-                                                                    className="text-xs md:text-xs"
-                                                                />
-                                                            </InputGroup>
-                                                        </Field>
+                                                        <DatePickerInput id={`act-fin-${si}-${ai}`} label="FIN ACTIVIDAD"
+                                                            value={parsearFechaLocal(act.fechaFin)}
+                                                            onChange={(date) => {
+                                                                setPlanificacionActualizar(prev => {
+                                                                    const subprocesos = [...prev.subprocesos];
+                                                                    const actividades = [...subprocesos[si].actividades];
+                                                                    actividades[ai] = { ...actividades[ai], fechaFin: date ? date.toISOString().split("T")[0] : "" };
+                                                                    subprocesos[si] = { ...subprocesos[si], actividades };
+                                                                    return { ...prev, subprocesos };
+                                                                });
+                                                                limpiarErrorAct(setErroresActualizar, si, ai, "fechaFin");
+                                                            }}
+                                                            error={erroresActualizar.subprocesos?.[si]?.actividades?.[ai]?.fechaFin}
+                                                        />
                                                     </div>
 
                                                     {act.instrumentos.length > 0 && (
@@ -917,7 +961,8 @@ export default function GestionPlanificacion() {
                                 <Button type="submit" className="md:py-6" disabled={loading}>
                                     {loading ? "Actualizando..." : "Actualizar"}
                                 </Button>
-                                <Button type="button" variant="outline" className="md:py-6" onClick={() => setIsOpenActualizarPlanificacion(false)}>
+                                <Button type="button" variant="outline" className="md:py-6"
+                                    onClick={() => { setIsOpenActualizarPlanificacion(false); setErroresActualizar({}); }}>
                                     Cancelar
                                 </Button>
                             </DrawerFooter>
@@ -1017,4 +1062,3 @@ export default function GestionPlanificacion() {
         </div>
     );
 }
-

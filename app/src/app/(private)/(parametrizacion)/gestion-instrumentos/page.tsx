@@ -353,6 +353,13 @@ export default function GestionInstrumentos() {
                         </TableRow>
                     </TableHeader>
                     <TableBody className="text-xs lg:text-sm">
+                        {instrumentos.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                                    No hay instrumentos registrados
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {instrumentos.map((instrumento, i) => (
                             <TableRow key={instrumento._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
@@ -463,9 +470,11 @@ export default function GestionInstrumentos() {
                                             setInstrumento({ ...instrumento, nombre: e.target.value });
                                             if (erroresRegistro.nombre) setErroresRegistro({ ...erroresRegistro, nombre: undefined });
                                         }}
-                                        className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
-                                {erroresRegistro.nombre && <span className="text-xs text-destructive mt-1">{erroresRegistro.nombre}</span>}
+                                {erroresRegistro.nombre && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.nombre}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCION</FieldLabel>
@@ -475,10 +484,11 @@ export default function GestionInstrumentos() {
                                             setInstrumento({ ...instrumento, descripcion: e.target.value });
                                             if (erroresRegistro.descripcion) setErroresRegistro({ ...erroresRegistro, descripcion: undefined });
                                         }}
-                                        className="w-full text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none"
-                                    />
+                                        className={`w-full text-xs md:text-sm placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-sm ${erroresRegistro.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
-                                {erroresRegistro.descripcion && <span className="text-xs text-destructive mt-1">{erroresRegistro.descripcion}</span>}
+                                {erroresRegistro.descripcion && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.descripcion}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FileUploadField id="archivo" label="ARCHIVO" accept=".pdf,.docx"
@@ -487,7 +497,9 @@ export default function GestionInstrumentos() {
                                         if (erroresRegistro.archivo) setErroresRegistro({ ...erroresRegistro, archivo: undefined });
                                     }}
                                 />
-                                {erroresRegistro.archivo && <span className="text-xs text-destructive mt-1">{erroresRegistro.archivo}</span>}
+                                {erroresRegistro.archivo && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.archivo}</p>
+                                )}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -520,9 +532,11 @@ export default function GestionInstrumentos() {
                                             setInstrumentoEditar({ ...instrumentoEditar, nombre: e.target.value });
                                             if (erroresActualizar.nombre) setErroresActualizar({ ...erroresActualizar, nombre: undefined });
                                         }}
-                                        className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
-                                {erroresActualizar.nombre && <span className="text-xs text-destructive mt-1">{erroresActualizar.nombre}</span>}
+                                {erroresActualizar.nombre && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.nombre}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCION</FieldLabel>
@@ -532,10 +546,11 @@ export default function GestionInstrumentos() {
                                             setInstrumentoEditar({ ...instrumentoEditar, descripcion: e.target.value });
                                             if (erroresActualizar.descripcion) setErroresActualizar({ ...erroresActualizar, descripcion: undefined });
                                         }}
-                                        className="w-full text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none"
-                                    />
+                                        className={`w-full text-xs md:text-sm placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-sm ${erroresActualizar.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
-                                {erroresActualizar.descripcion && <span className="text-xs text-destructive mt-1">{erroresActualizar.descripcion}</span>}
+                                {erroresActualizar.descripcion && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.descripcion}</p>
+                                )}
                             </Field>
                             <Field>
                                 {typeof instrumentoEditar.archivo === 'string' && (
@@ -560,7 +575,9 @@ export default function GestionInstrumentos() {
                                         }}
                                     />
                                 )}
-                                {erroresActualizar.archivo && <span className="text-xs text-destructive mt-1">{erroresActualizar.archivo}</span>}
+                                {erroresActualizar.archivo && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.archivo}</p>
+                                )}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">

@@ -496,6 +496,13 @@ export default function GestionSubprocesos() {
                         </TableRow>
                     </TableHeader>
                     <TableBody className="text-xs lg:text-sm">
+                        {subprocesos.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                                    No hay subprocesos registrados
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {subprocesos.map((sp, i) => (
                             <TableRow key={sp._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
@@ -618,7 +625,7 @@ export default function GestionSubprocesos() {
                                     </Field>
                                     <Field>
                                         <FieldLabel htmlFor="orden" className="text-xs">ORDEN</FieldLabel>
-                                        <Select value={String(subproceso.orden)}
+                                        <Select value={subproceso.orden === 0 ? undefined : String(subproceso.orden)}
                                             onValueChange={(e) => {
                                                 setSubproceso({ ...subproceso, orden: Number(e) })
                                                 if (erroresRegistro.orden) setErroresRegistro({ ...erroresRegistro, orden: undefined });
@@ -652,7 +659,7 @@ export default function GestionSubprocesos() {
                                                 setSubproceso(p => ({ ...p, nombre: e.target.value }));
                                                 if (erroresRegistro.nombre) setErroresRegistro({ ...erroresRegistro, nombre: undefined });
                                             }}
-                                            className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.nombre ? 'placeholder:text-destructive/50' : ''}`} />
+                                            className={`text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                     </InputGroup>
                                     {erroresRegistro.nombre && (
                                         <p className="text-xs text-destructive mt-1">{erroresRegistro.nombre}</p>
@@ -661,12 +668,12 @@ export default function GestionSubprocesos() {
                                 <Field>
                                     <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCIÓN</FieldLabel>
                                     <InputGroup className={`py-5 px-2 ${erroresRegistro.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
-                                        <textarea id="descripcion" rows={3} placeholder="Ingrese la descripción del subproceso"
+                                        <textarea id="descripcion" rows={4} placeholder="Ingrese la descripción del subproceso"
                                             value={subproceso.descripcion} onChange={e => {
                                                 setSubproceso(p => ({ ...p, descripcion: e.target.value }));
                                                 if (erroresRegistro.descripcion) setErroresRegistro({ ...erroresRegistro, descripcion: undefined });
                                             }}
-                                            className={`w-full text-xs md:text-sm placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-sm ${erroresRegistro.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
+                                            className={`w-full text-xs md:text-xs placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-xs ${erroresRegistro.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                     </InputGroup>
                                     {erroresRegistro.descripcion && (
                                         <p className="text-xs text-destructive mt-1">{erroresRegistro.descripcion}</p>
@@ -724,7 +731,7 @@ export default function GestionSubprocesos() {
                                                             });
                                                         }
                                                     }}
-                                                    className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.actividades?.[index]?.nombre ? 'placeholder:text-destructive/50' : ''}`} />
+                                                    className={`text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.actividades?.[index]?.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                             </InputGroup>
                                             {erroresRegistro.actividades?.[index]?.nombre && (
                                                 <p className="text-xs text-destructive mt-1">{erroresRegistro.actividades[index].nombre}</p>
@@ -734,7 +741,7 @@ export default function GestionSubprocesos() {
                                         <Field>
                                             <FieldLabel className="text-xs">DESCRIPCIÓN ACTIVIDAD</FieldLabel>
                                             <InputGroup className={`py-5 px-2 ${erroresRegistro.actividades?.[index]?.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
-                                                <textarea rows={2} placeholder="Descripción de la actividad"
+                                                <textarea rows={3} placeholder="Descripción de la actividad"
                                                     value={act.descripcion}
                                                     onChange={e => {
                                                         actualizarActividad(index, "descripcion", e.target.value);
@@ -746,7 +753,7 @@ export default function GestionSubprocesos() {
                                                             });
                                                         }
                                                     }}
-                                                    className={`w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none bg-transparent ${erroresRegistro.actividades?.[index]?.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
+                                                    className={`w-full text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs resize-none outline-none bg-transparent ${erroresRegistro.actividades?.[index]?.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                             </InputGroup>
                                             {erroresRegistro.actividades?.[index]?.descripcion && (
                                                 <p className="text-xs text-destructive mt-1">{erroresRegistro.actividades[index].descripcion}</p>
@@ -894,7 +901,7 @@ export default function GestionSubprocesos() {
                                                 setSubprocesoActualizar(p => ({ ...p, nombre: e.target.value }));
                                                 if (erroresActualizar.nombre) setErroresActualizar(p => ({ ...p, nombre: undefined }));
                                             }}
-                                            className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.nombre ? 'placeholder:text-destructive/50' : ''}`} />
+                                            className={`text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                     </InputGroup>
                                     {erroresActualizar.nombre && (
                                         <p className="text-xs text-destructive mt-1">{erroresActualizar.nombre}</p>
@@ -903,12 +910,12 @@ export default function GestionSubprocesos() {
                                 <Field>
                                     <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCIÓN</FieldLabel>
                                     <InputGroup className={`py-5 px-2 ${erroresActualizar.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
-                                        <textarea id="descripcion" rows={3} placeholder="Ingrese la descripción del subproceso"
+                                        <textarea id="descripcion" rows={4} placeholder="Ingrese la descripción del subproceso"
                                             value={subprocesoActualizar.descripcion} onChange={e => {
                                                 setSubprocesoActualizar(p => ({ ...p, descripcion: e.target.value }))
                                                 if (erroresActualizar.descripcion) setErroresActualizar(p => ({ ...p, descripcion: undefined }));
                                             }}
-                                            className={`w-full text-xs md:text-sm placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-sm ${erroresActualizar.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
+                                            className={`w-full text-xs md:text-xs placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-xs ${erroresActualizar.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                     </InputGroup>
                                     {erroresActualizar.descripcion && (
                                         <p className="text-xs text-destructive mt-1">{erroresActualizar.descripcion}</p>
@@ -964,7 +971,7 @@ export default function GestionSubprocesos() {
                                                             })
                                                         };
                                                     }}
-                                                    className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.actividades?.[index]?.nombre ? 'placeholder:text-destructive/50' : ''}`} />
+                                                    className={`text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.actividades?.[index]?.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                             </InputGroup>
                                             {erroresActualizar.actividades?.[index]?.nombre && (
                                                 <p className="text-xs text-destructive mt-1">{erroresActualizar.actividades?.[index]?.nombre}</p>
@@ -974,7 +981,7 @@ export default function GestionSubprocesos() {
                                         <Field>
                                             <FieldLabel className="text-xs">DESCRIPCIÓN ACTIVIDAD</FieldLabel>
                                             <InputGroup className={`py-5 px-2 ${erroresActualizar.actividades?.[index]?.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
-                                                <textarea rows={2} placeholder="Descripción de la actividad"
+                                                <textarea rows={3} placeholder="Descripción de la actividad"
                                                     value={act.descripcion}
                                                     onChange={e => {
                                                         actualizarActividadEditar(index, "descripcion", e.target.value)
@@ -986,7 +993,7 @@ export default function GestionSubprocesos() {
                                                             })
                                                         };
                                                     }}
-                                                    className={`w-full text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none bg-transparent ${erroresActualizar.actividades?.[index]?.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
+                                                    className={`w-full text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs resize-none outline-none bg-transparent ${erroresActualizar.actividades?.[index]?.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                             </InputGroup>
                                             {erroresActualizar.actividades?.[index]?.descripcion && (
                                                 <p className="text-xs text-destructive mt-1">{erroresActualizar.actividades?.[index]?.descripcion}</p>

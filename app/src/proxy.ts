@@ -4,11 +4,15 @@ import type { NextRequest } from "next/server";
 // Rutas y roles que pueden acceder a ellas
 const rutasProtegidas: Record<string, number[]> = {
     "/dashboard": [1, 2],
-    "/gestion-subprocesos": [1, 2],
     "/gestion-instrumentos": [1, 2],
-    "/gestion-usuarios": [1],
+    "/gestion-subprocesos": [1, 2],
+    "/gestion-planificaciones": [1, 2],
+    "/gestion-noticias": [1, 2],
+    "/gestion-soporte": [1, 2],
+    "/gestion-cargos": [1],
+    "/gestion-carreras": [1],
     "/gestion-roles": [1],
-    "/gestion-cargos": [1]
+    "/gestion-usuarios": [1]
 };
 
 // Función para decodificar el payload del token
