@@ -56,13 +56,18 @@ function obtenerUsuarioPorId(id: string) {
     return ejecutarQueryGet<Respuesta>('obtener-usuario-por-id', id);
 }
 
+function contarUsuariosActivos() {
+    return ejecutarQueryGet<Respuesta>('contar-usuarios-activos');
+}
+
 const usuarioService = {
     obtenerUsuarioAutenticado,
     registrarUsuario,
     actualizarUsuario,
     actualizarEstadoUsuario,
     obtenerUsuarios,
-    obtenerUsuarioPorId
+    obtenerUsuarioPorId,
+    contarUsuariosActivos
 }
 
 export default usuarioService;

@@ -39,7 +39,7 @@ export function useAuth() {
             // Limpiar identity
             localStorage.removeItem("identity");
             // Redirigir a login
-            router.push("/home");
+            router.push("/");
 
             return res;
         } catch (error) {

@@ -64,7 +64,7 @@ export function useUsuarios() {
         }
     };
 
-    const obtenerUsuarios = async (busqueda: Busqueda) => {
+    const obtenerUsuarios = async (busqueda: any) => {
         try {
             setLoading(true);
 
@@ -92,6 +92,20 @@ export function useUsuarios() {
         }
     };
 
+    const contarUsuariosActivos = async () => {
+        try {
+            setLoading(true);
+
+            const res = await usuarioService.contarUsuariosActivos();
+
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         obtenerUsuarioAutenticado,
         registrarUsuario,
@@ -99,6 +113,7 @@ export function useUsuarios() {
         actualizarEstadoUsuario,
         obtenerUsuarios,
         obtenerUsuarioPorId,
+        contarUsuariosActivos,
         loading
     };
 }

@@ -53,7 +53,7 @@ import {
 } from "@/components/ui/select"
 
 // Iconos
-import { Users, UserPlus, CircleUser, FileEdit, CircleX, ToggleLeft, ToggleRight, EyeOffIcon, EyeIcon, TextSearch } from 'lucide-react';
+import { Users, UserPlus, CircleUser, FileEdit, CircleX, ToggleLeft, ToggleRight, EyeOffIcon, EyeIcon, TextSearch, FunnelX } from 'lucide-react';
 
 // Utilidades
 import { useState, useEffect } from "react";
@@ -64,15 +64,18 @@ import { Usuario } from "@/DTOs/usuario";
 import { useUsuarios } from "@/hooks/use-usuario";
 import { useRoles } from "@/hooks/use-rol";
 import { useCargos } from "@/hooks/use-cargo";
+import { useCarreras } from "@/hooks/use-carrera";
 import { useDrawerDirection } from "@/hooks/use-drawer-size";
 
 import { environment } from "@/lib/api/client";
 
 export default function GestionUsuarios() {
 
-    const { registrarUsuario, obtenerUsuarios, actualizarEstadoUsuario, actualizarUsuario, obtenerUsuarioPorId, loading } = useUsuarios();
+    const { registrarUsuario, obtenerUsuarios, actualizarEstadoUsuario, actualizarUsuario, obtenerUsuarioPorId, contarUsuariosActivos, loading } = useUsuarios();
     const { listarRoles } = useRoles();
     const { listarCargos } = useCargos();
+    const { listarCarreras } = useCarreras();
+
     const drawerDirection = useDrawerDirection();
     const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
@@ -94,6 +97,9 @@ export default function GestionUsuarios() {
     });
 
     const [textoBusqueda, setTextoBusqueda] = useState("");
+
+    // Busqueda por filtro
+    const [filtroCarrera, setFiltroCarrera] = useState("");
 
     const [erroresRegistro, setErroresRegistro] = useState<{
         nombres?: string,
@@ -121,15 +127,18 @@ export default function GestionUsuarios() {
     const [rolesDisponibles, setRolesDisponibles] = useState<any[]>([]);
     // Cargos
     const [cargosDisponibles, setCargosDisponibles] = useState<any[]>([]);
+    // Carreras
+    const [carrerasDisponibles, setCarrerasDisponibles] = useState<any[]>([]);
 
     // Listado de usuarios
     const cargarUsuarios = async () => {
         try {
-            const res = await obtenerUsuarios(busqueda);
+            const res = await obtenerUsuarios({ ...busqueda, idCarrera: filtroCarrera });
+            const res2 = await contarUsuariosActivos();
             setUsuarios(res.data.docs);
             setSiguiente(res.data.hasNextPage);
             setAnterior(res.data.hasPrevPage);
-            setTotalUsuarios(res.data.totalDocs);
+            setTotalUsuarios(res2.data);
             toast.success(res.message);
         } catch (error: any) {
             console.error("Error al obtener usuarios:", error.message);
@@ -141,12 +150,14 @@ export default function GestionUsuarios() {
     const cargarSelectores = async () => {
         try {
             // Llamada concurrente
-            const [resRoles, resCargos] = await Promise.all([
+            const [resRoles, resCargos, resCarreras] = await Promise.all([
                 listarRoles(),
                 listarCargos(),
+                listarCarreras()
             ]);
             setRolesDisponibles(resRoles.data);
             setCargosDisponibles(resCargos.data);
+            setCarrerasDisponibles(resCarreras.data);
         } catch (error: any) {
             console.error("Error al cargar selectores:", error.message);
             //toast.error(error.message);
@@ -155,7 +166,7 @@ export default function GestionUsuarios() {
 
     // Carga inicial de la página
     useEffect(() => { cargarSelectores(); }, []);
-    useEffect(() => { cargarUsuarios(); }, [busqueda]);
+    useEffect(() => { cargarUsuarios(); }, [busqueda, filtroCarrera]);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -371,9 +382,9 @@ export default function GestionUsuarios() {
                     </Card>
                 </div>
                 <p className="p-4 font-bold text-sm md:text-md">Listado de usuarios</p>
-                {/** Buscador */}
-                <div className="flex items-center justify-center mb-4">
-                    <InputGroup className="p-2 bg-background w-full md:w-1/2 hover:border-primary">
+                {/** Buscador y filtro por carrera */}
+                <div className="flex flex-col md:flex-row items-center gap-2 mb-4">
+                    <InputGroup className="p-2 bg-background w-full md:flex-1 hover:border-primary">
                         <InputGroupAddon align="inline-start">
                             <TextSearch />
                         </InputGroupAddon>
@@ -382,6 +393,35 @@ export default function GestionUsuarios() {
                             className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
                         />
                     </InputGroup>
+                    <Select value={filtroCarrera || "todos"}
+                        onValueChange={(val) => {
+                            setFiltroCarrera(val === "todos" ? "" : val);
+                            setBusqueda(prev => ({ ...prev, pagina: 1 }));
+                        }}>
+                        <SelectTrigger className="w-full md:w-64 bg-background">
+                            <SelectValue placeholder="Todas las carreras" />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                            <SelectGroup>
+                                <SelectItem value="todos" className="text-xs md:text-sm">Todas las carreras</SelectItem>
+                                {carrerasDisponibles?.map((carrera) => (
+                                    <SelectItem key={carrera._id} value={carrera._id} className="text-xs md:text-sm">
+                                        {carrera.nombre}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+
+                    <Button variant="ghost" className="w-full md:w-auto text-primary text-xs md:text-sm"
+                        onClick={() => {
+                            setTextoBusqueda("");
+                            setFiltroCarrera("");
+                            setBusqueda({ pagina: 1, limite: 10, palabra: "" });
+                        }}>
+                        <FunnelX />
+                        Limpiar filtros
+                    </Button>
                 </div>
                 <Table className="bg-white dark:bg-gray-900 rounded-lg">
                     {/* <TableCaption>Listado de usuarios</TableCaption> */}
@@ -518,7 +558,7 @@ export default function GestionUsuarios() {
             {/** Drawer de registro de usuarios */}
             <Drawer open={isOpenNuevoUsuario} onOpenChange={setIsOpenNuevoUsuario} direction={drawerDirection}
                 onClose={() => {
-                    setUsuario({ nombres: '', apellidos: '', correo: '', usuario: '', contrasena: '', idRol: '', idCargo: '' });
+                    setUsuario({ nombres: '', apellidos: '', correo: '', usuario: '', contrasena: '', idRol: '', idCargo: '', idCarrera: '' });
                     setErroresRegistro({});
                 }}>
                 <DrawerContent className="p-2 md:p-4">
@@ -654,12 +694,38 @@ export default function GestionUsuarios() {
                                     <p className="text-xs text-destructive mt-1">{erroresRegistro.idCargo}</p>
                                 )}
                             </Field>
+                            <Field>
+                                <FieldLabel htmlFor="idCarrera" className="text-xs">CARRERA</FieldLabel>
+                                <Select value={usuario.idCarrera}
+                                    onValueChange={(e) => {
+                                        setUsuario({ ...usuario, idCarrera: e });
+                                        if (erroresRegistro.idCarrera) setErroresRegistro({ ...erroresRegistro, idCarrera: undefined });
+                                    }}>
+                                    <SelectTrigger className={`w-full ${erroresRegistro.idCarrera ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                        <SelectValue placeholder="Seleccione una carrera" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectGroup>
+                                            {carrerasDisponibles?.map((carrera) => (
+                                                <SelectItem key={carrera._id} value={carrera._id} className="text-xs md:text-sm">
+                                                    {carrera.nombre}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {erroresRegistro.idCarrera && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.idCarrera}</p>
+                                )}
+                            </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Guardando..." : "Guardar"}
                             </Button>
-                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenNuevoUsuario(false); setErroresRegistro({}); setUsuario({ nombres: "", apellidos: "", correo: "", usuario: "", contrasena: "", idRol: "", idCargo: "" }); }}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => {
+                                setIsOpenNuevoUsuario(false); setErroresRegistro({}); setUsuario({ nombres: "", apellidos: "", correo: "", usuario: "", contrasena: "", idRol: "", idCargo: "", idCarrera: "" });
+                            }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>
@@ -807,6 +873,30 @@ export default function GestionUsuarios() {
                                 </Select>
                                 {erroresActualizar.idCargo && (
                                     <p className="text-xs text-destructive mt-1">{erroresActualizar.idCargo}</p>
+                                )}
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="idCarrera" className="text-xs">CARRERA</FieldLabel>
+                                <Select value={usuarioEditar.idCarrera}
+                                    onValueChange={(e) => {
+                                        setUsuarioEditar({ ...usuarioEditar, idCarrera: e });
+                                        if (erroresActualizar.idCarrera) setErroresActualizar({ ...erroresActualizar, idCarrera: undefined });
+                                    }}>
+                                    <SelectTrigger className={`w-full ${erroresActualizar.idCarrera ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
+                                        <SelectValue placeholder="Indique la carrera" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectGroup>
+                                            {carrerasDisponibles?.map((carrera) => (
+                                                <SelectItem key={carrera._id} value={carrera._id} className="text-xs md:text-sm">
+                                                    {carrera.nombre}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {erroresActualizar.idCarrera && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.idCarrera}</p>
                                 )}
                             </Field>
                         </FieldGroup>

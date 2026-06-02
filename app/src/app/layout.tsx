@@ -42,7 +42,7 @@ export default function RootLayout({
           <CursorProvider>
             <CustomCursor />
             {children}
-            <Toaster expand visibleToasts={1} />
+            <Toaster position="top-right" visibleToasts={1} />
           </CursorProvider>
         </Providers>
       </body>
