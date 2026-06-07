@@ -617,7 +617,7 @@ export default function GestionSubprocesos() {
                                                     setSubproceso(p => ({ ...p, identificador: e.target.value }));
                                                     if (erroresRegistro.identificador) setErroresRegistro(p => ({ ...p, identificador: undefined }));
                                                 }}
-                                                className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.identificador ? 'placeholder:text-destructive/50' : ''}`} />
+                                                className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-xs md:placeholder:text-sm ${erroresRegistro.identificador ? 'placeholder:text-destructive/50' : ''}`} />
                                         </InputGroup>
                                         {erroresRegistro.identificador && (
                                             <p className="text-destructive text-xs mt-1">{erroresRegistro.identificador}</p>
@@ -630,7 +630,7 @@ export default function GestionSubprocesos() {
                                                 setSubproceso({ ...subproceso, orden: Number(e) })
                                                 if (erroresRegistro.orden) setErroresRegistro({ ...erroresRegistro, orden: undefined });
                                             }}>
-                                            <SelectTrigger className={`py-5 px-2 w-full ${erroresRegistro.orden ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                            <SelectTrigger className={`py-5 px-2 w-full bg-muted-foreground/10 text-xs md:text-sm ${erroresRegistro.orden ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
                                                 <SelectValue placeholder="Indique el orden" />
                                             </SelectTrigger>
                                             <SelectContent position="popper">
@@ -659,7 +659,7 @@ export default function GestionSubprocesos() {
                                                 setSubproceso(p => ({ ...p, nombre: e.target.value }));
                                                 if (erroresRegistro.nombre) setErroresRegistro({ ...erroresRegistro, nombre: undefined });
                                             }}
-                                            className={`text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.nombre ? 'placeholder:text-destructive/50' : ''}`} />
+                                            className={`text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs md:placeholder:text-sm ${erroresRegistro.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                     </InputGroup>
                                     {erroresRegistro.nombre && (
                                         <p className="text-xs text-destructive mt-1">{erroresRegistro.nombre}</p>
@@ -731,7 +731,7 @@ export default function GestionSubprocesos() {
                                                             });
                                                         }
                                                     }}
-                                                    className={`text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.actividades?.[index]?.nombre ? 'placeholder:text-destructive/50' : ''}`} />
+                                                    className={`text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs md:placeholder:text-sm ${erroresRegistro.actividades?.[index]?.nombre ? 'placeholder:text-destructive/50' : ''}`} />
                                             </InputGroup>
                                             {erroresRegistro.actividades?.[index]?.nombre && (
                                                 <p className="text-xs text-destructive mt-1">{erroresRegistro.actividades[index].nombre}</p>
@@ -771,7 +771,7 @@ export default function GestionSubprocesos() {
                                                         return { ...prev, actividades: acts };
                                                     });
                                                 }}>
-                                                <SelectTrigger className={`w-full ${erroresRegistro.actividades?.[index]?.idParticipante ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                                <SelectTrigger className={`w-full bg-muted-foreground/10 text-xs md:text-sm ${erroresRegistro.actividades?.[index]?.idParticipante ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
                                                     <SelectValue placeholder="Seleccione un participante" />
                                                 </SelectTrigger>
                                                 <SelectContent position="popper">

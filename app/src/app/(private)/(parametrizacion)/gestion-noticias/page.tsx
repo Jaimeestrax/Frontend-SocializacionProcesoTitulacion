@@ -458,12 +458,12 @@ export default function GestionNoticias() {
                             <Field>
                                 <FieldLabel htmlFor="descripcion" className="text-xs">DESCRIPCION</FieldLabel>
                                 <InputGroup className={`py-5 px-2 ${erroresRegistro.descripcion ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
-                                    <textarea id="descripcion" placeholder="Ingrese la descripcion del instrumento" rows={4}
+                                    <textarea id="descripcion" placeholder="Ingrese la descripcion de la noticia/aviso/recordatorio" rows={3}
                                         value={noticia.descripcion} onChange={(e) => {
                                             setNoticia({ ...noticia, descripcion: e.target.value });
                                             if (erroresRegistro.descripcion) setErroresRegistro({ ...erroresRegistro, descripcion: undefined });
                                         }}
-                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresRegistro.descripcion ? 'placeholder:text-destructive/50' : ''} resize-none outline-none`} />
+                                        className={`w-full text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none bg-transparent ${erroresRegistro.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                 </InputGroup>
                                 {erroresRegistro.descripcion && (
                                     <p className="text-xs text-destructive mt-1">{erroresRegistro.descripcion}</p>
@@ -476,7 +476,7 @@ export default function GestionNoticias() {
                                         setNoticia({ ...noticia, prioridad: e });
                                         if (erroresRegistro.prioridad) setErroresRegistro({ ...erroresRegistro, prioridad: undefined });
                                     }}>
-                                    <SelectTrigger className={`w-full ${erroresRegistro.prioridad ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
+                                    <SelectTrigger className={`w-full bg-muted-foreground/10 text-xs md:text-sm ${erroresRegistro.prioridad ? 'border-destructive bg-destructive/10 text-destructive' : ''}`}>
                                         <SelectValue placeholder="Indique la prioridad de su comunicado" />
                                     </SelectTrigger>
                                     <SelectContent position="popper">
