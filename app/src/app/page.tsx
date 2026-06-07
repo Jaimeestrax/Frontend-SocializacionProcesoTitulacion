@@ -11,6 +11,7 @@ import { ScrollMarquee } from "@/components/scroll-marquee";
 import { useTransform, useScroll } from "motion/react";
 import HeaderPublic from "@/components/header-public";
 import MenuPublic from "@/components/menu-public";
+import { ChatbotButton } from "@/components/chatbot-button";
 
 
 export default function InicioPage() {
@@ -173,6 +174,11 @@ export default function InicioPage() {
                 open={isOpenMenu}
                 onOpenChange={setIsOpenMenu}
             />
+
+            {/** Botón flotante chatbot */}
+            <div className="fixed bottom-10 right-10">
+                <ChatbotButton />
+            </div>
         </div>
     )
 }

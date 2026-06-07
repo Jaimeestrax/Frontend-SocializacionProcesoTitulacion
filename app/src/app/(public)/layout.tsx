@@ -14,7 +14,7 @@ export default function SocializacionLayout({
                 <SidebarTrigger />
                 {children}
                 {/** Botón flotante chatbot */}
-                <div className="fixed bottom-16 right-4">
+                <div className="fixed bottom-10 right-10">
                     <ChatbotButton />
                 </div>
             </main>
