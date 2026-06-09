@@ -32,6 +32,7 @@ export default function FormLogin() {
     const [contrasena, setContrasena] = useState("");
 
     const [mostrarContrasena, setMostrarContrasena] = useState(false);
+    const [erroresAutenticacion, setErroresAutenticacion] = useState<{ usuario?: string, contrasena?: string }>({});
 
     const toggleMostrarContrasena = () => {
         setMostrarContrasena(!mostrarContrasena);
@@ -39,6 +40,19 @@ export default function FormLogin() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: { usuario?: string, contrasena?: string } = {};
+        if (!usuario.trim()) nuevosErrores.usuario = "El usuario es requerido";
+        if (!contrasena.trim()) nuevosErrores.contrasena = "La contraseña es requerida";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresAutenticacion(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresAutenticacion({});
 
         try {
             const res = await login(usuario, contrasena);
@@ -58,13 +72,20 @@ export default function FormLogin() {
             <FieldGroup>
                 <Field>
                     <FieldLabel htmlFor="usuario">USUARIO</FieldLabel>
-                    <InputGroup className='py-5 px-2'>
+                    <InputGroup className={`py-5 px-2 ${erroresAutenticacion.usuario ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                         <InputGroupAddon align="inline-start">
                             <User />
                         </InputGroupAddon>
-                        <InputGroupInput id="usuario" type="text" placeholder="Ingrese su nombre de usuario" required
-                            value={usuario} onChange={(e) => setUsuario(e.target.value)} />
+                        <InputGroupInput id="usuario" type="text" placeholder="Ingrese su nombre de usuario"
+                            value={usuario} onChange={(e) => {
+                                setUsuario(e.target.value);
+                                if (erroresAutenticacion.usuario) setErroresAutenticacion({ ...erroresAutenticacion, usuario: "" });
+                            }}
+                            className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresAutenticacion.usuario ? 'placeholder:text-destructive/50' : ''}`} />
                     </InputGroup>
+                    {erroresAutenticacion.usuario && (
+                        <p className="text-xs text-destructive mt-1">{erroresAutenticacion.usuario}</p>
+                    )}
                 </Field>
                 <Field>
                     <div className="flex items-center">
@@ -73,18 +94,25 @@ export default function FormLogin() {
                             OLVIDO SU CONTRASEÑA?
                         </Link>
                     </div>
-                    <InputGroup className='py-5 px-2'>
+                    <InputGroup className={`py-5 px-2 ${erroresAutenticacion.contrasena ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                         <InputGroupAddon align="inline-start">
                             <LockKeyhole />
                         </InputGroupAddon>
-                        <InputGroupInput id="password" type={mostrarContrasena ? "text" : "password"} required
-                            value={contrasena} onChange={(e) => setContrasena(e.target.value)} />
+                        <InputGroupInput id="password" type={mostrarContrasena ? "text" : "password"}
+                            value={contrasena} onChange={(e) => {
+                                setContrasena(e.target.value);
+                                if (erroresAutenticacion.contrasena) setErroresAutenticacion({ ...erroresAutenticacion, contrasena: "" });
+                            }}
+                            className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresAutenticacion.contrasena ? 'placeholder:text-destructive/50' : ''}`} />
                         <InputGroupAddon align="inline-end">
                             <Button type="button" variant="ghost" onClick={toggleMostrarContrasena} className="cursor-pointer">
                                 {mostrarContrasena ? <EyeOffIcon /> : <EyeIcon />}
                             </Button>
                         </InputGroupAddon>
                     </InputGroup>
+                    {erroresAutenticacion.contrasena && (
+                        <p className="text-xs text-destructive mt-1">{erroresAutenticacion.contrasena}</p>
+                    )}
                 </Field>
                 <Field className='flex flex-col gap-2'>
                     <Button variant="default" type="submit" className="py-5 font-bold text-md xl:text-lg" disabled={loading}>
