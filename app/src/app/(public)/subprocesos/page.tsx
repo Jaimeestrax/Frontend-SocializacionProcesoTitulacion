@@ -4,8 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CalendarClock } from "lucide-react";
 
-import { TimelineVertical } from "@/components/subprocesos/timeline-vertical";
-
+import { TimelineVertical } from "@/components/timeline-vertical";
 import { usePlanificacion } from "@/hooks/use-planificacion";
 
 export default function SubprocesosCalendarPage() {

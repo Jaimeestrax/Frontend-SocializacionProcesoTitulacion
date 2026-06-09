@@ -164,6 +164,18 @@ export function usePlanificacion() {
         }
     };
 
+    const obtenerSubprocesoEspecificoPlanificacion = async (id: string) => {
+        try {
+            setLoading(true);
+            const response = await planificacionesService.obtenerSubprocesoEspecificoPlanificacion(id);
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         loading,
         registrarPlanificacion,
@@ -178,6 +190,7 @@ export function usePlanificacion() {
         obtenerSubprocesoActual,
         obtenerActividadPorId,
         obtenerSubprocesosPlanificacionVigente,
-        obtenerCodigoPAO
+        obtenerCodigoPAO,
+        obtenerSubprocesoEspecificoPlanificacion
     };
 }

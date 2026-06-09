@@ -60,6 +60,10 @@ function obtenerCodigoPAO() {
     return ejecutarQueryGet<Respuesta>("obtener-codigo-pao");
 }
 
+function obtenerSubprocesoEspecificoPlanificacion(id: string) {
+    return ejecutarQueryGet<Respuesta>("obtener-subproceso-especifico-planificacion", id);
+}
+
 const planificacionesService = {
     registrarPlanificacion,
     obtenerPlanificaciones,
@@ -73,7 +77,8 @@ const planificacionesService = {
     obtenerSubprocesoActual,
     obtenerActividadPorId,
     obtenerSubprocesosPlanificacionVigente,
-    obtenerCodigoPAO
+    obtenerCodigoPAO,
+    obtenerSubprocesoEspecificoPlanificacion
 }
 
 export default planificacionesService;

@@ -56,7 +56,7 @@ export default function Paso3() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="font-bold text-foreground">Comunicación de la designación de Director(a) para el acompañamiento académico</p>
+                        <p className="font-bold text-foreground">Formato de comunicación para la designación de Director(a) para el acompañamiento académico</p>
                     </CardContent>
                     <CardFooter className="flex items-center justify-center bg-warning">
                         <Button variant="ghost" className="px-8 py-4">
