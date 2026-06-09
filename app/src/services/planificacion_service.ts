@@ -56,6 +56,10 @@ function obtenerSubprocesosPlanificacionVigente() {
     return ejecutarQueryGet<Respuesta>("obtener-subprocesos-planificacion-vigente");
 }
 
+function obtenerCodigoPAO() {
+    return ejecutarQueryGet<Respuesta>("obtener-codigo-pao");
+}
+
 const planificacionesService = {
     registrarPlanificacion,
     obtenerPlanificaciones,
@@ -68,7 +72,8 @@ const planificacionesService = {
     obtenerProximasActividades,
     obtenerSubprocesoActual,
     obtenerActividadPorId,
-    obtenerSubprocesosPlanificacionVigente
+    obtenerSubprocesosPlanificacionVigente,
+    obtenerCodigoPAO
 }
 
 export default planificacionesService;

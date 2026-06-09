@@ -32,10 +32,10 @@ export default function OnboardingPage() {
                         </p>
 
                         <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-2">
-                            <Button variant="default" className="p-2 md:p-4" onClick={() => router.push("/onboarding/paso1")}>
+                            <Button variant="default" className="p-2 md:p-4 hover:cursor-pointer" onClick={() => router.push("/onboarding/paso1")}>
                                 Comenzar <ArrowBigRightDash />
                             </Button>
-                            <Button variant="link" className="border-2 border-primary p-2 md:p-4" onClick={() => router.push("/")}>
+                            <Button variant="link" className="border-2 border-primary p-2 md:p-4 hover:cursor-pointer" onClick={() => router.push("/")}>
                                 Saltar a la página principal
                             </Button>
                         </div>

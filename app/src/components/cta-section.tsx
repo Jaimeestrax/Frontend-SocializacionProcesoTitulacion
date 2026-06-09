@@ -52,9 +52,12 @@ export function CTASection() {
                             className="rounded-full text-base md:text-lg px-6 py-4 h-auto
                                 hover:scale-105 hover:shadow-2xl hover:shadow-primary
                                 transition-all duration-300 hover:cursor-pointer"
-                            onClick={() => router.push("/subprocesos")}
                             onMouseEnter={() => setHovered("¡Clic!")}
                             onMouseLeave={() => clearHovered()}
+                            onClick={() => {
+                                router.push("/subprocesos")
+                                clearHovered()
+                            }}
                         >
                             <Telescope className="w-5 h-5" />
                             Explorar calendario

@@ -116,7 +116,7 @@ export default function ProcessStory() {
             {/* Para pantallas grandes scrollytelling */}
             <div ref={containerRef} className="hidden lg:block relative" style={{ height: `${subprocesos.length * 100}vh` }}
                 onMouseEnter={() => setHovered("Scroll")} onMouseLeave={clearHovered}>
-                <div className="sticky top-0 h-screen flex overflow-hidden">
+                <div className="sticky top-0 h-screen flex">
                     {/* Panel izquierdo de progreso */}
                     <div className="w-[26%] xl:w-[22%] flex flex-col justify-center relative px-8 xl:px-12 border-r border-border/50">
                         {/* Numero indicador del paso */}
@@ -172,16 +172,16 @@ export default function ProcessStory() {
                                                 {/* Punto de paso actual */}
                                                 <div
                                                     className={`
-                                                        absolute -left-[28px] w-[14px] h-[14px] rounded-full border-2
-                                                        flex items-center justify-center
-                                                        transition-all duration-500
-                                                        ${isDone
+                                                            absolute -left-[28px] w-[14px] h-[14px] rounded-full border-2
+                                                            flex items-center justify-center
+                                                            transition-all duration-500
+                                                            ${isDone
                                                             ? "bg-primary border-primary"
                                                             : isActive
                                                                 ? "bg-primary border-primary shadow-[0_0_0_5px] shadow-primary/20 scale-125"
                                                                 : "bg-background border-border"
                                                         }
-                                                    `}
+                                                        `}
                                                 >
                                                     {isDone && (
                                                         <Check className="w-2.5 h-2.5 text-primary-foreground" />
@@ -191,14 +191,14 @@ export default function ProcessStory() {
                                                 {/* Titulo del paso activo */}
                                                 <span
                                                     className={`
-                                                        text-sm font-medium transition-all duration-400
-                                                        ${isActive
+                                                            text-sm font-medium transition-all duration-400
+                                                            ${isActive
                                                             ? `${current?.color} font-bold`
                                                             : isDone
                                                                 ? "text-muted-foreground"
                                                                 : "text-muted-foreground/40"
                                                         }
-                                                    `}
+                                                        `}
                                                 >
                                                     {step.tituloCorto}
                                                 </span>
@@ -233,7 +233,7 @@ export default function ProcessStory() {
                         <AnimatePresence>
                             <motion.div
                                 key={`grad-${activeStep}`}
-                                className={`absolute inset-0 bg-gradient-to-br ${current?.degradado}`}
+                                className={`absolute inset-0 bg-linear-to-br ${current?.degradado}`}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
@@ -271,7 +271,7 @@ export default function ProcessStory() {
                                 <div className="flex items-center flex-wrap gap-3 mb-8">
                                     <span
                                         className={`inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em]
-                                            px-3.5 py-1.5 rounded-full border ${current?.iconBg} border-current/20 ${current?.color}`}
+                                                px-3.5 py-1.5 rounded-full border ${current?.iconBg} border-current/20 ${current?.color}`}
                                     >
                                         Etapa {current?.numero}
                                     </span>
@@ -284,7 +284,7 @@ export default function ProcessStory() {
                                 {/* Icon */}
                                 <div
                                     className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-8
-        ${current?.fondoIcono} border border-current/10 shadow-sm`}
+            ${current?.fondoIcono} border border-current/10 shadow-sm`}
                                 >
                                     {(() => {
                                         const IconComponent = (LucideIcons as any)[current?.icono];
@@ -312,8 +312,8 @@ export default function ProcessStory() {
                                             <span
                                                 key={p}
                                                 className="inline-flex items-center gap-1.5 text-xs
-                                                    bg-background/60 backdrop-blur-sm text-muted-foreground
-                                                    px-3 py-1.5 rounded-full font-medium border border-border/60"
+                                                        bg-background/60 backdrop-blur-sm text-muted-foreground
+                                                        px-3 py-1.5 rounded-full font-medium border border-border/60"
                                             >
                                                 <UserRound className="w-3 h-3" />
                                                 {p}
@@ -341,7 +341,7 @@ export default function ProcessStory() {
                             delay: i * 0.06,
                         }}
                         className={`relative p-6 rounded-2xl border border-border/60
-                            bg-gradient-to-br ${step.degradado} bg-card/80
+                            bg-linear-to-br ${step.degradado} bg-card/80
                             backdrop-blur-sm overflow-hidden`}
                     >
                         {/* Giant ghost number */}

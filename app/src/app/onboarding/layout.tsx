@@ -4,7 +4,7 @@ export default function OnboardingLayout({
     children: React.ReactNode;
 }) {
     return (
-        <main className="flex items-center justify-center p-4 mt-4">
+        <main className="flex items-center justify-center h-full">
             {children}
         </main>
     );

@@ -61,7 +61,7 @@ export default function Paso4() {
                         </div>
 
                         <div className="grid grid-cols-2 gap-12">
-                            <Button variant="default" className="p-2 md:p-4" onClick={() => router.push("/")}>
+                            <Button variant="default" className="p-2 md:p-4 hover:cursor-pointer" onClick={() => router.push("/")}>
                                 <CircleCheckBig /> Finalizar
                             </Button>
 

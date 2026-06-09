@@ -152,6 +152,18 @@ export function usePlanificacion() {
         }
     };
 
+    const obtenerCodigoPAO = async () => {
+        try {
+            setLoading(true);
+            const response = await planificacionesService.obtenerCodigoPAO();
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         loading,
         registrarPlanificacion,
@@ -165,6 +177,7 @@ export function usePlanificacion() {
         obtenerProximasActividades,
         obtenerSubprocesoActual,
         obtenerActividadPorId,
-        obtenerSubprocesosPlanificacionVigente
+        obtenerSubprocesosPlanificacionVigente,
+        obtenerCodigoPAO
     };
 }

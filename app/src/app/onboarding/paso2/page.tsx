@@ -55,14 +55,14 @@ export default function Paso2() {
                             Visualiza el progreso
                         </p>
                         <p className="text-xs text-muted-foreground lg:text-lg mb-6 lg:mb-12">
-                            Monitorea el flujo de cada subproceso en tiempo real con indicadores claros de avance.
+                            Monitorea el flujo de cada una de las etapas del proceso en tiempo real con indicadores claros de avance.
                         </p>
 
                         <div className="grid grid-cols-2 gap-2 lg:gap-6">
-                            <Button variant="default" className="p-2 md:p-4" onClick={() => router.push("/onboarding/paso3")}>
+                            <Button variant="default" className="p-2 md:p-4 hover:cursor-pointer" onClick={() => router.push("/onboarding/paso3")}>
                                 Siguiente <StepForward />
                             </Button>
-                            <Button variant="link" className="border-2 border-primary p-2 md:p-4" onClick={() => router.push("/")}>
+                            <Button variant="link" className="border-2 border-primary p-2 md:p-4 hover:cursor-pointer" onClick={() => router.push("/")}>
                                 Saltar a la página principal
                             </Button>
                         </div>

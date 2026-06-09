@@ -29,7 +29,7 @@ export default function Paso3() {
                 </div>
                 {/* Cuadro de dialogo */}
                 <p className="text-sm md:text-lg lg:text-xl italic bg-background px-6 py-2 rounded-full">
-                    "Descarga los instrumentos necesarios para cada subproceso, asegurando que cumpla con los formatos institucionales"
+                    " Descarga los formatos necesarios para presentar en cada actividad, asegurando el cumplimiento de los lineamientos institucionales "
                 </p>
             </div>
 
@@ -37,17 +37,14 @@ export default function Paso3() {
                 <Card className="border-b-success border-b-6">
                     <CardHeader>
                         <CardTitle>
-                            <CircleCheck />
+                            <CircleCheck className="text-success-foreground" />
                         </CardTitle>
-                        <CardDescription className="font-bold text-foreground text-lg">
-                            IT-OM-1.a
-                        </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground">Solicitud de opción de titulación para el estudiante que elige examen de carácter complexivo</p>
+                        <p className="font-bold text-foreground">Solicitud de opción de titulación para el estudiante que elige examen de carácter complexivo</p>
                     </CardContent>
-                    <CardFooter className="flex items-center justify-center bg-background">
-                        <Button variant="default" className="px-8 py-4 cursor-pointer">
+                    <CardFooter className="flex items-center justify-center bg-success">
+                        <Button variant="ghost" className="px-8 py-4">
                             <FileDown /> Descargar
                         </Button>
                     </CardFooter>
@@ -55,17 +52,14 @@ export default function Paso3() {
                 <Card className="border-b-warning border-b-6">
                     <CardHeader>
                         <CardTitle>
-                            <CloudUpload />
+                            <CloudUpload className="text-warning" />
                         </CardTitle>
-                        <CardDescription className="font-bold text-foreground text-lg">
-                            IT-OM-2
-                        </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground">Comunicación de la designación de Director(a) para el acompañamiento académico</p>
+                        <p className="font-bold text-foreground">Comunicación de la designación de Director(a) para el acompañamiento académico</p>
                     </CardContent>
-                    <CardFooter className="flex items-center justify-center bg-background">
-                        <Button variant="default" className="px-8 py-4 cursor-pointer">
+                    <CardFooter className="flex items-center justify-center bg-warning">
+                        <Button variant="ghost" className="px-8 py-4">
                             <FileDown /> Descargar
                         </Button>
                     </CardFooter>
@@ -73,17 +67,14 @@ export default function Paso3() {
                 <Card className="hidden md:flex border-b-destructive border-b-6">
                     <CardHeader>
                         <CardTitle>
-                            <FileText />
+                            <FileText className="text-destructive" />
                         </CardTitle>
-                        <CardDescription className="font-bold text-foreground text-lg">
-                            IT-AN-1.a
-                        </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground">Anteproyecto de la opción: Trabajo de Titulación modalidad Proyecto Técnico</p>
+                        <p className="font-bold text-foreground">Formato para anteproyecto de la opción: Trabajo de Titulación modalidad Proyecto Técnico</p>
                     </CardContent>
-                    <CardFooter className="flex items-center justify-center bg-background">
-                        <Button variant="default" className="px-8 py-4 cursor-pointer">
+                    <CardFooter className="flex items-center justify-center bg-destructive">
+                        <Button variant="ghost" className="px-8 py-4">
                             <FileDown /> Descargar
                         </Button>
                     </CardFooter>
@@ -92,10 +83,10 @@ export default function Paso3() {
 
             <div className="mt-8 md:mt-12 flex flex-col gap-8 md:gap-12">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <Button variant="link" className="border-2 border-primary p-2 md:p-4 md:col-start-2" onClick={() => router.push("/onboarding/paso2")}>
+                    <Button variant="link" className="border-2 border-primary p-2 md:p-4 md:col-start-2 hover:cursor-pointer" onClick={() => router.push("/onboarding/paso2")}>
                         <StepBack /> Atras
                     </Button>
-                    <Button variant="default" className="p-2 md:p-4 md:col-start-3" onClick={() => router.push("/onboarding/paso4")}>
+                    <Button variant="default" className="p-2 md:p-4 md:col-start-3 hover:cursor-pointer" onClick={() => router.push("/onboarding/paso4")}>
                         Siguiente <StepForward />
                     </Button>
                 </div>

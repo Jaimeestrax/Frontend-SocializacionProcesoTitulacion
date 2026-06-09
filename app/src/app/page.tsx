@@ -89,7 +89,10 @@ export default function InicioPage() {
                                             className="rounded-full text-sm md:text-lg lg:text-xl hover:scale-110 transition-all hover:cursor-pointer"
                                             onMouseEnter={() => setHovered("¡Clic!")}
                                             onMouseLeave={() => setHovered("Scroll")}
-                                            onClick={() => router.push("/subprocesos")}
+                                            onClick={() => {
+                                                router.push("/subprocesos")
+                                                clearHovered()
+                                            }}
                                         >
                                             <Telescope />
                                             Explorar calendario
@@ -100,7 +103,10 @@ export default function InicioPage() {
                                             className="rounded-full text-sm md:text-lg lg:text-xl hover:scale-110 transition-all hover:cursor-pointer"
                                             onMouseEnter={() => setHovered("¡Clic!")}
                                             onMouseLeave={() => setHovered("Scroll")}
-                                            onClick={() => router.push("/noticias")}
+                                            onClick={() => {
+                                                router.push("/noticias")
+                                                clearHovered()
+                                            }}
                                         >
                                             <Newspaper />
                                             Últimas noticias
