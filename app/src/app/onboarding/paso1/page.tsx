@@ -56,7 +56,7 @@ export default function Paso1() {
                 <Button variant="default" className="p-2 md:p-4" onClick={() => router.push("/onboarding/paso2")}>
                     Siguiente <StepForward />
                 </Button>
-                <Button variant="link" className="p-2 md:p-4" onClick={() => router.push("/home")}>
+                <Button variant="link" className="p-2 md:p-4" onClick={() => router.push("/")}>
                     Saltar a la página principal
                 </Button>
             </div>

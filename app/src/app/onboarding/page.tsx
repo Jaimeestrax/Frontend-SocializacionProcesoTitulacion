@@ -35,7 +35,7 @@ export default function OnboardingPage() {
                             <Button variant="default" className="p-2 md:p-4" onClick={() => router.push("/onboarding/paso1")}>
                                 Comenzar <ArrowBigRightDash />
                             </Button>
-                            <Button variant="link" className="border-2 border-primary p-2 md:p-4" onClick={() => router.push("/home")}>
+                            <Button variant="link" className="border-2 border-primary p-2 md:p-4" onClick={() => router.push("/")}>
                                 Saltar a la página principal
                             </Button>
                         </div>

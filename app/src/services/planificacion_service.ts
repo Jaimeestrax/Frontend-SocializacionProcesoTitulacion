@@ -52,6 +52,10 @@ function obtenerActividadPorId(id: string) {
     return ejecutarQueryGet<Respuesta>("obtener-actividad-por-id", id);
 }
 
+function obtenerSubprocesosPlanificacionVigente() {
+    return ejecutarQueryGet<Respuesta>("obtener-subprocesos-planificacion-vigente");
+}
+
 const planificacionesService = {
     registrarPlanificacion,
     obtenerPlanificaciones,
@@ -63,7 +67,8 @@ const planificacionesService = {
     obtenerPorcentajeAvance,
     obtenerProximasActividades,
     obtenerSubprocesoActual,
-    obtenerActividadPorId
+    obtenerActividadPorId,
+    obtenerSubprocesosPlanificacionVigente
 }
 
 export default planificacionesService;

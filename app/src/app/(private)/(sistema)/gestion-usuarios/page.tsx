@@ -469,7 +469,7 @@ export default function GestionUsuarios() {
                                     </Badge>
                                 }</TableCell>
                                 <TableCell>{
-                                    <Badge className="px-5 py-3 bg-primary/60 text-foreground">
+                                    <Badge className="px-5 py-3 bg-secondary text-foreground">
                                         {usuario.idCarrera.nombre}
                                     </Badge>
                                 }</TableCell>
