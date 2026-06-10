@@ -145,3 +145,35 @@
     @apply font-sans;
   }
 }
+
+/* ────────────────────────────────────────────────────────
+   Scrollytelling & Marquee utilities
+──────────────────────────────────────────────────────── */
+
+/* Smooth scroll baseline (Lenis overrides this at runtime) */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection colour */
+::selection {
+  background-color: oklch(41.716% 0.15101 266 / 20%);
+}
+
+/* Custom thin scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(41.716% 0.15101 266 / 40%);
+  border-radius: 999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: oklch(62.233% 0.15104 263.086 / 40%);
+}
