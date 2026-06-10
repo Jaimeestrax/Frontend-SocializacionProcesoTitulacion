@@ -354,7 +354,17 @@ export default function GestionNoticias() {
                             <TableRow key={noticia._id} className="text-center">
                                 <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
                                 <TableCell>{noticia.titulo}</TableCell>
-                                <TableCell>{noticia.prioridad}</TableCell>
+                                <TableCell>{
+                                    noticia.prioridad === "Alta" ? (
+                                        <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground">{noticia.prioridad}</Badge>
+                                    ) : (
+                                        noticia.prioridad === "Media" ? (
+                                            <Badge className="px-5 py-3 bg-warning hover:bg-warning/60 text-foreground">{noticia.prioridad}</Badge>
+                                        ) : (
+                                            <Badge className="px-5 py-3 bg-primary/70 hover:bg-primary/60 text-foreground">{noticia.prioridad}</Badge>
+                                        )
+                                    )
+                                }</TableCell>
                                 <TableCell>{noticia.idEncargadoGenerar.nombres + ' ' + noticia.idEncargadoGenerar.apellidos}</TableCell>
                                 <TableCell>{
                                     noticia.fechaActualizacion ? (

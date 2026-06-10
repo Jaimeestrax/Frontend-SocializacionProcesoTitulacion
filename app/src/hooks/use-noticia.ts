@@ -38,21 +38,6 @@ export function useNoticias() {
         }
     };
 
-    // Función de cambio de estado
-    const actualizarEstadoNoticia = async (id: string, data: any) => {
-        try {
-            setLoading(true); // Activa loading
-
-            const res = await noticiaService.actualizarEstadoNoticia(id, data); // Llama al servicio
-
-            return res;
-        } catch (error) {
-            throw error;
-        } finally {
-            setLoading(false); // Desactiva loading
-        }
-    };
-
     // Función de actualización
     const actualizarNoticia = async (id: string, data: any) => {
         try {
@@ -96,14 +81,28 @@ export function useNoticias() {
         }
     };
 
+    const obtenerNoticiasPublico = async () => {
+        try {
+            setLoading(true); // Activa loading
+
+            const res = await noticiaService.obtenerNoticiasPublico(); // Llama al servicio
+
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false); // Desactiva loading
+        }
+    };
+
     // Hook que retorna funciones crud de noticias
     return {
         registrarNoticia,
         obtenerNoticias,
         actualizarNoticia,
-        actualizarEstadoNoticia,
         obtenerNoticiaPorId,
         eliminarNoticia,
+        obtenerNoticiasPublico,
         loading
     };
 }

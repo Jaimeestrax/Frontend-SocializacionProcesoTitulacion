@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { CheckCircle2, CircleDashed, Lock, ChevronDown, UserRound } from "lucide-react";
+import { CheckCircle2, CircleDashed, Lock, ChevronDown, UserRound, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InlineInstruments } from "./inline-instruments";
 
@@ -37,6 +37,15 @@ export function ActivityCard({ actividad, isLast, pos, isExpanded, onToggle }: {
         cardBg = "bg-destructive/50";
         cardOpacity = "opacity-60 grayscale-[0.3]";
     }
+
+    const formatearFecha = (fecha: any) => {
+        if (!fecha) return "S/N";
+        return new Date(fecha).toLocaleDateString("es-EC", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        });
+    };
 
     return (
         <div className={`relative flex items-start gap-6 ${cardOpacity}`}>
@@ -108,6 +117,25 @@ export function ActivityCard({ actividad, isLast, pos, isExpanded, onToggle }: {
                                                 <UserRound className="w-5 h-5 text-primary" />
                                                 <div className="flex flex-col">
                                                     <span className="text-xs font-bold text-foreground leading-none">{actividad.idParticipante.nombre}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Fechas */}
+                                    <div>
+                                        <h4 className="text-[10px] uppercase tracking-widest font-bold text-foreground mb-3">
+                                            Fechas de la actividad
+                                        </h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            <div className="flex items-center gap-2 bg-background border border-border/60 px-4 py-2 rounded-full shadow-sm">
+                                                <CalendarIcon className="w-5 h-5 text-primary" />
+                                                <div className="flex flex-col">
+                                                    <p className="text-xs font-bold text-foreground leading-none">
+                                                        Fecha inicio: <span className="text-xs font-normal">{formatearFecha(actividad.fechaInicio)}</span>
+                                                    </p>
+                                                    <p className="text-xs font-bold text-foreground leading-none">
+                                                        Fecha de fin: <span className="text-xs font-normal">{formatearFecha(actividad.fechaFin)}</span>
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>

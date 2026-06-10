@@ -45,12 +45,12 @@ function actualizarNoticia(id: string, data: any) {
     return ejecutarQueryPutArchivos<Respuesta>('actualizar-noticia', id, formData);
 }
 
-function actualizarEstadoNoticia(id: string, data: any) {
-    return ejecutarQueryPatch<Respuesta>('actualizar-estado-noticia', id, data);
-}
-
 function eliminarNoticia(id: string) {
     return ejecutarQueryDelete<Respuesta>('eliminar-noticia', id);
+}
+
+function obtenerNoticiasPublico() {
+    return ejecutarQueryGet<Respuesta>('obtener-noticias-publico');
 }
 
 const noticiaService = {
@@ -58,8 +58,8 @@ const noticiaService = {
     obtenerNoticias,
     obtenerNoticiaPorId,
     actualizarNoticia,
-    actualizarEstadoNoticia,
-    eliminarNoticia
+    eliminarNoticia,
+    obtenerNoticiasPublico
 }
 
 export default noticiaService;
