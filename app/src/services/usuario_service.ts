@@ -60,6 +60,10 @@ function contarUsuariosActivos() {
     return ejecutarQueryGet<Respuesta>('contar-usuarios-activos');
 }
 
+function listarUsuariosActivos() {
+    return ejecutarQueryGet<Respuesta>('listar-usuarios-activos');
+}
+
 const usuarioService = {
     obtenerUsuarioAutenticado,
     registrarUsuario,
@@ -67,7 +71,8 @@ const usuarioService = {
     actualizarEstadoUsuario,
     obtenerUsuarios,
     obtenerUsuarioPorId,
-    contarUsuariosActivos
+    contarUsuariosActivos,
+    listarUsuariosActivos
 }
 
 export default usuarioService;

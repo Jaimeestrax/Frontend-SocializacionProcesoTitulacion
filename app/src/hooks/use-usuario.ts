@@ -106,6 +106,20 @@ export function useUsuarios() {
         }
     };
 
+    const listarUsuariosActivos = async () => {
+        try {
+            setLoading(true);
+
+            const res = await usuarioService.listarUsuariosActivos();
+
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         obtenerUsuarioAutenticado,
         registrarUsuario,
@@ -114,6 +128,7 @@ export function useUsuarios() {
         obtenerUsuarios,
         obtenerUsuarioPorId,
         contarUsuariosActivos,
+        listarUsuariosActivos,
         loading
     };
 }

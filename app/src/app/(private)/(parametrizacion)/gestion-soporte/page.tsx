@@ -36,25 +36,14 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle
-} from "@/components/ui/dialog"
-
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { Select, SelectItem, SelectContent, SelectGroup, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toast-custom";
-import FileUploadField from "@/components/ui/fileUpload";
 
 // Iconos
-import { BadgePlus, MessageCircleQuestionMark, FileEdit, CircleX, Info, TextSearch } from 'lucide-react';
+import { BadgePlus, MessageCircleQuestionMark, FileEdit, CircleX, TextSearch } from 'lucide-react';
 
 // Utilidades
 import { useState, useEffect } from "react";
@@ -64,7 +53,6 @@ import { Faq } from "@/DTOs/faq";
 // Uso de hooks que interactuan con la API
 import { useFaqs } from "@/hooks/use-faq";
 import { useDrawerDirection } from "@/hooks/use-drawer-size";
-import { environment } from "@/lib/api/client";
 
 export default function GestionFaqs() {
     const { registrarFaq, obtenerFaqs, eliminarFaq, actualizarFaq, obtenerFaqPorId, loading: loadingFaqs } = useFaqs();
@@ -273,7 +261,7 @@ export default function GestionFaqs() {
                         <InputGroupAddon align="inline-start">
                             <TextSearch />
                         </InputGroupAddon>
-                        <InputGroupInput type="text" placeholder="Buscar por titulo..."
+                        <InputGroupInput type="text" placeholder="Buscar por pregunta..."
                             value={textoBusqueda} onChange={(e) => setTextoBusqueda(e.target.value)}
                             className="text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm"
                         />
