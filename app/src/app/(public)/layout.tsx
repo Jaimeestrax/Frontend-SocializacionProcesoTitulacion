@@ -15,9 +15,7 @@ export default function SocializacionLayout({
             </main>
 
             {/* Botón flotante chatbot */}
-            <div className="fixed bottom-10 right-10 z-50">
-                <ChatbotButton />
-            </div>
+            <ChatbotButton />
         </div>
     );
 }

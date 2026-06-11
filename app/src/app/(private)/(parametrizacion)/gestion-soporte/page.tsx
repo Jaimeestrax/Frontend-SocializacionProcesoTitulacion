@@ -8,7 +8,7 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
+    TableRow
 } from "@/components/ui/table"
 
 import {
@@ -17,7 +17,7 @@ import {
     PaginationItem,
     PaginationLink,
     PaginationNext,
-    PaginationPrevious,
+    PaginationPrevious
 } from "@/components/ui/pagination"
 
 import {
@@ -26,14 +26,14 @@ import {
     DrawerDescription,
     DrawerFooter,
     DrawerHeader,
-    DrawerTitle,
+    DrawerTitle
 } from "@/components/ui/drawer"
 
 import {
     Card,
     CardDescription,
     CardHeader,
-    CardTitle,
+    CardTitle
 } from "@/components/ui/card"
 
 import { Button } from "@/components/ui/button"
@@ -55,7 +55,7 @@ import { useFaqs } from "@/hooks/use-faq";
 import { useDrawerDirection } from "@/hooks/use-drawer-size";
 
 export default function GestionFaqs() {
-    const { registrarFaq, obtenerFaqs, eliminarFaq, actualizarFaq, obtenerFaqPorId, loading: loadingFaqs } = useFaqs();
+    const { registrarFaq, obtenerFaqs, eliminarFaq, actualizarFaq, obtenerFaqPorId, loading } = useFaqs();
     const drawerDirection = useDrawerDirection();
 
     // Listado de faqs
@@ -74,14 +74,12 @@ export default function GestionFaqs() {
 
     const [erroresRegistro, setErroresRegistro] = useState<{
         pregunta?: string,
-        respuesta?: string,
-        keywords?: string
+        respuesta?: string
     }>({});
 
     const [erroresActualizar, setErroresActualizar] = useState<{
         pregunta?: string,
-        respuesta?: string,
-        keywords?: string
+        respuesta?: string
     }>({});
 
     // Llamada asincrona reutilizable
@@ -120,18 +118,16 @@ export default function GestionFaqs() {
 
     const [faq, setFaq] = useState<Faq>({
         pregunta: "",
-        respuesta: "",
-        keywords: [],
+        respuesta: ""
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Validación
-        const nuevosErrores: { pregunta?: string, respuesta?: string, keywords?: string } = {};
+        const nuevosErrores: { pregunta?: string, respuesta?: string } = {};
         if (!faq.pregunta.trim()) nuevosErrores.pregunta = "La pregunta es requerida";
         if (!faq.respuesta.trim()) nuevosErrores.respuesta = "La respuesta es requerida";
-        if (!faq.keywords || faq.keywords.length === 0) nuevosErrores.keywords = "Las keywords son requeridas";
 
         if (Object.keys(nuevosErrores).length > 0) {
             setErroresRegistro(nuevosErrores);
@@ -150,13 +146,12 @@ export default function GestionFaqs() {
             // Reinicio del drawer
             setFaq({
                 pregunta: "",
-                respuesta: "",
-                keywords: []
+                respuesta: ""
             });
             setIsOpenNuevaFaq(false);
 
         } catch (error: any) {
-            console.error("Error al registrar faq:", error.message);
+            console.error("Error al registrar pregunta frecuente:", error.message);
             toast.error(error.message);
         }
     };
@@ -168,7 +163,7 @@ export default function GestionFaqs() {
             await cargarFaqs();
             toast.success(res.message);
         } catch (error: any) {
-            console.error("Error al eliminar la faq:", error.message);
+            console.error("Error al eliminar la pregunta frecuente:", error.message);
             toast.error(error.message);
         }
     };
@@ -177,8 +172,7 @@ export default function GestionFaqs() {
     const [isOpenEditarFaq, setIsOpenEditarFaq] = useState(false);
     const [faqEditar, setFaqEditar] = useState<Faq>({
         pregunta: "",
-        respuesta: "",
-        keywords: []
+        respuesta: ""
     });
     const [faqEditarId, setFaqEditarId] = useState<string>("");
 
@@ -191,7 +185,7 @@ export default function GestionFaqs() {
             setFaqEditarId(faq._id);
             setIsOpenEditarFaq(true);
         } catch (error: any) {
-            console.error("Error al obtener faq para editar:", error.message);
+            console.error("Error al obtener pregunta frecuente para editar:", error.message);
             toast.error(error.message);
         }
     };
@@ -200,10 +194,9 @@ export default function GestionFaqs() {
         e.preventDefault();
 
         // Validación
-        const nuevosErrores: { pregunta?: string, respuesta?: string, keywords?: string } = {};
+        const nuevosErrores: { pregunta?: string, respuesta?: string } = {};
         if (!faqEditar.pregunta.trim()) nuevosErrores.pregunta = "La pregunta es requerida";
         if (!faqEditar.respuesta.trim()) nuevosErrores.respuesta = "La respuesta es requerida";
-        if (!faqEditar.keywords || faqEditar.keywords.length === 0) nuevosErrores.keywords = "Las keywords son requeridas";
 
         if (Object.keys(nuevosErrores).length > 0) {
             setErroresActualizar(nuevosErrores);
@@ -219,7 +212,7 @@ export default function GestionFaqs() {
             await cargarFaqs();
             toast.success(res.message);
         } catch (error: any) {
-            console.error("Error al actualizar faq:", error.message);
+            console.error("Error al actualizar pregunta frecuente:", error.message);
             toast.error(error.message);
         }
     };
@@ -285,11 +278,11 @@ export default function GestionFaqs() {
                             </TableRow>
                         )}
                         {faqs.map((faq, i) => (
-                            <TableRow key={faq._id} className="text-center">
-                                <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
+                            <TableRow key={faq._id}>
+                                <TableCell className="text-center">{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
                                 <TableCell className="max-w-sm whitespace-normal wrap-break-words">{faq.pregunta}</TableCell>
                                 <TableCell className="max-w-sm whitespace-normal wrap-break-words">{faq.respuesta}</TableCell>
-                                <TableCell>
+                                <TableCell className="text-center">
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
@@ -346,7 +339,7 @@ export default function GestionFaqs() {
             {/** Drawer de registro de faqs */}
             <Drawer open={isOpenNuevaFaq} onOpenChange={setIsOpenNuevaFaq} direction={drawerDirection}
                 onClose={() => {
-                    setFaq({ pregunta: '', respuesta: '', keywords: [] as string[] });
+                    setFaq({ pregunta: '', respuesta: '' });
                     setErroresRegistro({})
                 }}>
                 <DrawerContent className="p-2 md:p-4">
@@ -387,22 +380,10 @@ export default function GestionFaqs() {
                                     <p className="text-xs text-destructive mt-1">{erroresRegistro.respuesta}</p>
                                 )}
                             </Field>
-                            <Field>
-                                <FieldLabel htmlFor="keywords" className="text-xs">PALABRAS CLAVE</FieldLabel>
-                                <InputGroup className={`py-5 px-2 ${erroresRegistro.keywords ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
-                                    <InputGroupInput id="keywords" type="text" placeholder="Ingrese las palabras clave para la pregunta frecuente" value={faq.keywords.join(', ')} onChange={(e) => {
-                                        setFaq({ ...faq, keywords: e.target.value.split(',').map(k => k.trim()) });
-                                        if (erroresRegistro.keywords) setErroresRegistro({ ...erroresRegistro, keywords: undefined });
-                                    }} className={`w-full text-xs md:text-xs placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none bg-transparent ${erroresRegistro.keywords ? 'placeholder:text-destructive/50' : ''}`} />
-                                </InputGroup>
-                                {erroresRegistro.keywords && (
-                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.keywords}</p>
-                                )}
-                            </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                            <Button type="submit" className="md:py-6" disabled={loadingFaqs}>
-                                {loadingFaqs ? "Guardando..." : "Guardar"}
+                            <Button type="submit" className="md:py-6" disabled={loading}>
+                                {loading ? "Guardando..." : "Guardar"}
                             </Button>
                             <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenNuevaFaq(false); setErroresRegistro({}) }}>
                                 Cancelar
@@ -415,7 +396,7 @@ export default function GestionFaqs() {
             {/** Drawer de edición de preguntas frecuentes */}
             <Drawer open={isOpenEditarFaq} onOpenChange={setIsOpenEditarFaq} direction={drawerDirection}
                 onClose={() => {
-                    setFaq({ pregunta: '', respuesta: '', keywords: [] as string[] });
+                    setFaq({ pregunta: '', respuesta: '' });
                     setErroresActualizar({})
                 }}>
                 <DrawerContent className="p-2 md:p-4">
@@ -457,24 +438,10 @@ export default function GestionFaqs() {
                                     <p className="text-xs text-destructive mt-1">{erroresActualizar.respuesta}</p>
                                 )}
                             </Field>
-                            <Field>
-                                <FieldLabel htmlFor="keywords" className="text-xs">PALABRAS CLAVE</FieldLabel>
-                                <InputGroup className={`py-5 px-2 ${erroresActualizar.keywords ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
-                                    <InputGroupInput id="keywords" type="text" placeholder="Ingrese las palabras clave para la pregunta frecuente" required
-                                        value={faqEditar.keywords.join(', ')} onChange={(e) => {
-                                            setFaqEditar({ ...faqEditar, keywords: e.target.value.split(',').map(k => k.trim()) });
-                                            if (erroresActualizar.keywords) setErroresActualizar({ ...erroresActualizar, keywords: undefined });
-                                        }}
-                                        className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm resize-none outline-none ${erroresActualizar.keywords ? 'placeholder:text-destructive/50' : ''}`} />
-                                </InputGroup>
-                                {erroresActualizar.keywords && (
-                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.keywords}</p>
-                                )}
-                            </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                            <Button type="submit" className="md:py-6" disabled={loadingFaqs}>
-                                {loadingFaqs ? "Actualizando..." : "Actualizar"}
+                            <Button type="submit" className="md:py-6" disabled={loading}>
+                                {loading ? "Actualizando..." : "Actualizar"}
                             </Button>
                             <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenEditarFaq(false); setErroresActualizar({}) }}>
                                 Cancelar

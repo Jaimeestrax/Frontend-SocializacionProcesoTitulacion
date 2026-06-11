@@ -157,11 +157,6 @@ export default function InicioPage() {
 
                 {/* Menú lateral para mobile */}
                 <MenuPublic open={isOpenMenu} onOpenChange={setIsOpenMenu} />
-
-                {/* Botón flotante chatbot */}
-                <div className="fixed bottom-10 right-10">
-                    <ChatbotButton />
-                </div>
             </div>
         </LenisProvider>
     );
