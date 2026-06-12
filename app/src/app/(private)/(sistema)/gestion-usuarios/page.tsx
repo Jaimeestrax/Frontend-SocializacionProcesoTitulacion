@@ -308,7 +308,7 @@ export default function GestionUsuarios() {
         if (!usuarioEditar.apellidos.trim()) nuevosErrores.apellidos = "El apellido del usuario es requerido";
         if (!usuarioEditar.correo.trim()) nuevosErrores.correo = "El correo del usuario es requerido";
         if (!usuarioEditar.usuario) nuevosErrores.usuario = "El usuario es requerido";
-        if (!usuarioEditar.contrasena) nuevosErrores.contrasena = "La contraseña es requerida";
+        if (cambiarContrasena && !usuarioEditar.contrasena) nuevosErrores.contrasena = "La contraseña es requerida";
         if (!usuarioEditar.idRol) nuevosErrores.idRol = "El rol es requerido";
         if (!usuarioEditar.idCargo) nuevosErrores.idCargo = "El cargo es requerido";
         if (!usuarioEditar.idCarrera) nuevosErrores.idCarrera = "La carrera es requerida";
@@ -807,6 +807,7 @@ export default function GestionUsuarios() {
                                             setCambiarContrasena(e.target.checked);
                                             if (!e.target.checked) {
                                                 setUsuarioEditar({ ...usuarioEditar, contrasena: "" });
+                                                setErroresActualizar({ ...erroresActualizar, contrasena: undefined });
                                             }
                                         }}
                                         className="h-5 w-5 cursor-pointer accent-primary"
@@ -825,6 +826,9 @@ export default function GestionUsuarios() {
                                             </Button>
                                         </InputGroupAddon>
                                     </InputGroup>
+                                )}
+                                {erroresActualizar.contrasena && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.contrasena}</p>
                                 )}
                             </Field>
                             <Field>

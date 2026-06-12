@@ -33,6 +33,13 @@ export default function Dashboard() {
     const [cambiarContrasena, setCambiarContrasena] = useState(false); // Habilita edición de contraseña
     const [mostrarContrasena, setMostrarContrasena] = useState(false); // Toogle de tipo de texto en contraseña
 
+    const [erroresActualizarPerfil, setErroresActualizarPerfil] = useState<{
+        nombres?: string,
+        apellidos?: string,
+        correo?: string,
+        contrasena?: string
+    }>({});
+
     const toggleMostrarContrasena = () => {
         setMostrarContrasena(!mostrarContrasena);
     };
@@ -69,6 +76,26 @@ export default function Dashboard() {
 
     const handleActualizar = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: {
+            nombres?: string,
+            apellidos?: string,
+            correo?: string,
+            contrasena?: string
+        } = {};
+        if (!usuarioEditar.nombres.trim()) nuevosErrores.nombres = "El nombre del usuario es requerido";
+        if (!usuarioEditar.apellidos.trim()) nuevosErrores.apellidos = "El apellido del usuario es requerido";
+        if (cambiarContrasena && !usuarioEditar.contrasena) nuevosErrores.contrasena = "La contraseña es requerida";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresActualizarPerfil(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresActualizarPerfil({});
+
         try {
             const payload = {
                 nombres: usuarioEditar.nombres,
@@ -82,6 +109,8 @@ export default function Dashboard() {
             const res = await actualizarUsuario(user._id, payload);
             setEditarPerfil(false);
             setArchivoSeleccionado(undefined);
+            setErroresActualizarPerfil({});
+            setCambiarContrasena(false);
             cargarUsuario(); // Vuelve a cargar el usuario con la info actualizada
             toast.success(res.message);
         } catch (error: any) {
@@ -91,9 +120,18 @@ export default function Dashboard() {
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const extensionesPermitidas = ["jpg", "jpeg", "png", "webp"];
+
         const file = e.target.files?.[0];
+        const extension = file?.name.split(".").pop()?.toLowerCase();
+
         setArchivoSeleccionado(file);
         if (file) {
+            if (!extension || !extensionesPermitidas.includes(extension)) {
+                setArchivoSeleccionado(undefined);
+                toast.error("Solo se permiten archivos de imagen.");
+                return;
+            }
             // Previsualización de imagen
             const imageUrl = URL.createObjectURL(file);
 
@@ -148,34 +186,52 @@ export default function Dashboard() {
                             ) : (
                                 <FieldGroup>
                                     <Field>
-                                        <InputGroup className='py-5 px-2 bg-secondary'>
+                                        <InputGroup className={`py-5 px-2 ${erroresActualizarPerfil.nombres ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                             <InputGroupAddon align="inline-start" className="text-primary font-bold">
                                                 Nombres:
                                             </InputGroupAddon>
-                                            <InputGroupInput id="nombres" type="text" placeholder="Ingrese los nombres del usuario" required
-                                                value={usuarioEditar.nombres} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, nombres: e.target.value })}
-                                                className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                            <InputGroupInput id="nombres" type="text" placeholder="Ingrese sus nombres"
+                                                value={usuarioEditar.nombres} onChange={(e) => {
+                                                    setUsuarioEditar({ ...usuarioEditar, nombres: e.target.value });
+                                                    if (erroresActualizarPerfil.nombres) setErroresActualizarPerfil({ ...erroresActualizarPerfil, nombres: undefined });
+                                                }}
+                                                className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizarPerfil.nombres ? 'placeholder:text-destructive/50' : ''}`} />
                                         </InputGroup>
+                                        {erroresActualizarPerfil.nombres && (
+                                            <p className="text-xs text-destructive mt-1">{erroresActualizarPerfil.nombres}</p>
+                                        )}
                                     </Field>
                                     <Field>
-                                        <InputGroup className='py-5 px-2 bg-secondary'>
+                                        <InputGroup className={`py-5 px-2 ${erroresActualizarPerfil.apellidos ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                             <InputGroupAddon align="inline-start" className="text-primary font-bold">
                                                 Apellidos:
                                             </InputGroupAddon>
-                                            <InputGroupInput id="apellidos" type="text" placeholder="Ingrese los apellidos del usuario" required
-                                                value={usuarioEditar.apellidos} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, apellidos: e.target.value })}
-                                                className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                            <InputGroupInput id="apellidos" type="text" placeholder="Ingrese los apellidos del usuario"
+                                                value={usuarioEditar.apellidos} onChange={(e) => {
+                                                    setUsuarioEditar({ ...usuarioEditar, apellidos: e.target.value });
+                                                    if (erroresActualizarPerfil.apellidos) setErroresActualizarPerfil({ ...erroresActualizarPerfil, apellidos: undefined });
+                                                }}
+                                                className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizarPerfil.apellidos ? 'placeholder:text-destructive/50' : ''}`} />
                                         </InputGroup>
+                                        {erroresActualizarPerfil.apellidos && (
+                                            <p className="text-xs text-destructive mt-1">{erroresActualizarPerfil.apellidos}</p>
+                                        )}
                                     </Field>
                                     <Field>
-                                        <InputGroup className='py-5 px-2 bg-secondary'>
+                                        <InputGroup className={`py-5 px-2 ${erroresActualizarPerfil.correo ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                             <InputGroupAddon align="inline-start" className="text-primary font-bold">
                                                 Correo:
                                             </InputGroupAddon>
-                                            <InputGroupInput id="correo" type="text" placeholder="Ingrese su correo" required
-                                                value={usuarioEditar.correo} onChange={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
-                                                className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                            <InputGroupInput id="correo" type="text" placeholder="Ingrese su correo"
+                                                value={usuarioEditar.correo} onChange={(e) => {
+                                                    setUsuarioEditar({ ...usuarioEditar, correo: e.target.value });
+                                                    if (erroresActualizarPerfil.correo) setErroresActualizarPerfil({ ...erroresActualizarPerfil, correo: undefined });
+                                                }}
+                                                className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizarPerfil.correo ? 'placeholder:text-destructive/50' : ''}`} />
                                         </InputGroup>
+                                        {erroresActualizarPerfil.correo && (
+                                            <p className="text-xs text-destructive mt-1">{erroresActualizarPerfil.correo}</p>
+                                        )}
                                     </Field>
                                     <Field>
                                         <div className="flex">
@@ -185,6 +241,7 @@ export default function Dashboard() {
                                                     setCambiarContrasena(e.target.checked);
                                                     if (!e.target.checked) {
                                                         setUsuarioEditar({ ...usuarioEditar, contrasena: "" });
+                                                        setErroresActualizarPerfil({ ...erroresActualizarPerfil, contrasena: undefined });
                                                     }
                                                 }}
                                                 className="h-5 w-5 cursor-pointer accent-primary"
@@ -192,17 +249,20 @@ export default function Dashboard() {
                                         </div>
 
                                         {cambiarContrasena && (
-                                            <InputGroup className='py-5 px-2 bg-secondary'>
+                                            <InputGroup className={`py-5 px-2 ${erroresActualizarPerfil.contrasena ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                                 <InputGroupInput id="contrasena" type={mostrarContrasena ? "text" : "password"}
-                                                    placeholder="Ingrese la nueva contraseña" required value={usuarioEditar.contrasena}
+                                                    placeholder="Ingrese la nueva contraseña" value={usuarioEditar.contrasena}
                                                     onChange={(e) => setUsuarioEditar({ ...usuarioEditar, contrasena: e.target.value })}
-                                                    className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />
+                                                    className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizarPerfil.contrasena ? 'placeholder:text-destructive/50' : ''}`} />
                                                 <InputGroupAddon align="inline-end">
                                                     <Button type="button" variant="ghost" onClick={toggleMostrarContrasena} className="cursor-pointer">
                                                         {mostrarContrasena ? <EyeOffIcon /> : <EyeIcon />}
                                                     </Button>
                                                 </InputGroupAddon>
                                             </InputGroup>
+                                        )}
+                                        {erroresActualizarPerfil.contrasena && (
+                                            <p className="text-xs text-destructive mt-1">{erroresActualizarPerfil.contrasena}</p>
                                         )}
                                     </Field>
                                 </FieldGroup>
@@ -226,6 +286,8 @@ export default function Dashboard() {
                                         onClick={() => {
                                             setEditarPerfil(false);
                                             setArchivoSeleccionado(undefined);
+                                            setErroresActualizarPerfil({});
+                                            setCambiarContrasena(false);
                                             cargarUsuario();
                                         }}>
                                         <X /> Cancelar

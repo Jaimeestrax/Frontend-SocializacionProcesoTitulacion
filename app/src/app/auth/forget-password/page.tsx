@@ -29,8 +29,22 @@ export default function ForgotPasswordPage() {
     const router = useRouter();
     const [correo, setCorreo] = useState("");
 
+    const [erroresForgetPassword, setErroresForgetPassword] = useState<{ correo?: string }>({});
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validación
+        const nuevosErrores: { correo?: string } = {};
+        if (!correo.trim()) nuevosErrores.correo = "El correo es requerido";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErroresForgetPassword(nuevosErrores);
+            toast.error("Complete todos los campos del formulario.");
+            return;
+        }
+
+        setErroresForgetPassword({});
 
         try {
             const res = await forgotPassword(correo);
@@ -64,13 +78,20 @@ export default function ForgotPasswordPage() {
                 <FieldGroup>
                     <Field>
                         <FieldLabel htmlFor="correo">CORREO ELECTRÓNICO</FieldLabel>
-                        <InputGroup className='py-5 px-2'>
+                        <InputGroup className={`py-5 px-2 ${erroresForgetPassword.correo ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                             <InputGroupAddon align="inline-start">
                                 <Mail />
                             </InputGroupAddon>
-                            <InputGroupInput id="correo" type="email" placeholder="Ingrese su correo institucional" required
-                                value={correo} onChange={(e) => setCorreo(e.target.value)} />
+                            <InputGroupInput id="correo" type="email" placeholder="Ingrese su correo institucional"
+                                value={correo} onChange={(e) => {
+                                    setCorreo(e.target.value);
+                                    if (erroresForgetPassword.correo) setErroresForgetPassword({ ...erroresForgetPassword, correo: "" });
+                                }}
+                                className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresForgetPassword.correo ? 'placeholder:text-destructive/50' : ''}`} />
                         </InputGroup>
+                        {erroresForgetPassword.correo && (
+                            <p className="text-xs text-destructive mt-1">{erroresForgetPassword.correo}</p>
+                        )}
                     </Field>
                     <Field>
                         <div className='flex flex-col gap-2'>

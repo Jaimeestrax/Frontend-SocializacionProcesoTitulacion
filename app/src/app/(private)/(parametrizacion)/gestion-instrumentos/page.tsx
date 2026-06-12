@@ -107,6 +107,8 @@ export default function GestionInstrumentos() {
         archivo?: string;
     }>({});
 
+    const [resetArchivo, setResetArchivo] = useState(false);
+
     // Llamada asincrona reutilizable
     const cargarInstrumentos = async () => {
         try {
@@ -162,6 +164,16 @@ export default function GestionInstrumentos() {
         if (!instrumento.nombre.trim()) nuevosErrores.nombre = "El nombre del instrumento es requerido";
         if (!instrumento.descripcion) nuevosErrores.descripcion = "La descripción del instrumento es requerida";
         if (!instrumento.archivo) nuevosErrores.archivo = "El archivo es requerido";
+
+        // Si es archivo subido
+        if (instrumento.archivo && instrumento.archivo instanceof File) {
+            const extensionesPermitidas = ["pdf", "doc", "docx"];
+            const extension = instrumento.archivo.name.split(".").pop()?.toLowerCase();
+
+            if (!extension || !extensionesPermitidas.includes(extension)) {
+                nuevosErrores.archivo = "Solo se permiten archivos PDF o DOC.";
+            }
+        }
 
         if (Object.keys(nuevosErrores).length > 0) {
             setErroresRegistro(nuevosErrores);
@@ -246,6 +258,16 @@ export default function GestionInstrumentos() {
         if (!instrumentoEditar.nombre.trim()) nuevosErrores.nombre = "El nombre del instrumento es requerido";
         if (!instrumentoEditar.descripcion) nuevosErrores.descripcion = "La descripción del instrumento es requerida";
         if (!instrumentoEditar.archivo) nuevosErrores.archivo = "El archivo es requerido";
+
+        // Si es archivo subido
+        if (instrumento.archivo && instrumento.archivo instanceof File) {
+            const extensionesPermitidas = ["pdf", "doc", "docx"];
+            const extension = instrumento.archivo.name.split(".").pop()?.toLowerCase();
+
+            if (!extension || !extensionesPermitidas.includes(extension)) {
+                nuevosErrores.archivo = "Solo se permiten archivos PDF o DOC.";
+            }
+        }
 
         if (Object.keys(nuevosErrores).length > 0) {
             setErroresActualizar(nuevosErrores);
@@ -491,10 +513,30 @@ export default function GestionInstrumentos() {
                                 )}
                             </Field>
                             <Field>
-                                <FileUploadField id="archivo" label="ARCHIVO" accept=".pdf,.docx"
+                                <FileUploadField id="archivo" label="ARCHIVO" accept=".pdf,.doc,.docx" reset={resetArchivo}
                                     onChange={(file) => {
-                                        setInstrumento({ ...instrumento, archivo: file as File });
-                                        if (erroresRegistro.archivo) setErroresRegistro({ ...erroresRegistro, archivo: undefined });
+                                        if (file) {
+                                            const extensionesPermitidas = ["pdf", "doc", "docx"];
+
+                                            const extension = file.name.split(".").pop()?.toLowerCase();
+
+                                            if (!extension || !extensionesPermitidas.includes(extension)) {
+                                                setErroresRegistro(prev => ({ ...prev, archivo: "Archivo no valido." }));
+
+                                                setInstrumento(prev => ({ ...prev, archivo: null as unknown as File }));
+
+                                                setResetArchivo(true);
+
+                                                setTimeout(() => {
+                                                    setResetArchivo(false);
+                                                }, 100);
+
+                                                return;
+                                            }
+                                        }
+
+                                        setInstrumento(prev => ({ ...prev, archivo: file as File }));
+                                        if (file && erroresRegistro.archivo) setErroresRegistro(prev => ({ ...prev, archivo: undefined }));
                                     }}
                                 />
                                 {erroresRegistro.archivo && (
@@ -558,7 +600,7 @@ export default function GestionInstrumentos() {
                                         <FileDown className="text-primary h-4 w-4" />
                                         <span className="text-sm truncate flex-1">
                                             {/* Se muestra código del instrumento y extension del archivo */}
-                                            {`IT-000${instrumentoEditar.codigo}.${instrumentoEditar.archivo.split('.').pop()}`}
+                                            {`IT-00${instrumentoEditar.codigo}.${instrumentoEditar.archivo.split('.').pop()}`}
                                         </span>
                                         {/* Eliminar el archivo actual */}
                                         <Button variant="ghost" size="icon" className="hover:bg-destructive/10 h-6 w-6"
@@ -568,10 +610,29 @@ export default function GestionInstrumentos() {
                                     </div>
                                 )}
                                 {typeof instrumentoEditar.archivo !== 'string' && (
-                                    <FileUploadField id="archivo-editar" label="ARCHIVO" accept=".pdf,.docx"
+                                    <FileUploadField id="archivo-editar" label="ARCHIVO" accept=".pdf,.doc,.docx" reset={resetArchivo}
                                         onChange={(file) => {
-                                            setInstrumentoEditar({ ...instrumentoEditar, archivo: file as File });
-                                            if (erroresActualizar.archivo) setErroresActualizar({ ...erroresActualizar, archivo: undefined });
+                                            if (file) {
+                                                const extensionesPermitidas = ["pdf", "doc", "docx"];
+
+                                                const extension = file.name.split(".").pop()?.toLowerCase();
+
+                                                if (!extension || !extensionesPermitidas.includes(extension)) {
+                                                    setErroresActualizar(prev => ({ ...prev, archivo: "Archivo no valido." }));
+
+                                                    setInstrumentoEditar(prev => ({ ...prev, archivo: null as unknown as File }));
+
+                                                    setResetArchivo(true);
+
+                                                    setTimeout(() => {
+                                                        setResetArchivo(false);
+                                                    }, 100);
+
+                                                    return;
+                                                }
+                                            }
+                                            setInstrumentoEditar(prev => ({ ...prev, archivo: file as File }));
+                                            if (file && erroresActualizar.archivo) setErroresActualizar(prev => ({ ...prev, archivo: undefined }));
                                         }}
                                     />
                                 )}
@@ -584,7 +645,7 @@ export default function GestionInstrumentos() {
                             <Button type="submit" className="md:py-6" disabled={loading}>
                                 {loading ? "Actualizando..." : "Actualizar"}
                             </Button>
-                            <Button variant="outline" className="md:py-6" onClick={() => { setIsOpenEditarInstrumento(false); setErroresActualizar({}); }}>
+                            <Button type="button" variant="outline" className="md:py-6" onClick={() => { setIsOpenEditarInstrumento(false); setErroresActualizar({}); }}>
                                 Cancelar
                             </Button>
                         </DrawerFooter>

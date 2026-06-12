@@ -1,10 +1,11 @@
-import { useState, useRef, useCallback, DragEvent, ChangeEvent } from "react";
+import { useEffect, useState, useRef, useCallback, DragEvent, ChangeEvent } from "react";
 
 interface FileUploadFieldProps {
     id?: string;
     label?: string;
     accept?: string;
     required?: boolean;
+    reset?: boolean;
     onChange?: (file: File | null) => void;
 }
 
@@ -29,12 +30,23 @@ export default function FileUploadField({
     label = "ARCHIVO",
     accept,
     required = false,
+    reset = false,
     onChange,
 }: FileUploadFieldProps) {
     const [file, setFile] = useState<File | null>(null);
     const [objectURL, setObjectURL] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (reset) {
+            if (objectURL) URL.revokeObjectURL(objectURL);
+            setFile(null);
+            setObjectURL(null);
+            if (inputRef.current) inputRef.current.value = "";
+            onChange?.(null);
+        }
+    }, [reset]);
 
     const handleFile = useCallback(
         (f: File) => {
@@ -165,7 +177,7 @@ export default function FileUploadField({
                         <div className="flex items-center gap-3 bg-background border border-border/50 rounded-lg px-3 py-2.5">
                             {/* File type icon */}
                             <div
-                                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                                 style={{ background: `${accentColor}18` }}
                             >
                                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -188,7 +200,7 @@ export default function FileUploadField({
                             </div>
 
                             {/* Actions */}
-                            <div className="flex gap-1.5 flex-shrink-0">
+                            <div className="flex gap-1.5 shrink-0">
                                 {objectURL && (
                                     <button
                                         type="button"

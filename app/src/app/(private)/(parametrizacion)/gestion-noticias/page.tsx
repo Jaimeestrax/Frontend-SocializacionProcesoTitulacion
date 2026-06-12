@@ -90,16 +90,20 @@ export default function GestionNoticias() {
 
     const [textoBusqueda, setTextoBusqueda] = useState("");
 
+    const [resetArchivo, setResetArchivo] = useState(false);
+
     const [erroresRegistro, setErroresRegistro] = useState<{
         titulo?: string,
         descripcion?: string,
-        prioridad?: string
+        prioridad?: string,
+        imagen?: string
     }>({});
 
     const [erroresActualizar, setErroresActualizar] = useState<{
         titulo?: string,
         descripcion?: string,
-        prioridad?: string
+        prioridad?: string,
+        imagen?: string
     }>({});
 
     // Llamada asincrona reutilizable
@@ -502,11 +506,33 @@ export default function GestionNoticias() {
                                 )}
                             </Field>
                             <Field>
-                                <FileUploadField id="imagen" label="IMAGEN" accept=".jpg,.png,.jpeg"
-                                    onChange={(file) =>
-                                        setNoticia({ ...noticia, imagen: file as File })
-                                    }
+                                <FileUploadField id="imagen" label="IMAGEN" accept=".jpg,.png,.jpeg" reset={resetArchivo}
+                                    onChange={(file) => {
+                                        if (file) {
+                                            const extensionesPermitidas = ["jpg", "png", "jpeg"];
+                                            const extension = file.name.split(".").pop()?.toLowerCase();
+
+                                            if (!extension || !extensionesPermitidas.includes(extension)) {
+                                                setErroresRegistro(prev => ({ ...prev, imagen: "Archivo no valido." }));
+
+                                                setNoticia(prev => ({ ...prev, imagen: null as unknown as File }));
+
+                                                setResetArchivo(true);
+
+                                                setTimeout(() => {
+                                                    setResetArchivo(false);
+                                                }, 100);
+
+                                                return;
+                                            }
+                                        }
+                                        setNoticia(prev => ({ ...prev, imagen: file as File }));
+                                        if (file && erroresRegistro.imagen) setErroresRegistro(prev => ({ ...prev, imagen: undefined }));
+                                    }}
                                 />
+                                {erroresRegistro.imagen && (
+                                    <p className="text-xs text-destructive mt-1">{erroresRegistro.imagen}</p>
+                                )}
                             </Field>
                         </FieldGroup>
                         <DrawerFooter className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -599,9 +625,33 @@ export default function GestionNoticias() {
                                     </div>
                                 )}
                                 {typeof noticiaEditar.imagen !== 'string' && (
-                                    <FileUploadField id="imagen" label="NUEVA IMAGEN" accept=".jpg,.png,.jpeg"
-                                        onChange={(file) => setNoticiaEditar({ ...noticiaEditar, imagen: file as File })}
+                                    <FileUploadField id="imagen" label="NUEVA IMAGEN" accept=".jpg,.png,.jpeg" reset={resetArchivo}
+                                        onChange={(file) => {
+                                            if (file) {
+                                                const extensionesPermitidas = ["jpg", "png", "jpeg"];
+                                                const extension = file.name.split(".").pop()?.toLowerCase();
+
+                                                if (!extension || !extensionesPermitidas.includes(extension)) {
+                                                    setErroresActualizar(prev => ({ ...prev, imagen: "Archivo no valido." }));
+
+                                                    setNoticiaEditar(prev => ({ ...prev, imagen: null as unknown as File }));
+
+                                                    setResetArchivo(true);
+
+                                                    setTimeout(() => {
+                                                        setResetArchivo(false);
+                                                    }, 100);
+
+                                                    return;
+                                                }
+                                            }
+                                            setNoticiaEditar({ ...noticiaEditar, imagen: file as File });
+                                            if (file && erroresActualizar.imagen) setErroresActualizar(prev => ({ ...prev, imagen: undefined }));
+                                        }}
                                     />
+                                )}
+                                {erroresActualizar.imagen && (
+                                    <p className="text-xs text-destructive mt-1">{erroresActualizar.imagen}</p>
                                 )}
                             </Field>
                         </FieldGroup>
