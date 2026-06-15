@@ -92,7 +92,7 @@ export default function SoportePage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-4xl md:text-5xl font-extrabold tracking-tight text-accent-foreground mb-4"
                 >
-                    ¿Cómo podemos ayudarte hoy?
+                    ¿Cómo podemos ayudarte?
                 </motion.h1>
                 <motion.p
                     initial={{ opacity: 0 }}

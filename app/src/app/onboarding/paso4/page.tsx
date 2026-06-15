@@ -24,18 +24,14 @@ export default function Paso4() {
             <div className="flex w-full max-w-lg md:max-w-xl lg:max-w-4xl xl:max-w-5xl p-6 md:p-2 mt-2 md:mt-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/** Cuadro izquierda*/}
-                    <div className="bg-foreground/10 relative rounded-lg md:rounded-xl p-6 flex items-center justify-center">
+                    <div className="bg-foreground/10 relative rounded-lg md:rounded-xl p-4 flex items-center justify-center">
                         {/* Texto superpuesto esquina superior derecha*/}
-                        <div className="absolute top-[-20px] right-0 bg-accent/75 rounded-full shadow-md p-4 z-20 max-w-75 flex items-center justify-center gap-2">
+                        <div className="absolute top-[-20px] right-0 bg-accent rounded-full shadow-md p-4 z-20 max-w-75 flex items-center justify-center gap-2">
                             <Bot className="text-success-foreground" /> <span className="text-xs font-medium italic">Asistencia siempre disponible</span>
                         </div>
 
                         {/** Imagen principal centrada */}
-                        <img
-                            src="https://avatar.vercel.sh/shadcn1"
-                            alt="Event cover"
-                            className="w-full h-full object-cover rounded-lg brightness-60 grayscale dark:brightness-40"
-                        />
+                        <img src="/images/chatbot.png" alt="chatbot" className="w-full h-full object-cover rounded-lg opacity-75" />
                     </div>
 
                     {/**  Cuadro derecho */}

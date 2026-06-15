@@ -70,12 +70,12 @@ function MarqueeRow({
 }
 
 
-export function ScrollMarquee() {
+export default function ScrollMarquee() {
     return (
         <section className="py-24 relative overflow-hidden">
             {/* Efecto de desvanecido en los bordes laterales */}
-            <div className="absolute inset-y-0 left-0 w-32 z-10 pointer-events-none bg-gradient-to-r from-background to-transparent" />
-            <div className="absolute inset-y-0 right-0 w-32 z-10 pointer-events-none bg-gradient-to-l from-background to-transparent" />
+            <div className="absolute inset-y-0 left-0 w-32 z-10 pointer-events-none bg-linear-to-r from-background to-transparent" />
+            <div className="absolute inset-y-0 right-0 w-32 z-10 pointer-events-none bg-linear-to-l from-background to-transparent" />
 
             {/* Header de la sección */}
             <motion.div

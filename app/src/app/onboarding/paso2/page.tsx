@@ -25,23 +25,19 @@ export default function Paso2() {
             <div className="flex w-full max-w-lg md:max-w-xl lg:max-w-4xl xl:max-w-5xl p-6 md:p-2 mt-2 md:mt-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/** Cuadro izquierda*/}
-                    <div className="bg-foreground/10 relative rounded-lg md:rounded-xl p-6 flex items-center justify-center">
+                    <div className="bg-foreground/10 relative rounded-lg md:rounded-xl p-4 flex items-center justify-center">
                         {/** Imagen principal centrada */}
-                        <img
-                            src="https://avatar.vercel.sh/shadcn1"
-                            alt="Event cover"
-                            className="w-full h-full object-cover rounded-lg brightness-60 grayscale dark:brightness-40"
-                        />
+                        <img src="/images/subproceso.png" alt="Subproceso" className="w-full h-full object-cover rounded-lg opacity-60" />
 
                         {/* Texto superpuesto arriba del logo*/}
-                        <div className="absolute bottom-18 right-12 bg-accent/75 rounded-md shadow-md p-2 z-20 max-w-50">
+                        <div className="absolute bottom-18 right-12 bg-accent rounded-md shadow-md p-2 z-20 max-w-50">
                             <p className="text-xs font-medium italic">
                                 ¡Observa como avanza el proceso! Visualizar el progreso es la clave para llegar a la meta.
                             </p>
                         </div>
 
                         {/* Logo superpuesto esquina inferior derecha */}
-                        <div className="absolute bottom-2 right-4 z-20 w-20 h-20 rounded-full bg-sky-400 flex items-center justify-center shadow-lg">
+                        <div className="absolute bottom-2 right-2 z-20 w-20 h-20 rounded-full bg-sky-400 flex items-center justify-center shadow-lg">
                             <img src="/images/logo.png" alt="logo" className="w-12 h-18" />
                         </div>
                     </div>

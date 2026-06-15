@@ -1,14 +1,24 @@
 import {
     ejecutarQueryPost,
+    ejecutarQueryPostArchivos,
     ejecutarQueryGet,
-    ejecutarQueryPut,
+    ejecutarQueryPutArchivos,
     ejecutarQueryPatch
 } from "../lib/api/peticiones";
 
 import { Respuesta } from "@/constants/respuesta";
 
 function registrarPlanificacion(data: any) {
-    return ejecutarQueryPost<Respuesta>("registrar-planificacion", data);
+    const formData = new FormData();
+
+    formData.append("periodo", data.periodo);
+    formData.append("fechaInicio", data.fechaInicio);
+    formData.append("fechaFin", data.fechaFin);
+    formData.append("subprocesos", JSON.stringify(data.subprocesos));
+    formData.append("imagenProceso", data.imagenProceso);
+    formData.append("idEncargadoGenerar", data.idEncargadoGenerar);
+
+    return ejecutarQueryPostArchivos<Respuesta>("registrar-planificacion", formData);
 }
 
 function obtenerPlanificaciones(busqueda: any) {
@@ -16,7 +26,17 @@ function obtenerPlanificaciones(busqueda: any) {
 }
 
 function actualizarPlanificacion(id: string, data: any) {
-    return ejecutarQueryPut<Respuesta>("actualizar-planificacion", id, data);
+    const formData = new FormData();
+
+    formData.append("periodo", data.periodo);
+    formData.append("fechaInicio", data.fechaInicio);
+    formData.append("fechaFin", data.fechaFin);
+    formData.append("subprocesos", JSON.stringify(data.subprocesos));
+    formData.append("idEncargadoActualizar", data.idEncargadoActualizar);
+    if (data.imagenProceso) {
+        formData.append("imagenProceso", data.imagenProceso);
+    }
+    return ejecutarQueryPutArchivos<Respuesta>("actualizar-planificacion", id, formData);
 }
 
 function actualizarEstadoPlanificacion(id: string, data: any) {
@@ -25,6 +45,10 @@ function actualizarEstadoPlanificacion(id: string, data: any) {
 
 function obtenerPlanificacionPorId(id: string) {
     return ejecutarQueryGet<Respuesta>("obtener-planificacion-por-id", id);
+}
+
+function contarPlanificacionesTotales() {
+    return ejecutarQueryGet<Respuesta>("contar-planificaciones-totales");
 }
 
 // Funciones públicas
@@ -70,6 +94,9 @@ const planificacionesService = {
     actualizarPlanificacion,
     actualizarEstadoPlanificacion,
     obtenerPlanificacionPorId,
+    contarPlanificacionesTotales,
+
+    // Funciones públicas
     obtenerPlanificacionVigente,
     obtenerPeriodoActual,
     obtenerPorcentajeAvance,

@@ -39,6 +39,12 @@ export function TimelineVertical({ subprocesos = [] }: { subprocesos: any[] }) {
                         dotColor = "bg-success border-success text-success-foreground";
                         cardBorder = "border-success";
                         cardBg = "bg-success/25";
+                        badge = (
+                            <span className="absolute -top-3 right-6 bg-success-foreground text-secondary text-xs font-black uppercase px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                                Finalizado
+                            </span>
+                        );
                     } else if (isActivo) {
                         dotColor = "bg-warning/25 border-warning/50 text-warning shadow-2xl";
                         cardBorder = "border-warning/50 shadow-2xl shadow-warning/25";
@@ -46,7 +52,7 @@ export function TimelineVertical({ subprocesos = [] }: { subprocesos: any[] }) {
                         badge = (
                             <span className="absolute -top-3 right-6 bg-warning text-secondary text-xs font-black uppercase px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
                                 <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                                Activo Ahora
+                                En proceso
                             </span>
                         );
                     } else if (isProximo) {
@@ -54,6 +60,12 @@ export function TimelineVertical({ subprocesos = [] }: { subprocesos: any[] }) {
                         cardBorder = "border-destructive/25";
                         cardBg = "bg-destructive/10";
                         cardOpacity = "opacity-80";
+                        badge = (
+                            <span className="absolute -top-3 right-6 bg-destructive text-secondary text-xs font-black uppercase px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                                Próximo
+                            </span>
+                        );
                     }
 
                     // Progreso de actividades
@@ -98,10 +110,9 @@ export function TimelineVertical({ subprocesos = [] }: { subprocesos: any[] }) {
                                 <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
                                     <div className="flex-1 space-y-4">
                                         <div>
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                                                    Subproceso {sub.identificador}
-                                                </span>
+                                            <div className={`w-12 h-12 rounded-full bg-background border-2 border-foreground flex items-center justify-center font-extrabold text-xl mb-4 -mt-12 -ml-10
+                                                ${isActivo ? 'text-secondary bg-warning border-warning' : 'text-accent-foreground'}`}>
+                                                {i + 1}.
                                             </div>
                                             <h3 className={`text-2xl md:text-3xl font-black tracking-tight leading-tight ${isActivo ? 'text-foreground' : ''}`}>
                                                 {sub.nombre}
@@ -109,17 +120,17 @@ export function TimelineVertical({ subprocesos = [] }: { subprocesos: any[] }) {
                                         </div>
 
                                         <p className="text-muted-foreground text-sm md:text-base leading-relaxed max-h-0 overflow-hidden opacity-0 group-hover:max-h-40 group-hover:opacity-100 transition-all duration-300 ease-in-out">
-                                            {sub.descripcion}
+                                            <span className="font-bold">Descripción: </span> {sub.descripcion}
                                         </p>
 
-                                        <div className="flex flex-wrap items-center gap-3 md:gap-5">
-                                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-md">
+                                        <div className="flex flex-wrap items-center gap-2 md:gap-4">
+                                            <span className="inline-flex items-center gap-1 text-xs md:text-sm font-medium text-accent-foreground bg-muted/60 px-3 py-2 rounded-md">
                                                 <Calendar className="w-4 h-4" />
-                                                {new Date(sub.fechaInicio).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' })} — {new Date(sub.fechaFin).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' })}
+                                                Del {new Date(sub.fechaInicio).toLocaleDateString('es-EC', { day: '2-digit', month: 'long' })} al {new Date(sub.fechaFin).toLocaleDateString('es-EC', { day: '2-digit', month: 'long' })}
                                             </span>
-                                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-md">
+                                            <span className="inline-flex items-center gap-1 text-xs md:text-sm font-medium text-accent-foreground bg-muted/60 px-3 py-2 rounded-md">
                                                 <Clock className="w-4 h-4" />
-                                                {semanasCalculadas} {semanasCalculadas === 1 ? 'semana' : 'semanas'}
+                                                Duración: {semanasCalculadas} {semanasCalculadas === 1 ? 'semana' : 'semanas'}
                                             </span>
                                         </div>
                                     </div>

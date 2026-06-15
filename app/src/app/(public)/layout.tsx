@@ -1,5 +1,5 @@
 import { NavbarPublic } from "@/components/navbar-public";
-import { ChatbotButton } from "@/components/chatbot-button";
+import ChatbotButton from "@/components/chatbot-button";
 
 export default function SocializacionLayout({
     children,

@@ -504,18 +504,18 @@ export default function GestionSubprocesos() {
                             </TableRow>
                         )}
                         {subprocesos.map((sp, i) => (
-                            <TableRow key={sp._id} className="text-center">
-                                <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
-                                <TableCell>{sp.identificador}</TableCell>
+                            <TableRow key={sp._id}>
+                                <TableCell className="text-center">{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
+                                <TableCell className="text-center">{sp.identificador}</TableCell>
                                 <TableCell className="max-w-sm whitespace-normal wrap-break-word">{sp.nombre}</TableCell>
                                 <TableCell className="max-w-xl whitespace-normal wrap-break-word">{sp.descripcion}</TableCell>
-                                <TableCell>
+                                <TableCell className="text-center">
                                     {sp.estado == 1
                                         ? <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground">Activo</Badge>
                                         : <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground">Inactivo</Badge>
                                     }
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="text-center">
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
@@ -610,11 +610,13 @@ export default function GestionSubprocesos() {
                             <FieldGroup>
                                 <div className="flex items-center justify-between gap-2">
                                     <Field>
-                                        <FieldLabel htmlFor="identificador" className="text-xs">ID SUBPROCESO</FieldLabel>
+                                        <FieldLabel htmlFor="identificador" className="text-xs">IDENTIFICADOR</FieldLabel>
                                         <InputGroup className={`py-5 px-2 ${erroresRegistro.identificador ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                             <InputGroupInput id="identificador" type="text" placeholder="OM, AT, ..."
-                                                value={subproceso.identificador} onChange={e => {
-                                                    setSubproceso(p => ({ ...p, identificador: e.target.value }));
+                                                value={subproceso.identificador} maxLength={2}
+                                                onChange={e => {
+                                                    const valor = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+                                                    setSubproceso(p => ({ ...p, identificador: valor }));
                                                     if (erroresRegistro.identificador) setErroresRegistro(p => ({ ...p, identificador: undefined }));
                                                 }}
                                                 className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-xs md:placeholder:text-sm ${erroresRegistro.identificador ? 'placeholder:text-destructive/50' : ''}`} />
@@ -673,7 +675,7 @@ export default function GestionSubprocesos() {
                                                 setSubproceso(p => ({ ...p, descripcion: e.target.value }));
                                                 if (erroresRegistro.descripcion) setErroresRegistro({ ...erroresRegistro, descripcion: undefined });
                                             }}
-                                            className={`w-full text-xs md:text-xs placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-xs ${erroresRegistro.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
+                                            className={`w-full text-xs md:text-xs placeholder:text-muted-foreground/50 resize-none outline-none bg-transparent placeholder:text-xs placeholder:md:text-sm ${erroresRegistro.descripcion ? 'placeholder:text-destructive/50' : ''}`} />
                                     </InputGroup>
                                     {erroresRegistro.descripcion && (
                                         <p className="text-xs text-destructive mt-1">{erroresRegistro.descripcion}</p>
@@ -852,11 +854,13 @@ export default function GestionSubprocesos() {
                             <FieldGroup>
                                 <div className="flex items-center justify-between gap-2">
                                     <Field>
-                                        <FieldLabel htmlFor="identificador" className="text-xs">ID SUBPROCESO</FieldLabel>
+                                        <FieldLabel htmlFor="identificador" className="text-xs">IDENTIFICADOR</FieldLabel>
                                         <InputGroup className={`py-5 px-2 ${erroresActualizar.identificador ? 'bg-destructive/10 border border-destructive' : 'bg-secondary'}`}>
                                             <InputGroupInput id="identificador" type="text" placeholder="OM, AT, ..."
-                                                value={subprocesoActualizar.identificador} onChange={e => {
-                                                    setSubprocesoActualizar(p => ({ ...p, identificador: e.target.value }));
+                                                value={subprocesoActualizar.identificador} maxLength={2}
+                                                onChange={e => {
+                                                    const valor = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+                                                    setSubprocesoActualizar(p => ({ ...p, identificador: valor }));
                                                     if (erroresActualizar.identificador) setErroresActualizar(p => ({ ...p, identificador: "" }))
                                                 }}
                                                 className={`text-xs md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm ${erroresActualizar.identificador ? 'placeholder:text-destructive/50' : ''}`} />

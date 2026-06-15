@@ -2,7 +2,7 @@
 
 import { toast } from "@/components/ui/toast-custom";
 
-import { CalendarPlus, CalendarRange, FileEdit, Download, Info, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronRight, TextSearch } from 'lucide-react';
+import { CalendarPlus, CalendarRange, FileEdit, Download, Info, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronRight, TextSearch, CircleX } from 'lucide-react';
 
 import {
     Drawer,
@@ -48,12 +48,16 @@ import {
 
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import FileUploadField from "@/components/ui/fileUpload";
+
 import { useState, useEffect } from "react";
 import { useDrawerDirection } from "@/hooks/use-drawer-size";
 import { usePlanificacion } from "@/hooks/use-planificacion";
 import { useSubprocesos } from "@/hooks/use-subproceso";
 import { Planificacion, SubprocesoSnapshot } from "@/DTOs/planificacion";
 import { Busqueda } from "@/constants/busqueda";
+import { environment } from "@/lib/api/client";
+
 // Plantilla para generar planificación como PDF
 import { PlanificacionPDF } from "@/components/planificacion-pdf";
 import { pdf } from "@react-pdf/renderer";
@@ -62,7 +66,8 @@ const planificacionVacia = (): Planificacion => ({
     periodo: "",
     fechaInicio: "",
     fechaFin: "",
-    subprocesos: []
+    subprocesos: [],
+    imagenProceso: null as unknown as File,
 });
 
 type ErroresActividad = {
@@ -82,11 +87,20 @@ type ErroresPlanificacion = {
     fechaFin?: string;
     subprocesos?: ErroresSubproceso[];
     sinSubprocesos?: string;
+    imagenProceso?: string;
 };
 
 export default function GestionPlanificacion() {
     // Hooks de planificacion
-    const { registrarPlanificacion, obtenerPlanificaciones, actualizarPlanificacion, actualizarEstadoPlanificacion, obtenerPlanificacionPorId, loading } = usePlanificacion();
+    const {
+        registrarPlanificacion,
+        obtenerPlanificaciones,
+        actualizarPlanificacion,
+        actualizarEstadoPlanificacion,
+        obtenerPlanificacionPorId,
+        contarPlanificacionesTotales,
+        loading
+    } = usePlanificacion();
     // Utilidad para obtener subprocesos
     const { listarSubprocesosActivos } = useSubprocesos();
     // Hook para dirección del drawer
@@ -105,6 +119,8 @@ export default function GestionPlanificacion() {
     });
 
     const [textoBusqueda, setTextoBusqueda] = useState("");
+
+    const [resetArchivo, setResetArchivo] = useState(false);
 
     const [erroresRegistro, setErroresRegistro] = useState<ErroresPlanificacion>({});
     const [erroresActualizar, setErroresActualizar] = useState<ErroresPlanificacion>({});
@@ -130,10 +146,11 @@ export default function GestionPlanificacion() {
     const cargarPlanificaciones = async () => {
         try {
             const res = await obtenerPlanificaciones(busqueda);
+            const res2 = await contarPlanificacionesTotales();
             setPlanificaciones(res.data.docs);
             setSiguiente(res.data.hasNextPage);
             setAnterior(res.data.hasPrevPage);
-            setTotalPlanificaciones(res.data.totalDocs);
+            setTotalPlanificaciones(res2.data);
             toast.success(res.message);
         } catch (error: any) {
             console.error("Error al obtener planificaciones:", error.message);
@@ -383,6 +400,7 @@ export default function GestionPlanificacion() {
         if (!plan.periodo.trim()) e.periodo = "El período de la planificación es requerido";
         if (!plan.fechaInicio) e.fechaInicio = "La fecha de inicio de la planificación es requerida";
         if (!plan.fechaFin) e.fechaFin = "La fecha de finalización es requerida";
+        if (!plan.imagenProceso) e.imagenProceso = "La imagen de la planificación es requerida";
         if (plan.subprocesos.length === 0) e.sinSubprocesos = "Se debe agregar al menos un subproceso";
 
         const errSubs = plan.subprocesos.map(sp => {
@@ -635,6 +653,35 @@ export default function GestionPlanificacion() {
                                         className="flex-1"
                                     />
                                 </div>
+                                <Field>
+                                    <FileUploadField id="imagenProceso" label="IMAGEN PROCESO" accept=".jpg,.png,.jpeg" reset={resetArchivo}
+                                        onChange={(file) => {
+                                            if (file) {
+                                                const extensionesPermitidas = ["jpg", "png", "jpeg"];
+                                                const extension = file.name.split(".").pop()?.toLowerCase();
+
+                                                if (!extension || !extensionesPermitidas.includes(extension)) {
+                                                    setErroresRegistro(prev => ({ ...prev, imagenProceso: "Archivo no valido." }));
+
+                                                    setPlanificacion(prev => ({ ...prev, imagenProceso: null as unknown as File }));
+
+                                                    setResetArchivo(true);
+
+                                                    setTimeout(() => {
+                                                        setResetArchivo(false);
+                                                    }, 100);
+
+                                                    return;
+                                                }
+                                            }
+                                            setPlanificacion(prev => ({ ...prev, imagenProceso: file as File }));
+                                            if (file && erroresRegistro.imagenProceso) setErroresRegistro(prev => ({ ...prev, imagenProceso: undefined }));
+                                        }}
+                                    />
+                                    {erroresRegistro.imagenProceso && (
+                                        <p className="text-xs text-destructive mt-1">{erroresRegistro.imagenProceso}</p>
+                                    )}
+                                </Field>
                             </FieldGroup>
                         </section>
 
@@ -845,6 +892,50 @@ export default function GestionPlanificacion() {
                                             className="flex-1"
                                         />
                                     </div>
+                                    <Field>
+                                        {typeof planificacionActualizar.imagenProceso === 'string' && (
+                                            <>
+                                                <FieldLabel htmlFor="periodo" className="text-xs">IMAGEN PROCESO</FieldLabel>
+                                                <div className="relative flex items-center justify-center p-3 bg-secondary rounded-md mb-2">
+                                                    <img src={`${environment.baseUrl}/${planificacionActualizar.imagenProceso}`} alt="Imagen" className="object-cover w-45 h-45" />
+                                                    {/* Eliminar la imagen actual */}
+                                                    <Button variant="ghost" size="icon" className="absolute top-1 right-1 hover:bg-destructive/10 h-6 w-6"
+                                                        onClick={() => setPlanificacionActualizar({ ...planificacionActualizar, imagenProceso: null as unknown as File })}>
+                                                        <CircleX className="text-destructive h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        )}
+                                        {typeof planificacionActualizar.imagenProceso !== 'string' && (
+                                            <FileUploadField id="imagenProceso" label="NUEVA IMAGEN PROCESO" accept=".jpg,.png,.jpeg" reset={resetArchivo}
+                                                onChange={(file) => {
+                                                    if (file) {
+                                                        const extensionesPermitidas = ["jpg", "png", "jpeg"];
+                                                        const extension = file.name.split(".").pop()?.toLowerCase();
+
+                                                        if (!extension || !extensionesPermitidas.includes(extension)) {
+                                                            setErroresActualizar(prev => ({ ...prev, imagenProceso: "Archivo no valido." }));
+
+                                                            setPlanificacionActualizar(prev => ({ ...prev, imagenProceso: null as unknown as File }));
+
+                                                            setResetArchivo(true);
+
+                                                            setTimeout(() => {
+                                                                setResetArchivo(false);
+                                                            }, 100);
+
+                                                            return;
+                                                        }
+                                                    }
+                                                    setPlanificacionActualizar({ ...planificacionActualizar, imagenProceso: file as File });
+                                                    if (file && erroresActualizar.imagenProceso) setErroresActualizar(prev => ({ ...prev, imagenProceso: undefined }));
+                                                }}
+                                            />
+                                        )}
+                                        {erroresActualizar.imagenProceso && (
+                                            <p className="text-xs text-destructive mt-1">{erroresActualizar.imagenProceso}</p>
+                                        )}
+                                    </Field>
                                 </FieldGroup>
                             </section>
 

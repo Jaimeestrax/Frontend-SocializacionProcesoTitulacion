@@ -89,7 +89,7 @@ export default function GestionInstrumentos() {
     // Se configura la busqueda inicial
     const [busqueda, setBusqueda] = useState<Busqueda>({
         pagina: 1,
-        limite: 5,
+        limite: 10,
         palabra: ""
     });
 
@@ -383,23 +383,23 @@ export default function GestionInstrumentos() {
                             </TableRow>
                         )}
                         {instrumentos.map((instrumento, i) => (
-                            <TableRow key={instrumento._id} className="text-center">
-                                <TableCell>{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
+                            <TableRow key={instrumento._id}>
+                                <TableCell className="text-center">{(busqueda.pagina - 1) * busqueda.limite + i + 1}</TableCell>
                                 {/* <TableCell>{instrumento.codigo}</TableCell> */}
-                                <TableCell>{instrumento.nombre}</TableCell>
+                                <TableCell className="max-w-sm whitespace-normal wrap-break-words">{instrumento.nombre}</TableCell>
                                 <TableCell className="max-w-sm whitespace-normal wrap-break-words">{instrumento.descripcion}</TableCell>
-                                <TableCell>{instrumento.idEncargadoGenerar.nombres + ' ' + instrumento.idEncargadoGenerar.apellidos}</TableCell>
-                                <TableCell>{
+                                <TableCell className="text-center">{instrumento.idEncargadoGenerar.nombres + ' ' + instrumento.idEncargadoGenerar.apellidos}</TableCell>
+                                <TableCell className="text-center">{
                                     instrumento.vigente ? (
                                         <Badge className="px-5 py-3 bg-success hover:bg-success/60 text-foreground">Vigente</Badge>
                                     ) : (
                                         <Badge className="px-5 py-3 bg-destructive hover:bg-destructive/60 text-foreground">No vigente</Badge>
                                     )
                                 }</TableCell>
-                                <TableCell>{formatearFecha(instrumento.fechaInicio)}</TableCell>
-                                <TableCell>{formatearFecha(instrumento.fechaFin)}</TableCell>
-                                <TableCell>{instrumento.version}</TableCell>
-                                <TableCell>
+                                <TableCell className="text-center">{formatearFecha(instrumento.fechaInicio)}</TableCell>
+                                <TableCell className="text-center">{formatearFecha(instrumento.fechaFin)}</TableCell>
+                                <TableCell className="text-center">{instrumento.version}</TableCell>
+                                <TableCell className="text-center">
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>

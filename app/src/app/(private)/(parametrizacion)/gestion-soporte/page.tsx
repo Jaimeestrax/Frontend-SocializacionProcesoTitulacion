@@ -55,13 +55,14 @@ import { useFaqs } from "@/hooks/use-faq";
 import { useDrawerDirection } from "@/hooks/use-drawer-size";
 
 export default function GestionFaqs() {
-    const { registrarFaq, obtenerFaqs, eliminarFaq, actualizarFaq, obtenerFaqPorId, loading } = useFaqs();
+    const { registrarFaq, obtenerFaqs, eliminarFaq, actualizarFaq, obtenerFaqPorId, contarFaqs, loading } = useFaqs();
     const drawerDirection = useDrawerDirection();
 
     // Listado de faqs
     const [faqs, setFaqs] = useState<any[]>([]);
     const [siguiente, setSiguiente] = useState(false);
     const [anterior, setAnterior] = useState(false);
+    const [totalFaqs, setTotalFaqs] = useState(0);
 
     // Se configura la busqueda inicial
     const [busqueda, setBusqueda] = useState<Busqueda>({
@@ -86,9 +87,13 @@ export default function GestionFaqs() {
     const cargarFaqs = async () => {
         try {
             const res = await obtenerFaqs(busqueda);
+            const res2 = await contarFaqs();
+
             setFaqs(res.data.docs);
             setSiguiente(res.data.hasNextPage);
             setAnterior(res.data.hasPrevPage);
+            setTotalFaqs(res2.data);
+
             toast.success(res.message);
         } catch (error: any) {
             console.error("Error al obtener faqs:", error.message);
@@ -242,7 +247,7 @@ export default function GestionFaqs() {
                             <MessageCircleQuestionMark className="w-16 h-16 text-primary bg-primary/10 p-4 rounded-md" />
                             <CardHeader>
                                 <CardTitle>Preguntas frecuentes</CardTitle>
-                                <CardDescription className="font-bold text-lg">{faqs?.length || 'S/N'}</CardDescription>
+                                <CardDescription className="font-bold text-lg">{totalFaqs}</CardDescription>
                             </CardHeader>
                         </div>
                     </Card>

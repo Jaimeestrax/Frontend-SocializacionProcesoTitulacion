@@ -15,7 +15,7 @@ export function InlineInstruments({ instrumentos, estadoSubproceso }: { instrume
     return (
         <div className="mt-6 space-y-3">
             <h4 className="text-[10px] uppercase tracking-widest font-bold text-foreground">
-                Documentos Requeridos
+                Documentos Requeridos:
             </h4>
             <div className="grid gap-3">
                 {instrumentos.map(inst => {
@@ -28,13 +28,12 @@ export function InlineInstruments({ instrumentos, estadoSubproceso }: { instrume
                         >
                             <div className="flex items-start gap-3">
                                 <div className="p-2 rounded-lg bg-muted shrink-0">
-                                    <FileText className="w-5 h-5 text-muted-foreground" />
+                                    <FileText className="w-5 h-5 text-primary" />
                                 </div>
                                 <div>
-                                    <span className="text-[10px] font-bold uppercase tracking-widest bg-muted px-2 py-0.5 rounded text-muted-foreground">
-                                        {inst.identificador}
+                                    <span className="text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded text-accent-foreground">
+                                        {inst.idInstrumento.nombre}
                                     </span>
-                                    <p className="text-sm font-semibold">{inst.idInstrumento.nombre}</p>
                                 </div>
                             </div>
 

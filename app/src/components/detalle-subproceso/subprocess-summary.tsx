@@ -13,7 +13,7 @@ export function SubprocessSummary({ data = null }: { data: any }) {
         a.instrumentos.forEach((i: any) => instrumentosSet.add(i._id));
     });
 
-    const metrics = [
+    const metricas = [
         { label: "Total actividades", value: totales, icon: LayoutList, color: 'text-blue-400' },
         { label: "Finalizadas", value: completadas, icon: CheckSquare, color: 'text-green-400' },
         { label: "Instrumentos", value: instrumentosSet.size, icon: FileText, color: 'text-amber-400' }
@@ -21,7 +21,7 @@ export function SubprocessSummary({ data = null }: { data: any }) {
 
     return (
         <div className="grid grid-cols-3 gap-4 mb-12">
-            {metrics.map((m, i) => (
+            {metricas.map((m, i) => (
                 <motion.div
                     key={m.label}
                     initial={{ opacity: 0, y: 20 }}
@@ -34,7 +34,7 @@ export function SubprocessSummary({ data = null }: { data: any }) {
                     </div>
                     <div className="flex flex-col items-center justify-center">
                         <p className="text-2xl font-black">{m.value}</p>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
+                        <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-muted-foreground mt-1">
                             {m.label}
                         </p>
                     </div>

@@ -20,10 +20,9 @@ export function mapSubprocesosPasos(subprocesos: any[]) {
         // 3. Formatear las fechas de duración
         const fechaInicio = new Date(sub.fechaInicio).toLocaleDateString('es-EC', { month: 'short', day: 'numeric' });
         const fechaFin = new Date(sub.fechaFin).toLocaleDateString('es-EC', { month: 'short', day: 'numeric' });
-        const duracion = `${fechaInicio} — ${fechaFin}`;
 
         return {
-            numero: String(index + 1).padStart(2, "0"),
+            numero: index + 1,
             tituloCorto: visual.tituloCorto,
             titulo: sub.nombre,
             descripcion: sub.descripcion,
@@ -32,7 +31,8 @@ export function mapSubprocesosPasos(subprocesos: any[]) {
             fondoIcono: visual.fondoIcono,
             degradado: visual.degradado,
             participantes,
-            duracion
+            fechaInicio,
+            fechaFin
         };
     });
 }

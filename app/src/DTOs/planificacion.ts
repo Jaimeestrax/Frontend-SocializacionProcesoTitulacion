@@ -29,6 +29,7 @@ export type Planificacion = {
     fechaInicio: string;
     fechaFin: string;
     subprocesos: SubprocesoSnapshot[];
+    imagenProceso?: File | string;
     idEncargadoGenerar?: string;
     idEncargadoActualizar?: string;
 }

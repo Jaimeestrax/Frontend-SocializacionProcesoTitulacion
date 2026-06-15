@@ -10,7 +10,7 @@ import { usePlanificacion } from "@/hooks/use-planificacion";
 export default function SubprocesosCalendarPage() {
     // Hooks de planificacion
     const { obtenerSubprocesosPlanificacionVigente, obtenerPeriodoActual, obtenerCodigoPAO, loading } = usePlanificacion();
-    const [filtroEstado, setFiltroEstado] = useState<string>("todos");
+    const [filtroEstado, setFiltroEstado] = useState<string>("en_proceso");
     const [subprocesosVigentes, setSubprocesosVigentes] = useState<any>(null);
     const [periodoActual, setPeriodoActual] = useState<any>(null);
     const [codigoPAO, setCodigoPAO] = useState<any>(null);
@@ -68,16 +68,16 @@ export default function SubprocesosCalendarPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 space-y-12">
 
             {/* Encabezado */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                 <div>
                     <span className="inline-flex items-center gap-2 text-sm font-bold uppercase text-primary bg-primary/10 px-3 py-2 rounded-full border border-primary mb-4 hover:scale-105 transition-transform duration-200 cursor-none">
                         <span className="w-4 h-4 rounded-full bg-primary animate-pulse" />
-                        {codigoPAO}
+                        PAO: {codigoPAO}
                     </span>
                     <h1 className="text-xl md:text-2xl font-black tracking-tight mb-3">
                         Periodo académico: {periodoActual}
                     </h1>
-                    <p className="text-muted-foreground text-lg max-w-xl">
+                    <p className="text-muted-foreground text-sm md:text-base lg:text-lg max-w-xl">
                         Visualize el cronograma de actividades para el periodo vigente.
                     </p>
                 </div>
@@ -90,16 +90,12 @@ export default function SubprocesosCalendarPage() {
 
             {/* Filtros */}
             <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sticky top-20 z-40 bg-background/80 backdrop-blur-xl p-4 rounded-2xl border border-border/40 shadow-sm">
-
                 <div className="flex p-1 bg-muted/40 border border-border/50 rounded-xl w-full lg:w-auto overflow-x-auto">
                     {filterOptions.map((opt) => {
                         const isActive = filtroEstado === opt.value;
                         return (
-                            <button
-                                key={opt.value}
-                                onClick={() => setFiltroEstado(opt.value)}
-                                className={`relative px-5 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap hover:cursor-pointer ${isActive ? "text-primary" : "text-muted-foreground"
-                                    }`}
+                            <button key={opt.value} onClick={() => setFiltroEstado(opt.value)}
+                                className={`relative px-5 py-2 text-sm lg:text-base font-bold rounded-lg transition-colors whitespace-nowrap hover:cursor-pointer ${isActive ? "text-primary" : "text-muted-foreground"}`}
                             >
                                 {isActive && (
                                     <motion.div

@@ -44,9 +44,9 @@ export function NewsCarousel({ noticias }: { noticias: any[] }) {
                     className="w-full relative"
                 >
                     {/* Controles del Carrusel */}
-                    <div className="flex justify-end gap-2 mb-6 pr-2">
-                        <CarouselPrevious className="relative left-0 top-0 translate-y-0 h-10 w-10 bg-muted border-border/50 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors" />
-                        <CarouselNext className="relative right-0 top-0 translate-y-0 h-10 w-10 bg-muted border-border/50 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors" />
+                    <div className="flex justify-end gap-2 mb-6 sm:mb-1 pr-2">
+                        <CarouselPrevious className="relative left-0 top-0 sm:-top-15 translate-y-0 h-10 w-10 bg-primary text-accent hover:bg-muted hover:text-accent-foreground hover:border-primary transition-colors" />
+                        <CarouselNext className="relative right-0 top-0 sm:-top-15 translate-y-0 h-10 w-10 bg-primary text-accent hover:bg-muted hover:text-accent-foreground hover:border-primary transition-colors" />
                     </div>
 
                     <CarouselContent className="-ml-4 md:-ml-6">

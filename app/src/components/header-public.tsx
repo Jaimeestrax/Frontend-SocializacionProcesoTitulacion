@@ -30,7 +30,7 @@ export default function HeaderPublic({
                 </span>
             </div>
 
-            {/* Nav en el medio — solo visible en md+ */}
+            {/* Nav en el medio — solo visible en lg+ */}
             <nav className="hidden lg:flex items-center gap-1">
                 {data.items.map((item) => {
                     const isActive = pathname === item.url;
@@ -39,7 +39,7 @@ export default function HeaderPublic({
                             key={item.title}
                             variant="ghost"
                             onClick={() => router.push(item.url)}
-                            className={`text-md transition-all hover:scale-110 hover:cursor-pointer ${isActive ? "text-primary text-lg bg-primary/10 hover:text-destructive" : "text-muted-foreground hover:text-primary"}`}
+                            className={`transition-all hover:scale-110 hover:cursor-pointer ${isActive ? "text-primary text-lg bg-primary/10 hover:text-destructive" : "text-md text-muted-foreground hover:text-primary"}`}
                         >
                             {item.title}
                         </Button>
@@ -62,9 +62,11 @@ export default function HeaderPublic({
                 </Button>
 
                 <Button variant="link" className="lg:hidden hover:scale-110 transition-all duration-100 hover:cursor-pointer dark:border-0"
+                    aria-label={"Abrir menú de navegación"}
                     onClick={onOpenMenu}>
                     <Logs />
                 </Button>
+
                 <ToggleMode />
                 {/** Solo para desarrollo -> indica los breakpoints */}
                 <ScreenSizeIndicator />

@@ -26,11 +26,10 @@ export default function NoticiasPage() {
     }, []);
 
     return (
-        <div className="mx-auto px-4 md:px-8 py-10">
-
+        <div className="mx-auto px-4 md:px-8 py-6">
             {/* Header */}
-            <div className="flex flex-col items-center gap-4 mb-12">
-                <h1 className="text-lg lg:text-2xl font-black uppercase tracking-widest text-foreground">
+            <div className="flex flex-col items-center gap-4 mb-8">
+                <h1 className="text-xl lg:text-2xl font-black uppercase tracking-widest text-foreground">
                     Noticias y Avisos
                 </h1>
                 <p className="text-sm md:text-lg font-medium text-muted-foreground">

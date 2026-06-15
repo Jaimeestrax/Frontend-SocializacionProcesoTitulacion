@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCursor } from "@/components/cursor-provider";
 
 
-export function CTASection() {
+export default function CTASection() {
     const router = useRouter();
     const { setHovered, clearHovered } = useCursor();
 

@@ -67,17 +67,17 @@ export function NewsHero({ noticia }: { noticia: any }) {
                         <div className="flex items-center gap-6 text-sm font-semibold text-foreground">
                             <span className="flex items-center gap-2 bg-background backdrop-blur-md px-3 py-1.5 rounded-lg">
                                 <Calendar className="w-4 h-4 text-primary" />
-                                {new Date(noticia.fechaRegistro).toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                <span className="text-primary font-black">Fecha publicación:</span> {new Date(noticia.fechaRegistro).toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
-                            <span className="flex items-center gap-2 bg-background backdrop-blur-md px-3 py-1.5 rounded-lg">
+                            {/* <span className="flex items-center gap-2 bg-background backdrop-blur-md px-3 py-1.5 rounded-lg">
                                 <Clock className="w-4 h-4 text-primary" />
                                 2 min lectura
-                            </span>
+                            </span> */}
                         </div>
 
                         <span className="flex items-center text-sm font-semibold text-foreground gap-2 bg-background backdrop-blur-md px-3 py-1.5 rounded-lg">
                             <User className="w-4 h-4 text-primary" />
-                            Publicado por: {noticia.idEncargadoGenerar.nombres} {noticia.idEncargadoGenerar.apellidos}
+                            <span className="text-primary font-black">Publicado por:</span> {noticia.idEncargadoGenerar.nombres} {noticia.idEncargadoGenerar.apellidos}
                         </span>
                     </div>
                 </motion.div>

@@ -27,12 +27,17 @@ function eliminarFaq(id: string) {
     return ejecutarQueryDelete<Respuesta>('eliminar-faq', id);
 }
 
+function contarFaqs() {
+    return ejecutarQueryGet<Respuesta>('contar-faqs');
+}
+
 const faqService = {
     registrarFaq,
     obtenerFaqs,
     obtenerFaqPorId,
     actualizarFaq,
-    eliminarFaq
+    eliminarFaq,
+    contarFaqs
 }
 
 export default faqService;

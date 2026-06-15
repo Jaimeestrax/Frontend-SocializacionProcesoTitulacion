@@ -4,7 +4,7 @@ import { MessageSquareQuote } from "lucide-react";
 import { useState } from "react";
 import { ChatbotWindow } from "./chatbot-window";
 
-export function ChatbotButton() {
+export default function ChatbotButton() {
     const [open, setOpen] = useState(false);
 
     return (
@@ -14,6 +14,7 @@ export function ChatbotButton() {
             <button
                 className="fixed bottom-10 right-10 bg-primary text-secondary rounded-full p-4 shadow-lg hover:scale-110 transition-transform z-50 cursor-pointer"
                 onClick={() => setOpen(!open)}
+                aria-label={open ? "Cerrar chat de soporte" : "Abrir chat de soporte"}
             >
                 <MessageSquareQuote size={30} />
             </button>

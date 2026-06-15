@@ -29,18 +29,18 @@ export function ChatbotWindow({ onClose }: ChatbotWindowProps) {
     const [mensajes, setMensajes] = useState([
         {
             tipo: "bot",
-            contenido: "Bienvenido, dime cómo puedo ayudarte hoy."
+            contenido: "Bienvenido. ¿Cómo puedo ayudarte?"
         }
     ]);
 
     const [opciones, setOpciones] = useState<Opcion[]>([
         {
             parametro: "faqs",
-            opcion: "Información general"
+            opcion: "Preguntas frecuentes"
         },
         {
             parametro: "subprocesos",
-            opcion: "Etapas del proceso"
+            opcion: "Información del proceso"
         }
     ]);
 
@@ -109,11 +109,11 @@ export function ChatbotWindow({ onClose }: ChatbotWindowProps) {
                 nuevasOpciones.push(
                     {
                         parametro: "faqs",
-                        opcion: "Información general"
+                        opcion: "Preguntas frecuentes"
                     },
                     {
                         parametro: "subprocesos",
-                        opcion: "Etapas del proceso"
+                        opcion: "Información del proceso"
                     }
                 );
             }
@@ -216,7 +216,7 @@ export function ChatbotWindow({ onClose }: ChatbotWindowProps) {
                 <div className="flex-1 p-4 overflow-y-auto space-y-3">
                     {
                         mensajes.map((mensaje, index) => (
-                            <div key={index} className={`rounded-xl px-3 py-1.5 text-xs text-start whitespace-pre-wrap font-semibold
+                            <div key={index} className={`rounded-xl px-3 py-1.5 text-[10px] sm:text-xs text-start whitespace-pre-wrap font-semibold
                                 ${mensaje.tipo === "bot" ? "max-w-[70%] bg-primary/25" : "max-w-[50%] bg-primary text-accent text-center ml-auto"}`}>
                                 {mensaje.contenido}
                             </div>
@@ -229,7 +229,7 @@ export function ChatbotWindow({ onClose }: ChatbotWindowProps) {
                             {
                                 opciones.map(
                                     (opcion, index) => (
-                                        <Button key={opcion.parametro} variant="outline" disabled={loading} className="rounded-xl justify-start cursor-pointer"
+                                        <Button key={opcion.parametro} variant="outline" disabled={loading} className="rounded-xl justify-start cursor-pointer py-2 h-auto"
                                             onClick={() => {
                                                 if (opcion.archivo) {
                                                     handleDescarga(opcion.archivo);
@@ -240,12 +240,12 @@ export function ChatbotWindow({ onClose }: ChatbotWindowProps) {
                                             {opcion.archivo ? (
                                                 <div className="flex items-center gap-1">
                                                     <Download />
-                                                    <span className="px-2 py-1.5 text-xs text-start whitespace-pre-wrap">
+                                                    <span className="px-1 text-[10px] sm:text-xs text-start whitespace-pre-wrap">
                                                         {index + 1}. {opcion.opcion}
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="px-2 py-1.5 text-xs text-start whitespace-pre-wrap">{index + 1}. {opcion.opcion}</span>
+                                                <span className="px-1 text-[10px] sm:text-xs text-start whitespace-pre-wrap">{index + 1}. {opcion.opcion}</span>
                                             )}
                                         </Button>
                                     )
@@ -264,7 +264,7 @@ export function ChatbotWindow({ onClose }: ChatbotWindowProps) {
                         <Plus />
                     </Button>
                     <InputGroup className="flex-1 bg-secondary rounded-full border-2">
-                        <InputGroupInput id="opcion" type="text" placeholder="Indica tu opción..."
+                        <InputGroupInput id="opcion" type="text" placeholder="Indique su opción..."
                             value={mensajeInput} onChange={e => setMensajeInput(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Enter") handleMensaje(Number(mensajeInput)); }}
                             className="text-sm md:text-sm placeholder:text-muted-foreground/50 placeholder:text-sm" />

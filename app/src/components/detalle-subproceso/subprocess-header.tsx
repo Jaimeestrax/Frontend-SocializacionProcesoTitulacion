@@ -33,18 +33,19 @@ export function SubprocessHeader({ data = null }: { data: any }) {
                     {data.nombre}
                 </h1>
 
-                <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-muted-foreground">
-                    <span className="flex items-center gap-1.5 bg-muted/40 px-3 py-1.5 rounded-lg border border-border/40">
+                <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-primary">
+                    <span className="flex items-center gap-1 bg-muted/40 px-3 py-1.5 rounded-lg border border-border">
                         <Calendar className="w-4 h-4" />
-                        {new Date(data.fechaInicio).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' })} — {new Date(data.fechaFin).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' })}
+                        Desde el {new Date(data.fechaInicio).toLocaleDateString('es-EC', { day: '2-digit', month: 'long' })} hasta el {new Date(data.fechaFin).toLocaleDateString('es-EC', { day: '2-digit', month: 'long' })}
                     </span>
                 </div>
             </div>
 
-            {/* Circular Progress Indicator */}
+            {/* Indicador de progreso circular */}
             <div className="shrink-0 flex items-center justify-center p-6 bg-card/40 backdrop-blur-md rounded-3xl border border-border/60 shadow-lg relative overflow-hidden">
-                {/* Glow sutil */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-primary/20 rounded-full blur-2xl" />
+                {/* Difuminados en los costados */}
+                <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-primary rounded-full blur-2xl" />
+                <div className="absolute bottom-0 right-0 -translate-x-1 -translate-y-1 w-15 h-15 bg-primary rounded-full blur-2xl" />
 
                 <div className="relative w-[100px] h-[100px]">
                     <svg className="w-full h-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
@@ -76,9 +77,9 @@ export function SubprocessHeader({ data = null }: { data: any }) {
                         <span className="text-2xl font-black tabular-nums">{data.porcentajeCompletado}%</span>
                     </div>
                 </div>
-                <div className="ml-5">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Avance etapa</p>
-                    <p className="text-sm font-semibold leading-tight">Progreso del<br />completado</p>
+                <div className="ml-5 uppercase font-black">
+                    <p className="text-xs tracking-widest text-muted-foreground">Actividades</p>
+                    <p className="text-sm md:text-base leading-tight">completadas</p>
                 </div>
             </div>
         </div>

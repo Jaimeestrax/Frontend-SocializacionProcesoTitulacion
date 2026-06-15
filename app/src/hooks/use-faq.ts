@@ -78,12 +78,27 @@ export function useFaqs() {
         }
     };
 
+    const contarFaqs = async () => {
+        try {
+            setLoading(true);
+
+            const res = await faqService.contarFaqs();
+
+            return res;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         registrarFaq,
         obtenerFaqs,
         obtenerFaqPorId,
         actualizarFaq,
         eliminarFaq,
+        contarFaqs,
         loading
     };
 }

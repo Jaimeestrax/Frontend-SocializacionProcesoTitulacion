@@ -56,7 +56,6 @@ export default function DetalleSubprocesoPage() {
 
                     {/* Timeline de Actividades */}
                     <ActivityTimeline data={subprocesoEspecifico} />
-
                 </div>
 
                 {/* Sidebar derecha */}

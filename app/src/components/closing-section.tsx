@@ -6,7 +6,7 @@ import { GraduationCap } from "lucide-react";
 const QUOTE = "Tu esfuerzo de hoy es el título que celebrarás mañana.";
 const BRAND = "SOPTI-SOFT · Sistema de Socialización del Proceso de Titulación";
 
-export function ClosingSection() {
+export default function ClosingSection() {
     const words = QUOTE.split(" ");
 
     return (
@@ -39,8 +39,7 @@ export function ClosingSection() {
                     aria-label={QUOTE}
                 >
                     {words.map((word, i) => (
-                        <motion.span
-                            key={i}
+                        <motion.span key={i}
                             initial={{ opacity: 0, y: 28, filter: "blur(4px)" }}
                             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                             viewport={{ once: true }}
@@ -50,10 +49,8 @@ export function ClosingSection() {
                                 ease: [0.16, 1, 0.3, 1],
                             }}
                             className={
-                                /* Highlight key words */
-                                word === "título" || word === "celebrarás"
-                                    ? "text-primary"
-                                    : ""
+                                /* Resalta palabras clave */
+                                word === "título" || word === "celebrarás" ? "text-primary" : ""
                             }
                         >
                             {word}
@@ -71,7 +68,7 @@ export function ClosingSection() {
                         initial={{ scaleX: 0 }}
                         whileInView={{ scaleX: 1 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 2, ease: "easeOut", delay: 0.5 }}
+                        transition={{ duration: 3, ease: "easeOut", delay: 0.5 }}
                     />
                     {/* Punto final */}
                     <motion.div

@@ -176,6 +176,18 @@ export function usePlanificacion() {
         }
     };
 
+    const contarPlanificacionesTotales = async () => {
+        try {
+            setLoading(true);
+            const response = await planificacionesService.contarPlanificacionesTotales();
+            return response;
+        } catch (error) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         loading,
         registrarPlanificacion,
@@ -191,6 +203,7 @@ export function usePlanificacion() {
         obtenerActividadPorId,
         obtenerSubprocesosPlanificacionVigente,
         obtenerCodigoPAO,
-        obtenerSubprocesoEspecificoPlanificacion
+        obtenerSubprocesoEspecificoPlanificacion,
+        contarPlanificacionesTotales
     };
 }

@@ -87,7 +87,7 @@ function Digit({ value }: { value: string }) {
     );
 }
 
-export function PeriodDashboard() {
+export default function PeriodDashboard() {
     const sectionRef = useRef<HTMLDivElement>(null);
     const isInView = useInView(sectionRef, { once: true, margin: "-80px" });
 
@@ -210,7 +210,7 @@ export function PeriodDashboard() {
             </motion.div>
 
             {/* Cards informativas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4 max-w-5xl mx-auto">
 
                 {/* Card 1: Progreso del proceso */}
                 <motion.div
@@ -227,14 +227,14 @@ export function PeriodDashboard() {
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                             <TrendingUp className="w-5 h-5 text-primary" />
                         </div>
-                        <span className="text-sm font-semibold text-muted-foreground">
+                        <span className="text-sm font-semibold text-accent-foreground">
                             Avance del período actual
                         </span>
                     </div>
 
                     <div className="flex flex-col items-center">
                         <CircularProgress progress={porcentajeAvance} isInView={isInView} />
-                        <p className="text-xs lg:text-sm text-primary">
+                        <p className="text-sm lg:text-base text-primary">
                             Porcentaje de actividades que ya han sido completadas
                         </p>
                     </div>
@@ -252,25 +252,25 @@ export function PeriodDashboard() {
                     <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-warning/25 blur-2xl pointer-events-none" />
 
                     <div className="flex items-center gap-2 mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                            <Target className="w-5 h-5 text-amber-500" />
+                        <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
+                            <Target className="w-5 h-5 text-warning" />
                         </div>
-                        <span className="text-sm font-semibold text-muted-foreground">
+                        <span className="text-sm font-semibold text-warning-foreground">
                             Próxima actividad
                         </span>
                     </div>
 
                     {proximasActividades && proximasActividades.length > 0 ? (
                         <>
-                            <h3 className="text-2xl font-black tracking-tight leading-tight mb-2">
+                            <h3 className="text-2xl font-black tracking-tight leading-tight mb-4">
                                 {proximasActividades[0].nombre}
                             </h3>
-                            <p className="text-muted-foreground text-sm leading-relaxed mb-1">
-                                {proximasActividades[0].descripcion}
+                            <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                                <span className="font-bold text-accent-foreground">Descripción: </span>{proximasActividades[0].descripcion}
                             </p>
-                            <p className="text-xs font-semibold text-primary mb-8 flex items-center gap-1.5">
-                                <CalendarClock className="w-3 h-3" />
-                                {formatearFecha(proximasActividades[0].fechaInicio)}
+                            <p className="text-sm font-semibold text-primary mb-8 flex items-center gap-1">
+                                <CalendarClock className="w-4 h-4" />
+                                Inicia: <strong>{formatearFecha(proximasActividades[0].fechaInicio)}</strong>
                             </p>
                         </>
                     ) : (
@@ -283,7 +283,7 @@ export function PeriodDashboard() {
                     <div className="mt-4 pt-4 border-t border-border/40">
                         {tiempoRestante ? (
                             <div className="flex flex-col gap-3">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-accent-foreground flex items-center gap-1">
                                     <Clock9 size={12} className="text-amber-500" /> Tiempo restante
                                 </span>
 

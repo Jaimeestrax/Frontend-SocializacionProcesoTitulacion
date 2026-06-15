@@ -21,13 +21,19 @@ export function ActivityCard({ actividad, isLast, pos, isExpanded, onToggle }: {
         dotColor = "bg-success border-success-foreground text-success-foreground";
         cardBorder = "border-success-foreground";
         cardBg = "bg-success";
+        badge = (
+            <span className="absolute -top-3 right-6 bg-success-foreground text-accent text-xs font-black uppercase px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                Finalizado
+            </span>
+        );
     } else if (isActivo) {
-        dotColor = "bg-warning/25 border-warning text-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.6)]";
-        cardBorder = "border-warning shadow-sm shadow-warning/25";
+        dotColor = "bg-warning/25 border-warning text-amber-500";
+        cardBorder = "border-warning";
         cardBg = "bg-warning/25";
         badge = (
-            <span className="absolute -top-3 right-6 bg-amber-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-lg shadow-amber-500/30 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <span className="absolute -top-3 right-6 bg-warning text-accent-foreground text-xs font-black uppercase px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-warning-foreground animate-pulse" />
                 En proceso
             </span>
         );
@@ -36,6 +42,12 @@ export function ActivityCard({ actividad, isLast, pos, isExpanded, onToggle }: {
         cardBorder = "border-destructive";
         cardBg = "bg-destructive/50";
         cardOpacity = "opacity-60 grayscale-[0.3]";
+        badge = (
+            <span className="absolute -top-3 right-6 bg-destructive text-accent-foreground text-xs font-black uppercase px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-destructive-foreground animate-pulse" />
+                Próximo
+            </span>
+        );
     }
 
     const formatearFecha = (fecha: any) => {
@@ -67,14 +79,14 @@ export function ActivityCard({ actividad, isLast, pos, isExpanded, onToggle }: {
 
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                        <p className="text-xs font-bold uppercase tracking-widest text-accent-foreground mb-2">
                             Actividad {pos + 1}
                         </p>
                         <h3 className={`text-xl md:text-2xl font-black tracking-tight leading-tight mb-2 ${isActivo ? 'text-foreground' : ''}`}>
                             {actividad.nombre}
                         </h3>
                         <p className="text-sm text-secondary-foreground line-clamp-2 md:line-clamp-none max-w-2xl">
-                            {actividad.descripcion}
+                            <span className="font-bold">Descripción: </span>{actividad.descripcion}
                         </p>
                     </div>
 
@@ -106,11 +118,11 @@ export function ActivityCard({ actividad, isLast, pos, isExpanded, onToggle }: {
                             className="overflow-hidden"
                         >
                             <div className="pt-4 space-y-8 border-t border-border/50 mt-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                     {/* Participantes */}
                                     <div>
                                         <h4 className="text-[10px] uppercase tracking-widest font-bold text-foreground mb-3">
-                                            Participantes
+                                            Participantes:
                                         </h4>
                                         <div className="flex flex-wrap gap-2">
                                             <div className="flex items-center gap-2 bg-background border border-border/60 px-3 py-2 rounded-full shadow-sm">
@@ -124,7 +136,7 @@ export function ActivityCard({ actividad, isLast, pos, isExpanded, onToggle }: {
                                     {/* Fechas */}
                                     <div>
                                         <h4 className="text-[10px] uppercase tracking-widest font-bold text-foreground mb-3">
-                                            Fechas de la actividad
+                                            Fechas de la actividad:
                                         </h4>
                                         <div className="flex flex-wrap gap-2">
                                             <div className="flex items-center gap-2 bg-background border border-border/60 px-4 py-2 rounded-full shadow-sm">
